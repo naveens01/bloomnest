@@ -81,14 +81,20 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI)
+const DB_TARGET = process.env.DB_TARGET || 'local';
+const mongodbUri = DB_TARGET === 'atlas'
+  ? (process.env.MONGODB_URI_ATLAS || process.env.MONGODB_URI_PROD)
+  : process.env.MONGODB_URI;
+
+mongoose.connect(mongodbUri)
   .then(() => {
-    console.log('✅ Connected to MongoDB successfully');
+    console.log(`✅ Connected to MongoDB successfully (${DB_TARGET})`);
     
     // Start server
     app.listen(PORT, () => {
       console.log(`🚀 BloomNest server running on port ${PORT}`);
       console.log(`📱 Environment: ${process.env.NODE_ENV}`);
+      console.log(`🗄️ DB Target: ${DB_TARGET}`);
       console.log(`🔗 API URL: http://localhost:${PORT}/api`);
     });
   })
