@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { brands } from '../data/products';
 import { Link } from 'react-router-dom';
-import { Search, Filter, Award, Users, Globe, Leaf, Sparkles, ArrowRight, Star, TrendingUp, ShoppingBag, Shield, Zap, Recycle, Heart, Crown, Target, Lightbulb } from 'lucide-react';
+import { Search, Award, Sparkles, ArrowRight, Star, TrendingUp, ShoppingBag, Crown, Target, Lightbulb } from 'lucide-react';
 
 const BrandsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,7 +30,7 @@ const BrandsPage: React.FC = () => {
         filtered.sort((a, b) => b.productCount - a.productCount);
         break;
       case 'newest':
-        filtered.sort((a, b) => Math.random() - 0.5); // Simulate newest
+        filtered.sort(() => Math.random() - 0.5); // Simulate newest
         break;
       default:
         // Featured - keep original order
@@ -174,8 +174,8 @@ const BrandsPage: React.FC = () => {
 
       {/* Grand Brands Grid */}
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
+        <div className="max-w-none mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 sm:gap-10">
             {filteredBrands.map((brand, index) => (
               <div
                 key={brand.id}

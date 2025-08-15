@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { categories } from '../data/products';
 import { Link } from 'react-router-dom';
-import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart, Filter, Search, Grid, List, ShoppingBag, TrendingUp, Shield, Users } from 'lucide-react';
+import { Leaf, Sparkles, ArrowRight, Award, Clock, Search, Grid, ShoppingBag, Shield } from 'lucide-react';
 
 const CategoriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,7 +27,7 @@ const CategoriesPage: React.FC = () => {
         filtered.sort((a, b) => b.count - a.count);
         break;
       case 'newest':
-        filtered.sort((a, b) => Math.random() - 0.5); // Simulate newest
+        filtered.sort(() => Math.random() - 0.5); // Simulate newest
         break;
       default:
         // Featured - keep original order
@@ -60,7 +60,7 @@ const CategoriesPage: React.FC = () => {
           </div>
         </div>
         
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-none mx-auto relative z-10">
           <div className="text-center">
             <div className="inline-flex items-center space-x-2 bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-eco-200 mb-6 sm:mb-8">
               <Award className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
@@ -76,7 +76,7 @@ const CategoriesPage: React.FC = () => {
               eco-friendly lifestyle easier and more beautiful. Find exactly what you need for every aspect of sustainable living.
             </p>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-6xl xl:max-w-7xl mx-auto">
               <div className="bg-glass-eco p-4 sm:p-6 rounded-2xl border border-eco-200">
                 <div className="text-2xl sm:text-3xl font-bold text-eco-600 mb-1">{categories.length}</div>
                 <div className="text-xs sm:text-sm text-eco-700">Categories</div>
@@ -96,7 +96,7 @@ const CategoriesPage: React.FC = () => {
 
       {/* Enhanced Search and Filter Section */}
       <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-white/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-none mx-auto">
           <div className="bg-glass-eco rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-eco-200 shadow-eco-glow">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-center">
               {/* Search Bar */}
@@ -152,7 +152,7 @@ const CategoriesPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-none mx-auto relative z-10">
           {/* Section Header */}
           <div className="text-center mb-12 sm:mb-16">
             <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-eco-400 to-nature-400 px-6 py-3 rounded-full border border-eco-200 mb-6 shadow-eco-glow animate-fade-in-up">
@@ -203,7 +203,7 @@ const CategoriesPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
               {filteredCategories.map((category, index) => (
                 <div
                   key={category.id}
