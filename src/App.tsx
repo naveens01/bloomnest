@@ -10,6 +10,7 @@ import BrandsPage from './pages/BrandsPage';
 import CategoriesPage from './pages/CategoriesPage';
 import AboutPage from './pages/AboutPage';
 import SignupPage from './pages/SignupPage';
+import SigninPage from './pages/SigninPage';
 import { CartItem, Product } from './types';
 import WatchlistPage from './pages/WatchlistPage.tsx';
 
@@ -149,6 +150,10 @@ function App() {
           <Route 
             path="/signup" 
             element={<SignupPage />} 
+          />
+          <Route 
+            path="/signin" 
+            element={<SigninPage />} 
           />
         </Routes>
 

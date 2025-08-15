@@ -3,7 +3,7 @@ import { Leaf, Sparkles, Users, Award, Globe, Heart, ArrowRight, Star, Shield, Z
 
 const AboutPage: React.FC = () => {
   return (
-    <main className="min-h-screen bg-eco-pattern">
+    <main className="min-h-screen bg-eco-pattern pt-20 sm:pt-0">
       {/* Hero Section */}
       <section className="relative py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
@@ -46,48 +46,85 @@ const AboutPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gradient-eco mb-4 sm:mb-6">
-              Our Core Values
+      {/* Enhanced Values Section */}
+      <section className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 relative overflow-hidden">
+        {/* Enhanced Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-eco-200 to-nature-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
+          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-br from-nature-200 to-ocean-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-br from-ocean-200 to-eco-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
+          
+          {/* Floating Decorative Elements */}
+          <div className="absolute top-10 right-10 animate-nature-float">
+            <div className="w-12 h-12 bg-gradient-to-br from-eco-300 to-nature-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-pulse">
+              <Leaf className="h-6 w-6 text-eco-600" />
+            </div>
+          </div>
+          <div className="absolute bottom-10 left-10 animate-nature-float animation-delay-2000">
+            <div className="w-10 h-10 bg-gradient-to-br from-nature-300 to-ocean-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-ping">
+              <Globe className="h-5 w-5 text-nature-600" />
+            </div>
+          </div>
+          <div className="absolute top-1/3 left-1/4 animate-nature-float animation-delay-1000">
+            <div className="w-8 h-8 bg-gradient-to-br from-ocean-300 to-eco-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-pulse">
+              <Sparkles className="h-4 w-4 text-ocean-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-eco-400 to-nature-400 px-6 py-3 rounded-full border border-eco-200 mb-6 shadow-eco-glow animate-fade-in-up">
+              <Award className="h-5 w-5 text-white" />
+              <span className="text-sm font-semibold text-white">Our Values</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gradient-eco mb-6 animate-fade-in-up animation-delay-200">
+              What Drives Us
             </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-eco-600 max-w-3xl mx-auto px-4">
-              These principles guide everything we do, from product selection to customer service
+            <p className="text-xl text-eco-700 max-w-4xl mx-auto leading-relaxed px-4 animate-fade-in-up animation-delay-400">
+              Our core values shape everything we do, from product selection to customer service
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            <div className="bg-glass-eco p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-eco-200 text-center group hover:shadow-eco-glow transition-all duration-300">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-eco-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                <Leaf className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Leaf,
+                title: "Sustainability First",
+                description: "Every product is carefully vetted for environmental impact",
+                color: "eco"
+              },
+              {
+                icon: Shield,
+                title: "Quality Assurance",
+                description: "We never compromise on product quality and safety",
+                color: "nature"
+              },
+              {
+                icon: Heart,
+                title: "Customer Care",
+                description: "Your satisfaction is our top priority",
+                color: "ocean"
+              }
+            ].map((value, index) => (
+              <div
+                key={value.title}
+                className="group bg-white rounded-3xl p-8 shadow-eco-glow hover:shadow-eco-glow-xl transition-all duration-500 hover:-translate-y-2 animate-fade-in-up border border-eco-200"
+                style={{ animationDelay: `${index * 200}ms` }}
+              >
+                <div className={`w-16 h-16 bg-gradient-to-r from-${value.color}-500 to-${value.color === 'eco' ? 'nature' : value.color === 'nature' ? 'ocean' : 'eco'}-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-eco-glow mx-auto`}>
+                  <value.icon className="h-8 w-8 text-white animate-pulse-slow" />
+                </div>
+                <h3 className="text-2xl font-bold text-eco-800 mb-4 group-hover:scale-105 transition-transform duration-300">
+                  {value.title}
+                </h3>
+                <p className="text-eco-600 leading-relaxed group-hover:text-eco-700 transition-colors duration-300">
+                  {value.description}
+                </p>
+                {/* Enhanced hover effects */}
+                <div className="absolute inset-0 bg-gradient-to-r from-eco-400/5 via-nature-400/5 to-ocean-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl"></div>
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-eco-800 mb-3 sm:mb-4">Environmental Stewardship</h3>
-              <p className="text-eco-600 text-sm sm:text-base">
-                We prioritize products that minimize environmental impact and promote sustainable practices.
-              </p>
-            </div>
-            
-            <div className="bg-glass-eco p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-eco-200 text-center group hover:shadow-eco-glow transition-all duration-300">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-nature-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                <Heart className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-eco-800 mb-3 sm:mb-4">Customer Care</h3>
-              <p className="text-eco-600 text-sm sm:text-base">
-                Your satisfaction and eco-journey matter to us. We're here to support your sustainable lifestyle.
-              </p>
-            </div>
-            
-            <div className="bg-glass-eco p-6 sm:p-8 rounded-2xl sm:rounded-3xl border border-eco-200 text-center group hover:shadow-eco-glow transition-all duration-300">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-ocean-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                <Shield className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-eco-800 mb-3 sm:mb-4">Quality Assurance</h3>
-              <p className="text-eco-600 text-sm sm:text-base">
-                Every product is carefully vetted for quality, sustainability, and ethical production.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
