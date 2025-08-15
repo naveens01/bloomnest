@@ -47,7 +47,7 @@ const BrandPage: React.FC<BrandPageProps> = ({
   }, [brandId, searchQuery]);
 
   return (
-    <main className="py-8 sm:py-12 lg:py-16">
+    <main className="py-8 sm:py-12 lg:py-16 pt-20 sm:pt-8">
       {/* Brand Header */}
       <section className="relative bg-gradient-to-r from-green-50 to-blue-50 py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">

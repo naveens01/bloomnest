@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../types';
 import ProductCard from '../components/ProductCard';
-import { Heart, ArrowLeft, Sparkles, Trash2 } from 'lucide-react';
+import { Heart, ArrowLeft, Sparkles, Trash2, Star, Leaf } from 'lucide-react';
 
 interface WatchlistPageProps {
   items: Product[];
@@ -11,14 +11,38 @@ interface WatchlistPageProps {
 
 const WatchlistPage: React.FC<WatchlistPageProps> = ({ items, onToggleWatchlist }) => {
   return (
-    <main className="min-h-screen bg-eco-pattern">
-      {/* Hero */}
-      <section className="relative py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-20 sm:-top-40 -right-20 sm:-right-40 w-48 sm:w-96 h-48 sm:h-96 bg-eco-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob"></div>
-          <div className="absolute -bottom-20 sm:-bottom-40 -left-20 sm:-left-40 w-48 sm:w-96 h-48 sm:h-96 bg-ocean-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-2000"></div>
-          <div className="absolute top-20 sm:top-40 left-20 sm:left-40 w-48 sm:w-96 h-48 sm:h-96 bg-forest-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-4000"></div>
+    <main className="min-h-screen bg-eco-pattern relative overflow-hidden pt-20 sm:pt-0">
+      {/* Enhanced Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-eco-200 to-nature-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-br from-nature-200 to-ocean-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-br from-ocean-200 to-eco-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
+        
+        {/* Floating Decorative Elements */}
+        <div className="absolute top-10 right-10 animate-nature-float">
+          <div className="w-12 h-12 bg-gradient-to-br from-eco-300 to-nature-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-pulse">
+            <Heart className="h-6 w-6 text-eco-600" />
+          </div>
         </div>
+        <div className="absolute bottom-10 left-10 animate-nature-float animation-delay-2000">
+          <div className="w-10 h-10 bg-gradient-to-br from-nature-300 to-ocean-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-ping">
+            <Star className="h-5 w-5 text-nature-600" />
+          </div>
+        </div>
+        <div className="absolute top-1/3 left-1/4 animate-nature-float animation-delay-1000">
+          <div className="w-8 h-8 bg-gradient-to-br from-ocean-300 to-eco-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-pulse">
+            <Sparkles className="h-4 w-4 text-ocean-600" />
+          </div>
+        </div>
+        <div className="absolute top-2/3 right-1/3 animate-nature-float animation-delay-3000">
+          <div className="w-6 h-6 bg-gradient-to-br from-eco-300 to-nature-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-ping">
+            <Leaf className="h-3 w-3 text-eco-600" />
+          </div>
+        </div>
+      </div>
+
+      {/* Hero Section */}
+      <section className="relative py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-8 sm:mb-12 animate-fade-in-up">
             <div className="inline-flex items-center space-x-2 bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-eco-200 mb-4 sm:mb-6">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, Lock, Eye, EyeOff, Shield, CheckCircle, XCircle, Leaf, Sparkles, Zap, Globe, Recycle, Heart } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Lock, Eye, EyeOff, Shield, CheckCircle, XCircle, Leaf, Sparkles, Zap, Globe, Recycle, Heart, Star } from 'lucide-react';
 
 const SignupPage: React.FC = () => {
   const [authMethod, setAuthMethod] = useState<'mobile' | 'email'>('mobile');
@@ -93,7 +93,7 @@ const SignupPage: React.FC = () => {
             <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r from-eco-400 to-nature-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-eco-glow animate-bounce-in">
               <CheckCircle className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gradient-eco mb-4 animate-fade-in-up">Welcome to EcoMarket!</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gradient-eco mb-4 animate-fade-in-up">Welcome to BloomNest!</h1>
             <p className="text-eco-700 mb-8 text-base sm:text-lg animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
               Your account has been created successfully. Start exploring our eco-friendly products!
             </p>
@@ -114,15 +114,37 @@ const SignupPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-eco-50 via-white to-nature-50 relative overflow-hidden">
-      {/* Animated Background Elements */}
+      {/* Enhanced Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-48 sm:w-72 h-48 sm:h-72 bg-eco-200/40 rounded-full blur-3xl animate-blob"></div>
-        <div className="absolute bottom-20 right-20 w-48 sm:w-72 h-48 sm:h-72 bg-nature-200/40 rounded-full blur-3xl animate-blob" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 sm:w-96 h-64 sm:h-96 bg-ocean-200/30 rounded-full blur-3xl animate-blob" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-eco-200 to-nature-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-br from-nature-200 to-ocean-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-br from-ocean-200 to-eco-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
+        
+        {/* Floating Decorative Elements */}
+        <div className="absolute top-10 right-10 animate-nature-float">
+          <div className="w-12 h-12 bg-gradient-to-br from-eco-300 to-nature-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-pulse">
+            <Leaf className="h-6 w-6 text-eco-600" />
+          </div>
+        </div>
+        <div className="absolute bottom-10 left-10 animate-nature-float animation-delay-2000">
+          <div className="w-10 h-10 bg-gradient-to-br from-nature-300 to-ocean-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-ping">
+            <Globe className="h-5 w-5 text-nature-600" />
+          </div>
+        </div>
+        <div className="absolute top-1/3 left-1/4 animate-nature-float animation-delay-1000">
+          <div className="w-8 h-8 bg-gradient-to-br from-ocean-300 to-eco-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-pulse">
+            <Sparkles className="h-4 w-4 text-ocean-600" />
+          </div>
+        </div>
+        <div className="absolute top-2/3 right-1/3 animate-nature-float animation-delay-3000">
+          <div className="w-6 h-6 bg-gradient-to-br from-eco-300 to-nature-300 rounded-full flex items-center justify-center opacity-80 shadow-lg animate-ping">
+            <Star className="h-3 w-3 text-eco-600" />
+          </div>
+        </div>
       </div>
 
       {/* Header */}
-      <header className="relative z-10 pt-6 sm:pt-8 px-4 sm:px-6">
+      <header className="relative z-10 pt-20 sm:pt-6 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <Link to="/" className="inline-flex items-center space-x-2 text-eco-700 hover:text-eco-900 font-semibold text-sm sm:text-base">
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -139,7 +161,7 @@ const SignupPage: React.FC = () => {
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-eco-gradient rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-eco-glow">
               <Leaf className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gradient-eco mb-2 sm:mb-4">Join EcoMarket</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gradient-eco mb-2 sm:mb-4">Join BloomNest</h1>
             <p className="text-eco-600 text-sm sm:text-base">Create your account and start your sustainable journey</p>
           </div>
 
