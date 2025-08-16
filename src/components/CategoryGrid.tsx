@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Category } from '../types';
-import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart } from 'lucide-react';
+import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart, Database } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 
 interface CategoryGridProps {
   categories: Category[];
+  loading?: boolean;
+  hasBackendData?: boolean;
 }
 
-const CategoryGrid: React.FC<CategoryGridProps> = ({ categories }) => {
+const CategoryGrid: React.FC<CategoryGridProps> = ({ categories, loading = false, hasBackendData = false }) => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -22,6 +25,12 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ categories }) => {
           <div className="inline-flex items-center space-x-2 bg-glass-eco px-6 py-3 rounded-full border border-eco-200 mb-6">
             <Award className="h-5 w-5 text-eco-600" />
             <span className="text-sm font-semibold text-eco-700">Shop by Category</span>
+            {hasBackendData && (
+              <div className="flex items-center space-x-1 bg-green-100 px-2 py-1 rounded-full">
+                <Database className="h-3 w-3 text-green-600" />
+                <span className="text-xs text-green-700 font-medium">Live</span>
+              </div>
+            )}
           </div>
           <h2 className="text-4xl sm:text-5xl font-bold text-gradient-eco mb-6">
             Discover Eco-Friendly Categories
@@ -29,6 +38,11 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ categories }) => {
           <p className="text-xl text-eco-600 max-w-3xl mx-auto leading-relaxed">
             Explore our carefully curated categories of sustainable products, each designed to help you 
             make environmentally conscious choices for your lifestyle
+            {hasBackendData && (
+              <span className="block mt-2 text-sm text-green-600">
+                ✨ Enhanced with real-time data from our database
+              </span>
+            )}
           </p>
         </div>
 
@@ -67,8 +81,13 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ categories }) => {
         </div>
 
         {/* Enhanced Category Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {categories.map((category, index) => (
+        {loading ? (
+          <div className="flex justify-center items-center py-16">
+            <LoadingSpinner size="lg" text="Loading categories..." />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {categories.map((category, index) => (
             <div
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
@@ -193,7 +212,8 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ categories }) => {
               <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-eco-200 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );
