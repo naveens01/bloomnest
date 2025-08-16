@@ -1,13 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Brand } from '../types';
-import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart, Building2, Shield, Users, Crown, Target, Lightbulb } from 'lucide-react';
+import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart, Building2, Shield, Users, Crown, Target, Lightbulb, Database } from 'lucide-react';
+import LoadingSpinner from './LoadingSpinner';
 
 interface BrandGridProps {
   brands: Brand[];
+  loading?: boolean;
+  hasBackendData?: boolean;
 }
 
-const BrandGrid: React.FC<BrandGridProps> = ({ brands }) => {
+const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBackendData = false }) => {
   const navigate = useNavigate();
 
   const handleBrandClick = (brandId: string) => {
@@ -40,6 +43,12 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands }) => {
           <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-eco-400 to-nature-400 px-6 py-3 rounded-full border border-eco-200 mb-6 shadow-eco-glow">
             <Award className="h-5 w-5 text-white" />
             <span className="text-sm font-semibold text-white">Premium Brands</span>
+            {hasBackendData && (
+              <div className="flex items-center space-x-1 bg-green-100 px-2 py-1 rounded-full">
+                <Database className="h-3 w-3 text-green-600" />
+                <span className="text-xs text-green-700 font-medium">Live</span>
+              </div>
+            )}
           </div>
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gradient-eco mb-6">
             Trusted Eco-Friendly Brands
@@ -47,12 +56,22 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands }) => {
           <p className="text-xl text-eco-700 max-w-4xl mx-auto leading-relaxed">
             Discover trusted brands committed to sustainability and quality. 
             Each brand has been carefully selected for their environmental commitment and product excellence
+            {hasBackendData && (
+              <span className="block mt-2 text-sm text-green-600">
+                ✨ Enhanced with real-time data from our database
+              </span>
+            )}
           </p>
         </div>
 
         {/* Enhanced Brand Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {brands.map((brand, index) => (
+        {loading ? (
+          <div className="flex justify-center items-center py-16">
+            <LoadingSpinner size="lg" text="Loading brands..." />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {brands.map((brand, index) => (
             <div
               key={brand.id}
               onClick={() => handleBrandClick(brand.id)}
@@ -181,7 +200,8 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands }) => {
               <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-gradient-to-r from-nature-400 to-ocean-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </section>
   );

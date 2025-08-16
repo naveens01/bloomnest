@@ -5,7 +5,7 @@ import CategoryGrid from '../components/CategoryGrid';
 import BrandGrid from '../components/BrandGrid';
 import PromotionCards from '../components/PromotionCards';
 import ProductCard from '../components/ProductCard';
-import { products, categories, brands } from '../data/products';
+import { useHybridProducts, useHybridCategories, useHybridBrands, useHybridFeaturedProducts } from '../hooks/useHybridData';
 import { CartItem, Product } from '../types';
 import { Leaf, Sparkles, ArrowRight, Star, TrendingUp, ShoppingCart } from 'lucide-react';
 
@@ -24,8 +24,14 @@ const Home: React.FC<HomeProps> = ({
   selectedCategory,
   onCategorySelect
 }) => {
+  // Use hybrid data hooks
+  const { data: allProducts, loading: productsLoading, hasBackendData: hasBackendProducts } = useHybridProducts();
+  const { data: allCategories, loading: categoriesLoading, hasBackendData: hasBackendCategories } = useHybridCategories();
+  const { data: allBrands, loading: brandsLoading, hasBackendData: hasBackendBrands } = useHybridBrands();
+  const { data: featuredProducts, loading: featuredLoading, hasBackendData: hasBackendFeatured } = useHybridFeaturedProducts();
+
   const filteredProducts = useMemo(() => {
-    let filtered = products;
+    let filtered = allProducts;
 
     // Filter by category
     if (selectedCategory !== 'all') {
@@ -44,7 +50,7 @@ const Home: React.FC<HomeProps> = ({
     }
 
     return filtered.slice(0, 8); // Show only 8 products on home page
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, allProducts]);
 
   return (
     <main>
@@ -53,12 +59,32 @@ const Home: React.FC<HomeProps> = ({
       <PromotionBanner />
       
       <CategoryGrid
-        categories={categories}
+        categories={allCategories}
+        loading={categoriesLoading}
+        hasBackendData={hasBackendCategories}
       />
 
       <PromotionCards />
 
-      <BrandGrid brands={brands} />
+      <BrandGrid 
+        brands={allBrands} 
+        loading={brandsLoading}
+        hasBackendData={hasBackendBrands}
+      />
+
+      {/* Backend Data Status Indicator */}
+      {(hasBackendCategories || hasBackendBrands || hasBackendProducts) && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-2xl p-4 text-center">
+            <div className="flex items-center justify-center space-x-2 text-green-700">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">
+                Enhanced with live data from our database
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 relative overflow-hidden">
         {/* Grand Background Elements */}
