@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import { products, categories } from '../data/products';
 import { CartItem, Product } from '../types';
-import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart, Filter, Search, Grid, List, ShoppingBag, TrendingUp, Shield, Users } from 'lucide-react';
+import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart, Filter, Search, Grid, List, ShoppingBag, TrendingUp, Shield, Users, Loader2 } from 'lucide-react';
+import { useHybridCategories, useHybridProducts } from '../hooks/useHybridData';
 
 interface CategoryPageProps {
   cart: CartItem[];
@@ -25,14 +25,142 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   
-  const category = categories.find(c => c.id === categoryId);
+  // Use hybrid data hooks
+  const { data: categories, loading: categoriesLoading, refresh: refreshCategories } = useHybridCategories();
+  const { data: allProducts, loading: productsLoading } = useHybridProducts();
   
-  if (!category) {
+  // State to track if we've waited enough for categories to load
+  const [hasWaitedForCategories, setHasWaitedForCategories] = useState(false);
+  
+  // Refresh categories on mount and wait a bit before deciding category doesn't exist
+  useEffect(() => {
+    refreshCategories();
+    
+    // Wait a bit for categories to load from backend before giving up
+    const timer = setTimeout(() => {
+      setHasWaitedForCategories(true);
+    }, 1000); // Wait 1 second for categories to load
+    
+    return () => clearTimeout(timer);
+  }, [categoryId, refreshCategories]);
+  
+  // Find category by ID or slug (slug takes priority for SEO-friendly URLs)
+  const category = useMemo(() => {
+    if (!categoryId || !categories || categories.length === 0) return null;
+    
+    // Normalize the categoryId from URL (remove any encoding issues and normalize)
+    const normalizedCategoryId = decodeURIComponent(categoryId).toLowerCase().trim();
+    
+    // Try to find by slug first (most common case for SEO-friendly URLs)
+    const categoryBySlug = categories.find(c => {
+      const categorySlug = (c as any).slug;
+      if (categorySlug) {
+        const normalizedSlug = categorySlug.toLowerCase().trim();
+        return normalizedSlug === normalizedCategoryId;
+      }
+      // Generate slug from name if not present
+      const generatedSlug = c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').trim();
+      return generatedSlug === normalizedCategoryId;
+    });
+    if (categoryBySlug) return categoryBySlug;
+    
+    // Then try to find by exact ID match
+    const categoryById = categories.find(c => {
+      const categoryIdNormalized = String(c.id).toLowerCase().trim();
+      return categoryIdNormalized === normalizedCategoryId || categoryIdNormalized === categoryId?.toLowerCase().trim();
+    });
+    if (categoryById) return categoryById;
+    
+    // Try matching by generated slug from name (for static categories without slug)
+    const categoryByNameSlug = categories.find(c => {
+      const nameSlug = c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').trim();
+      return nameSlug === normalizedCategoryId;
+    });
+    if (categoryByNameSlug) return categoryByNameSlug;
+    
+    // Try matching by name (exact match, normalized)
+    const categoryByName = categories.find(c => {
+      const categoryNameNormalized = c.name.toLowerCase().trim();
+      return categoryNameNormalized === normalizedCategoryId;
+    });
+    if (categoryByName) return categoryByName;
+    
+    // Debug: log what we're looking for and what we have
+    console.log('Category not found. Looking for:', normalizedCategoryId, '(original:', categoryId, ')');
+    console.log('Available categories:', categories.map(c => ({
+      id: c.id,
+      name: c.name,
+      slug: (c as any).slug || 'none',
+      generatedSlug: c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').trim()
+    })));
+    
+    return null;
+  }, [categories, categoryId]);
+  
+  // Loading state
+  if (categoriesLoading || (!hasWaitedForCategories && (!categories || categories.length === 0))) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+      </div>
+    );
+  }
+  
+  // Only redirect if we've waited for categories to load AND category is still not found
+  // Don't redirect if we haven't waited yet (categories might still be loading from backend)
+  if (!category && hasWaitedForCategories && !categoriesLoading && categories && categories.length > 0) {
+    console.log('Category not found after waiting, redirecting to home. categoryId:', categoryId);
+    console.log('Available categories:', categories.map(c => ({
+      id: c.id,
+      name: c.name,
+      slug: (c as any).slug || 'none'
+    })));
     return <Navigate to="/" replace />;
+  }
+  
+  // If category still not found but we haven't waited yet, show loading
+  if (!category && !hasWaitedForCategories) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+      </div>
+    );
+  }
+  
+  // If still no category after waiting and categories loaded, redirect
+  if (!category && hasWaitedForCategories) {
+    return <Navigate to="/" replace />;
+  }
+  
+  // Category not found but we're still waiting - show loading
+  if (!category) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+      </div>
+    );
   }
 
   const filteredProducts = useMemo(() => {
-    let filtered = products.filter(product => product.category === categoryId);
+    // Filter products by category ID, slug, or name
+    let filtered = allProducts.filter(product => {
+      // Check if product has categoryId (backend product)
+      if ((product as any).categoryId) {
+        return (product as any).categoryId === category.id || (product as any).categoryId === categoryId;
+      }
+      // For static products, category is a string like "personal-care"
+      // Match by category slug or name
+      const productCategory = product.category.toLowerCase().replace(/\s+/g, '-');
+      const categorySlug = (category as any).slug || category.id.toLowerCase().replace(/\s+/g, '-');
+      const categoryIdNormalized = categoryId?.toLowerCase().replace(/\s+/g, '-');
+      const categoryNameSlug = category.name.toLowerCase().replace(/\s+/g, '-');
+      
+      return productCategory === categoryIdNormalized || 
+             productCategory === categorySlug ||
+             productCategory === categoryNameSlug ||
+             product.category === categoryId ||
+             product.category === category.name.toLowerCase();
+    });
 
     // Filter by search query
     if (searchQuery.trim()) {
@@ -65,7 +193,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
     }
 
     return filtered;
-  }, [categoryId, searchQuery, sortBy]);
+  }, [categoryId, searchQuery, sortBy, allProducts, category]);
 
   return (
     <main className="min-h-screen bg-eco-pattern">
@@ -247,7 +375,11 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
             </div>
           </div>
 
-          {filteredProducts.length === 0 ? (
+          {productsLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <div className="text-center py-16 sm:py-20">
               <div className="bg-glass-eco p-8 sm:p-12 rounded-2xl sm:rounded-3xl border border-eco-200 max-w-2xl mx-auto">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-eco-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">

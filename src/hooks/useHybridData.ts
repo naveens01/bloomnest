@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { products, brands, categories } from '../data/products';
 import { productApi, brandApi, categoryApi, transformBackendProduct, transformBackendBrand, transformBackendCategory } from '../services/api';
 import { Product, Brand, Category } from '../types';
@@ -77,50 +77,97 @@ export function useHybridBrands(options: UseHybridDataOptions = {}) {
     error: null,
     hasBackendData: false,
   });
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!enableBackend) return;
 
+    let isMounted = true;
+
     const fetchBackendBrands = async () => {
-      if (showLoading) {
+      if (showLoading && isMounted) {
         setState(prev => ({ ...prev, loading: true }));
       }
 
       try {
         const response = await brandApi.getAll();
+        if (!isMounted) return;
+
         const backendBrands = response.data.brands.map(transformBackendBrand);
         
-        // Combine static and backend brands, avoiding duplicates
+        // Combine static and backend brands, avoiding duplicates by ID
         const combinedBrands = [...brands];
         const existingIds = new Set(brands.map(b => b.id));
+        const existingSlugs = new Set(brands.map(b => (b as any).slug || '').filter(Boolean));
         
         backendBrands.forEach(backendBrand => {
-          if (!existingIds.has(backendBrand.id)) {
+          // Check by ID first, then by slug to avoid duplicates
+          const brandSlug = (backendBrand as any).slug || '';
+          if (!existingIds.has(backendBrand.id) && !existingSlugs.has(brandSlug)) {
             combinedBrands.push(backendBrand);
+            existingIds.add(backendBrand.id);
+            if (brandSlug) existingSlugs.add(brandSlug);
           }
         });
 
-        setState({
-          data: combinedBrands,
-          loading: false,
-          error: null,
-          hasBackendData: true,
-        });
+        if (isMounted) {
+          setState({
+            data: combinedBrands,
+            loading: false,
+            error: null,
+            hasBackendData: true,
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch backend brands:', error);
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: 'Failed to load additional brands',
-          hasBackendData: false,
-        }));
+        if (isMounted) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: 'Failed to load additional brands',
+            hasBackendData: false,
+          }));
+        }
       }
     };
 
     fetchBackendBrands();
-  }, [enableBackend, showLoading]);
 
-  return state;
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableBackend, showLoading, refreshKey]); // brands is static, don't include in deps
+
+  // Refetch when page becomes visible (user switches back to tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && enableBackend) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [enableBackend]);
+
+  // Refetch on focus (user clicks back to window)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (enableBackend) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [enableBackend]);
+
+  const refresh = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
+
+  return { ...state, refresh };
 }
 
 export function useHybridCategories(options: UseHybridDataOptions = {}) {
@@ -131,50 +178,97 @@ export function useHybridCategories(options: UseHybridDataOptions = {}) {
     error: null,
     hasBackendData: false,
   });
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!enableBackend) return;
 
+    let isMounted = true;
+
     const fetchBackendCategories = async () => {
-      if (showLoading) {
+      if (showLoading && isMounted) {
         setState(prev => ({ ...prev, loading: true }));
       }
 
       try {
         const response = await categoryApi.getAll();
+        if (!isMounted) return;
+
         const backendCategories = response.data.categories.map(transformBackendCategory);
         
-        // Combine static and backend categories, avoiding duplicates
+        // Combine static and backend categories, avoiding duplicates by ID
         const combinedCategories = [...categories];
         const existingIds = new Set(categories.map(c => c.id));
+        const existingSlugs = new Set(categories.map(c => (c as any).slug || '').filter(Boolean));
         
         backendCategories.forEach(backendCategory => {
-          if (!existingIds.has(backendCategory.id)) {
+          // Check by ID first, then by slug to avoid duplicates
+          const categorySlug = (backendCategory as any).slug || '';
+          if (!existingIds.has(backendCategory.id) && !existingSlugs.has(categorySlug)) {
             combinedCategories.push(backendCategory);
+            existingIds.add(backendCategory.id);
+            if (categorySlug) existingSlugs.add(categorySlug);
           }
         });
 
-        setState({
-          data: combinedCategories,
-          loading: false,
-          error: null,
-          hasBackendData: true,
-        });
+        if (isMounted) {
+          setState({
+            data: combinedCategories,
+            loading: false,
+            error: null,
+            hasBackendData: true,
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch backend categories:', error);
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: 'Failed to load additional categories',
-          hasBackendData: false,
-        }));
+        if (isMounted) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: 'Failed to load additional categories',
+            hasBackendData: false,
+          }));
+        }
       }
     };
 
     fetchBackendCategories();
-  }, [enableBackend, showLoading]);
 
-  return state;
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableBackend, showLoading, refreshKey]); // categories is static, don't include in deps
+
+  // Refetch when page becomes visible (user switches back to tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && enableBackend) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [enableBackend]);
+
+  // Refetch on focus (user clicks back to window)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (enableBackend) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [enableBackend]);
+
+  const refresh = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
+
+  return { ...state, refresh };
 }
 
 export function useHybridFeaturedProducts(options: UseHybridDataOptions = {}) {

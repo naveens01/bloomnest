@@ -160,6 +160,12 @@ const cleanupFiles = (files) => {
 const generateFileUrl = (req, filename, type = 'products') => {
   if (!filename) return null;
   
+  // If filename already contains full path or relative path, use it
+  if (filename.startsWith('http://') || filename.startsWith('https://')) {
+    return filename;
+  }
+  
+  // Generate relative path for frontend to access
   const baseUrl = `${req.protocol}://${req.get('host')}`;
   return `${baseUrl}/uploads/${type}/${filename}`;
 };
@@ -169,14 +175,18 @@ const processUploadedFiles = (req, type = 'products') => {
   if (!req.files && !req.file) return [];
 
   const files = req.files || [req.file];
-  return files.map(file => ({
-    originalName: file.originalname,
-    filename: file.filename,
-    path: file.path,
-    size: file.size,
-    mimetype: file.mimetype,
-    url: generateFileUrl(req, file.filename, type)
-  }));
+  return files.map(file => {
+    // Extract just the filename from the path
+    const filename = path.basename(file.path);
+    return {
+      originalName: file.originalname,
+      filename: filename,
+      path: file.path,
+      size: file.size,
+      mimetype: file.mimetype,
+      url: generateFileUrl(req, filename, type)
+    };
+  });
 };
 
 // Validate image dimensions (optional)

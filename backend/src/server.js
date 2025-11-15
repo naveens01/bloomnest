@@ -23,7 +23,17 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "http://localhost:5000", "https:"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+    },
+  },
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://yourdomain.com'] 
@@ -31,13 +41,30 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
+// Rate limiting (exclude health check and admin routes)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  max: process.env.NODE_ENV === 'development' ? 500 : 200, // Higher limit in development
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for health check and admin routes (admin routes are already protected by auth)
+    return req.path === '/api/health' || req.path.startsWith('/api/admin');
+  }
 });
+
+// More lenient rate limiter for admin routes (since they're already protected by authentication)
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'development' ? 1000 : 500, // Very high limit in development, higher in production
+  message: 'Too many admin requests, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 app.use('/api/', limiter);
+app.use('/api/admin', adminLimiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));

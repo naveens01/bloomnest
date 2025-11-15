@@ -1,14 +1,24 @@
-import React, { useState, useMemo } from 'react';
-import { categories } from '../data/products';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Leaf, Sparkles, ArrowRight, Award, Clock, Search, Grid, ShoppingBag, Shield } from 'lucide-react';
+import { Leaf, Sparkles, ArrowRight, Award, Clock, Search, Grid, ShoppingBag, Shield, Loader2 } from 'lucide-react';
+import { useHybridCategories } from '../hooks/useHybridData';
 
 const CategoriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('featured');
 
+  // Use hybrid data hook to get categories from both static and backend
+  // The hook automatically refreshes when page becomes visible or window gains focus
+  const { data: categories, loading: categoriesLoading, hasBackendData, refresh } = useHybridCategories();
+
+  // Refresh categories when component mounts to get latest data
+  useEffect(() => {
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
   const filteredCategories = useMemo(() => {
-    let filtered = categories;
+    let filtered = [...categories]; // Create a new array to ensure reactivity
 
     // Filter by search query
     if (searchQuery.trim()) {
@@ -35,7 +45,7 @@ const CategoriesPage: React.FC = () => {
     }
 
     return filtered;
-  }, [searchQuery, sortBy]);
+  }, [searchQuery, sortBy, categories]); // Include categories in dependencies
 
   return (
     <main className="min-h-screen bg-eco-pattern pt-20 sm:pt-0">
@@ -202,14 +212,31 @@ const CategoriesPage: React.FC = () => {
                 </button>
               </div>
             </div>
+          ) : categoriesLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+            </div>
+          ) : filteredCategories.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-eco-700 text-lg">No categories found. Try adjusting your search.</p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
-              {filteredCategories.map((category, index) => (
-                <div
-                  key={category.id}
-                  className="group relative cursor-pointer animate-fade-in-up"
-                  style={{ animationDelay: `${index * 200}ms` }}
-                >
+            <>
+              {hasBackendData && (
+                <div className="mb-6 text-center">
+                  <div className="inline-flex items-center space-x-2 bg-green-50 border border-green-200 rounded-full px-4 py-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-green-700 font-medium">Enhanced with live data</span>
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8">
+                {filteredCategories.map((category, index) => (
+                  <div
+                    key={category.id}
+                    className="group relative cursor-pointer animate-fade-in-up"
+                    style={{ animationDelay: `${index * 200}ms` }}
+                  >
                   {/* Main Card Container */}
                   <div className="bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-3xl shadow-eco-glow hover:shadow-eco-glow-xl transition-all duration-700 cursor-pointer overflow-hidden hover:-translate-y-4 border border-eco-200 relative">
                     {/* Enhanced Image Section */}
@@ -313,7 +340,7 @@ const CategoriesPage: React.FC = () => {
                         
                         {/* Enhanced CTA Button with Grand Design */}
                         <Link 
-                          to={`/category/${category.id}`}
+                          to={`/category/${category.slug || category.id}`}
                           className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-6 py-3 rounded-2xl font-semibold text-sm hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-eco-glow-xl"
                         >
                           <span className="flex items-center space-x-2">
@@ -331,9 +358,10 @@ const CategoriesPage: React.FC = () => {
                   {/* Floating Decorative Elements with Enhanced Colors */}
                   <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-eco-400 to-nature-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-3000"></div>
                   <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-gradient-to-r from-nature-400 to-ocean-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
-                </div>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </section>
