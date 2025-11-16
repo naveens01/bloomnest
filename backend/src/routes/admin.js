@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs').promises;
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Brand = require('../models/Brand');
@@ -404,10 +405,19 @@ router.delete('/products/:id', asyncHandler(async (req, res) => {
 // @access  Admin only
 router.get('/brands', asyncHandler(async (req, res) => {
   const brands = await Brand.find().sort({ name: 1 });
+  
+  // Transform logo base64 data to data URI for frontend
+  const brandsWithDataUri = brands.map(brand => {
+    const brandObj = brand.toObject();
+    if (brandObj.logo && brandObj.logo.data) {
+      brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
+    }
+    return brandObj;
+  });
 
   res.status(200).json({
     status: 'success',
-    data: { brands }
+    data: { brands: brandsWithDataUri }
   });
 }));
 
@@ -425,13 +435,35 @@ router.post('/brands', brandLogoUpload, asyncHandler(async (req, res) => {
       .replace(/(^-|-$)/g, '');
   }
   
-  // Process uploaded logo if any
+  // Process uploaded logo if any - store as base64 in database
   if (req.file) {
-    const filename = path.basename(req.file.path);
-    brandData.logo = {
-      url: generateFileUrl(req, filename, 'brands'),
-      alt: req.file.originalname
-    };
+    try {
+      // Read the file and convert to base64
+      const fileBuffer = await fs.readFile(req.file.path);
+      const base64Data = fileBuffer.toString('base64');
+      const contentType = req.file.mimetype || 'image/jpeg';
+      
+      // Store in database as base64
+      brandData.logo = {
+        data: base64Data,
+        contentType: contentType,
+        alt: req.file.originalname
+      };
+      
+      // Delete the temporary file since we're storing in DB
+      await fs.unlink(req.file.path);
+    } catch (error) {
+      console.error('Error processing logo:', error);
+      // Cleanup file on error
+      if (req.file && req.file.path) {
+        try {
+          await fs.unlink(req.file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting temp file:', unlinkError);
+        }
+      }
+      throw error;
+    }
   }
 
   // Add creator info
@@ -441,10 +473,16 @@ router.post('/brands', brandLogoUpload, asyncHandler(async (req, res) => {
   // Populate virtuals to get productCount
   await brand.populate('productCount');
 
+  // Transform logo base64 data to data URI for frontend
+  const brandObj = brand.toObject();
+  if (brandObj.logo && brandObj.logo.data) {
+    brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
+  }
+
   res.status(201).json({
     status: 'success',
     message: 'Brand created successfully',
-    data: { brand }
+    data: { brand: brandObj }
   });
 }));
 
@@ -462,13 +500,35 @@ router.put('/brands/:id', brandLogoUpload, asyncHandler(async (req, res) => {
       .replace(/(^-|-$)/g, '');
   }
   
-  // Process uploaded logo if any
+  // Process uploaded logo if any - store as base64 in database
   if (req.file) {
-    const filename = path.basename(req.file.path);
-    brandData.logo = {
-      url: generateFileUrl(req, filename, 'brands'),
-      alt: req.file.originalname
-    };
+    try {
+      // Read the file and convert to base64
+      const fileBuffer = await fs.readFile(req.file.path);
+      const base64Data = fileBuffer.toString('base64');
+      const contentType = req.file.mimetype || 'image/jpeg';
+      
+      // Store in database as base64
+      brandData.logo = {
+        data: base64Data,
+        contentType: contentType,
+        alt: req.file.originalname
+      };
+      
+      // Delete the temporary file since we're storing in DB
+      await fs.unlink(req.file.path);
+    } catch (error) {
+      console.error('Error processing logo:', error);
+      // Cleanup file on error
+      if (req.file && req.file.path) {
+        try {
+          await fs.unlink(req.file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting temp file:', unlinkError);
+        }
+      }
+      throw error;
+    }
   }
 
   // Add updater info
@@ -487,10 +547,16 @@ router.put('/brands/:id', brandLogoUpload, asyncHandler(async (req, res) => {
     });
   }
 
+  // Transform logo base64 data to data URI for frontend
+  const brandObj = brand.toObject();
+  if (brandObj.logo && brandObj.logo.data) {
+    brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
+  }
+
   res.status(200).json({
     status: 'success',
     message: 'Brand updated successfully',
-    data: { brand }
+    data: { brand: brandObj }
   });
 }));
 

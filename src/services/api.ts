@@ -333,35 +333,25 @@ export const transformBackendProduct = (backendProduct: BackendProduct) => {
 };
 
 export const transformBackendBrand = (backendBrand: BackendBrand) => {
+  // Backend now returns logo.url as data URI (data:image/jpeg;base64,...) when stored in DB
+  // Or it might still be a file URL for backward compatibility
   const logoUrl = backendBrand.logo?.url || '';
   // Generate slug from name if slug doesn't exist (for backward compatibility)
   const slug = backendBrand.slug || generateSlug(backendBrand.name);
   
-  // Normalize logo URL - the backend already returns full URLs, but handle all cases
-  let normalizedLogoUrl = '';
-  if (logoUrl && logoUrl.trim() !== '') {
-    // If already a full URL, use it as is (this is what backend returns)
-    if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
-      normalizedLogoUrl = logoUrl;
-    }
-    // If starts with /uploads, prepend backend URL
-    else if (logoUrl.startsWith('/uploads')) {
-      normalizedLogoUrl = `http://localhost:5000${logoUrl}`;
-    }
-    // If it's just a filename, assume it's in the brands directory
-    else {
-      // Check if it contains brands/ path
-      if (logoUrl.includes('brands/')) {
-        normalizedLogoUrl = `http://localhost:5000/uploads/${logoUrl}`;
-      } else {
-        normalizedLogoUrl = `http://localhost:5000/uploads/brands/${logoUrl}`;
-      }
-    }
-  }
+  // Use logo URL as is - it's either a data URI (for DB-stored images) or a file URL
+  let normalizedLogoUrl = logoUrl;
   
-  // Debug log to see what logo URL we're generating
-  if (logoUrl && !normalizedLogoUrl) {
-    console.warn('Failed to normalize logo URL:', logoUrl, 'for brand:', backendBrand.name);
+  // Only normalize if it's not already a data URI and not a full URL
+  if (logoUrl && !logoUrl.startsWith('data:') && !logoUrl.startsWith('http://') && !logoUrl.startsWith('https://')) {
+    // Handle legacy file paths
+    if (logoUrl.startsWith('/uploads')) {
+      normalizedLogoUrl = `http://localhost:5000${logoUrl}`;
+    } else if (logoUrl.includes('brands/')) {
+      normalizedLogoUrl = `http://localhost:5000/uploads/${logoUrl}`;
+    } else {
+      normalizedLogoUrl = `http://localhost:5000/uploads/brands/${logoUrl}`;
+    }
   }
   
   return {

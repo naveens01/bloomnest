@@ -10,10 +10,19 @@ const router = express.Router();
 // @access  Public
 router.get('/', asyncHandler(async (req, res) => {
   const brands = await Brand.find({ isActive: true }).sort({ name: 1 });
+  
+  // Transform logo base64 data to data URI for frontend
+  const brandsWithDataUri = brands.map(brand => {
+    const brandObj = brand.toObject();
+    if (brandObj.logo && brandObj.logo.data) {
+      brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
+    }
+    return brandObj;
+  });
 
   res.status(200).json({
     status: 'success',
-    data: { brands }
+    data: { brands: brandsWithDataUri }
   });
 }));
 
@@ -22,10 +31,19 @@ router.get('/', asyncHandler(async (req, res) => {
 // @access  Public
 router.get('/featured', asyncHandler(async (req, res) => {
   const brands = await Brand.findFeatured();
+  
+  // Transform logo base64 data to data URI for frontend
+  const brandsWithDataUri = brands.map(brand => {
+    const brandObj = brand.toObject();
+    if (brandObj.logo && brandObj.logo.data) {
+      brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
+    }
+    return brandObj;
+  });
 
   res.status(200).json({
     status: 'success',
-    data: { brands }
+    data: { brands: brandsWithDataUri }
   });
 }));
 
@@ -45,9 +63,15 @@ router.get('/:slug', asyncHandler(async (req, res) => {
     });
   }
 
+  // Transform logo base64 data to data URI for frontend
+  const brandObj = brand.toObject();
+  if (brandObj.logo && brandObj.logo.data) {
+    brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
+  }
+
   res.status(200).json({
     status: 'success',
-    data: { brand }
+    data: { brand: brandObj }
   });
 }));
 
@@ -103,10 +127,16 @@ router.get('/:slug/products', asyncHandler(async (req, res) => {
     status: 'published'
   });
 
+  // Transform logo base64 data to data URI for frontend
+  const brandObj = brand.toObject();
+  if (brandObj.logo && brandObj.logo.data) {
+    brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
+  }
+
   res.status(200).json({
     status: 'success',
     data: {
-      brand,
+      brand: brandObj,
       products,
       pagination: {
         currentPage: parseInt(page),
