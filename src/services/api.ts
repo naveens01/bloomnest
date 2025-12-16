@@ -98,7 +98,22 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     });
 
     if (!response.ok) {
-      throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+      // Try to parse error message from response
+      let errorMessage = `API call failed: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch (e) {
+        // If response is not JSON, use default message
+      }
+      
+      const error = new Error(errorMessage);
+      (error as any).status = response.status;
+      throw error;
     }
 
     const data = await response.json();
@@ -265,44 +280,289 @@ export const categoryApi = {
   },
 };
 
+// Helper function to generate slug from name
+export const generateSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
+
+// Helper function to normalize image URLs
+const normalizeImageUrl = (url: string | undefined): string => {
+  if (!url || url.trim() === '') return '';
+  // If already a full URL, return as is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  // If starts with /uploads, prepend backend URL
+  if (url.startsWith('/uploads')) {
+    return `http://localhost:5000${url}`;
+  }
+  // Otherwise, assume it's a relative path from uploads
+  return `http://localhost:5000/uploads/${url}`;
+};
+
 // Utility function to transform backend data to frontend format
-export const transformBackendProduct = (backendProduct: BackendProduct) => ({
+export const transformBackendProduct = (backendProduct: BackendProduct) => {
+  const primaryImage = backendProduct.images.find(img => img.isPrimary)?.url || backendProduct.images[0]?.url;
+  const brandId = typeof backendProduct.brand === 'object' ? backendProduct.brand._id : backendProduct.brand;
+  const brandName = typeof backendProduct.brand === 'object' ? backendProduct.brand.name : backendProduct.brand;
+  const categoryId = typeof backendProduct.category === 'object' ? backendProduct.category._id : backendProduct.category;
+  const categoryName = typeof backendProduct.category === 'object' ? backendProduct.category.name : backendProduct.category;
+  
+  return {
   id: backendProduct._id,
   name: backendProduct.name,
-  brand: backendProduct.brand.name,
-  price: backendProduct.price.current,
-  originalPrice: backendProduct.price.original,
-  image: backendProduct.images.find(img => img.isPrimary)?.url || backendProduct.images[0]?.url || '',
-  category: backendProduct.category.name.toLowerCase().replace(/\s+/g, '-'),
-  description: backendProduct.description,
-  features: backendProduct.features,
-  inStock: backendProduct.inventory.isInStock,
-  rating: backendProduct.ratings.average,
-  reviews: backendProduct.ratings.count,
+  brand: brandName,
+  brandId: brandId, // Store brand ID for filtering
+  price: backendProduct.price?.current || 0,
+  originalPrice: backendProduct.price?.original,
+    image: normalizeImageUrl(primaryImage),
+  category: categoryName.toLowerCase().replace(/\s+/g, '-'),
+  categoryId: categoryId, // Store category ID for filtering
+  description: backendProduct.description || '',
+  features: backendProduct.features || [],
+  inStock: backendProduct.inventory?.isInStock ?? true,
+  rating: backendProduct.ratings?.average || 0,
+  reviews: backendProduct.ratings?.count || 0,
   slug: backendProduct.slug,
-  isFeatured: backendProduct.isFeatured,
+  isFeatured: backendProduct.isFeatured || false,
   createdAt: backendProduct.createdAt,
-});
+  };
+};
 
-export const transformBackendBrand = (backendBrand: BackendBrand) => ({
+export const transformBackendBrand = (backendBrand: BackendBrand) => {
+  // Backend now returns logo.url as data URI (data:image/jpeg;base64,...) when stored in DB
+  // Or it might still be a file URL for backward compatibility
+  const logoUrl = backendBrand.logo?.url || '';
+  // Generate slug from name if slug doesn't exist (for backward compatibility)
+  const slug = backendBrand.slug || generateSlug(backendBrand.name);
+  
+  // Use logo URL as is - it's either a data URI (for DB-stored images) or a file URL
+  let normalizedLogoUrl = logoUrl;
+  
+  // Only normalize if it's not already a data URI and not a full URL
+  if (logoUrl && !logoUrl.startsWith('data:') && !logoUrl.startsWith('http://') && !logoUrl.startsWith('https://')) {
+    // Handle legacy file paths
+    if (logoUrl.startsWith('/uploads')) {
+      normalizedLogoUrl = `http://localhost:5000${logoUrl}`;
+    } else if (logoUrl.includes('brands/')) {
+      normalizedLogoUrl = `http://localhost:5000/uploads/${logoUrl}`;
+    } else {
+      normalizedLogoUrl = `http://localhost:5000/uploads/brands/${logoUrl}`;
+    }
+  }
+  
+  return {
   id: backendBrand._id,
   name: backendBrand.name,
-  logo: backendBrand.logo?.url || '',
+    logo: normalizedLogoUrl,
   description: backendBrand.description || '',
-  image: backendBrand.logo?.url || '',
+    image: normalizedLogoUrl || '', // Use logo as image, or empty if no logo
   productCount: backendBrand.productCount || 0,
   established: backendBrand.foundedYear?.toString() || '',
   specialty: backendBrand.industry || '',
-  slug: backendBrand.slug,
+  slug: slug,
   isFeatured: backendBrand.isFeatured,
-});
+  };
+};
 
-export const transformBackendCategory = (backendCategory: BackendCategory) => ({
+export const transformBackendCategory = (backendCategory: BackendCategory) => {
+  const imageUrl = backendCategory.image?.url || '';
+  return {
   id: backendCategory._id,
   name: backendCategory.name,
-  image: backendCategory.image?.url || '',
+    image: normalizeImageUrl(imageUrl),
   count: backendCategory.productCount || 0,
   slug: backendCategory.slug,
   isFeatured: backendCategory.isFeatured,
-});
+  };
+};
+
+// Admin API calls (requires authentication)
+export const adminApi = {
+  // Get auth token from localStorage
+  getAuthHeaders: (): HeadersInit => {
+    const token = localStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+  },
+
+  // Categories CRUD
+  categories: {
+    getAll: async (): Promise<ApiResponse<{ categories: BackendCategory[] }>> => {
+      return apiCall('/admin/categories', {
+        method: 'GET',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+    create: async (data: FormData): Promise<ApiResponse<{ category: BackendCategory }>> => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/admin/categories`, {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: data,
+      });
+      if (!response.ok) throw new Error(`API call failed: ${response.status}`);
+      return response.json();
+    },
+    update: async (id: string, data: FormData): Promise<ApiResponse<{ category: BackendCategory }>> => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+        method: 'PUT',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: data,
+      });
+      if (!response.ok) throw new Error(`API call failed: ${response.status}`);
+      return response.json();
+    },
+    delete: async (id: string): Promise<ApiResponse<void>> => {
+      return apiCall(`/admin/categories/${id}`, {
+        method: 'DELETE',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+  },
+
+  // Brands CRUD
+  brands: {
+    getAll: async (): Promise<ApiResponse<{ brands: BackendBrand[] }>> => {
+      return apiCall('/admin/brands', {
+        method: 'GET',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+    create: async (data: FormData): Promise<ApiResponse<{ brand: BackendBrand }>> => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/admin/brands`, {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: data,
+      });
+      if (!response.ok) {
+        let errorMessage = `API call failed: ${response.status} ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          // If response is not JSON, use default message
+        }
+        const error = new Error(errorMessage);
+        (error as any).status = response.status;
+        throw error;
+      }
+      return response.json();
+    },
+    update: async (id: string, data: FormData): Promise<ApiResponse<{ brand: BackendBrand }>> => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/admin/brands/${id}`, {
+        method: 'PUT',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: data,
+      });
+      if (!response.ok) {
+        let errorMessage = `API call failed: ${response.status} ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          // If response is not JSON, use default message
+        }
+        const error = new Error(errorMessage);
+        (error as any).status = response.status;
+        throw error;
+      }
+      return response.json();
+    },
+    delete: async (id: string): Promise<ApiResponse<void>> => {
+      return apiCall(`/admin/brands/${id}`, {
+        method: 'DELETE',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+  },
+
+  // Products CRUD
+  products: {
+    getAll: async (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      category?: string;
+      brand?: string;
+      status?: string;
+    }): Promise<ApiResponse<{ products: BackendProduct[]; pagination: PaginationInfo }>> => {
+      const searchParams = new URLSearchParams();
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined) {
+            searchParams.append(key, value.toString());
+          }
+        });
+      }
+      const queryString = searchParams.toString();
+      const endpoint = queryString ? `/admin/products?${queryString}` : '/admin/products';
+      return apiCall(endpoint, {
+        method: 'GET',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+    create: async (data: FormData): Promise<ApiResponse<{ product: BackendProduct }>> => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/admin/products`, {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: data,
+      });
+      if (!response.ok) throw new Error(`API call failed: ${response.status}`);
+      return response.json();
+    },
+    update: async (id: string, data: FormData): Promise<ApiResponse<{ product: BackendProduct }>> => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/admin/products/${id}`, {
+        method: 'PUT',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: data,
+      });
+      if (!response.ok) throw new Error(`API call failed: ${response.status}`);
+      return response.json();
+    },
+    delete: async (id: string): Promise<ApiResponse<void>> => {
+      return apiCall(`/admin/products/${id}`, {
+        method: 'DELETE',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+    setFeatured: async (id: string, isFeatured: boolean): Promise<ApiResponse<{ product: BackendProduct }>> => {
+      return apiCall(`/admin/products/${id}`, {
+        method: 'PUT',
+        headers: adminApi.getAuthHeaders(),
+        body: JSON.stringify({ isFeatured }),
+      });
+    },
+  },
+};
 

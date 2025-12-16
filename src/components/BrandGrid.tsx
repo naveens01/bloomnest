@@ -13,8 +13,13 @@ interface BrandGridProps {
 const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBackendData = false }) => {
   const navigate = useNavigate();
 
-  const handleBrandClick = (brandId: string) => {
-    navigate(`/brand/${brandId}`);
+  const handleBrandClick = (brand: Brand) => {
+    // Use slug if available, otherwise generate from name, fallback to ID
+    const brandSlug = (brand as any).slug;
+    const finalSlug = brandSlug 
+      ? brandSlug.toLowerCase() 
+      : (brand.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || brand.id);
+    navigate(`/brand/${finalSlug}`);
   };
 
   return (
@@ -74,7 +79,7 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
             {brands.map((brand, index) => (
             <div
               key={brand.id}
-              onClick={() => handleBrandClick(brand.id)}
+              onClick={() => handleBrandClick(brand)}
               className="group relative cursor-pointer animate-fade-in-up"
               style={{ animationDelay: `${index * 200}ms` }}
             >
@@ -93,12 +98,21 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
                   
                   {/* Floating Brand Logo with Enhanced Design */}
                   <div className="absolute top-4 left-4">
-                    <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl border border-white/30 shadow-2xl group-hover:scale-110 transition-all duration-500">
-                      <img
-                        src={brand.logo}
-                        alt={`${brand.name} logo`}
-                        className="w-16 h-16 object-cover rounded-xl"
-                      />
+                    <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl border border-white/30 shadow-2xl group-hover:scale-110 transition-all duration-500 flex items-center justify-center">
+                      {brand.logo ? (
+                        <img
+                          src={brand.logo}
+                          alt={`${brand.name} logo`}
+                          className="w-16 h-16 object-contain rounded-xl"
+                          onError={(e) => {
+                            // Fallback if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <Award className="w-16 h-16 text-eco-600" />
+                      )}
                     </div>
                   </div>
                   

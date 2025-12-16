@@ -1,4 +1,6 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs').promises;
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Brand = require('../models/Brand');
@@ -11,7 +13,8 @@ const {
   brandLogoUpload, 
   categoryImageUpload,
   processUploadedFiles,
-  cleanupFiles 
+  cleanupFiles,
+  generateFileUrl
 } = require('../middleware/upload');
 
 const router = express.Router();
@@ -238,6 +241,33 @@ router.get('/products', asyncHandler(async (req, res) => {
 router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
   const productData = req.body;
   
+  // Parse nested form data (price.current, inventory.stock, etc.)
+  if (productData['price.current']) {
+    productData.price = {
+      current: parseFloat(productData['price.current']),
+      original: productData['price.original'] ? parseFloat(productData['price.original']) : undefined,
+      currency: 'USD'
+    };
+    delete productData['price.current'];
+    delete productData['price.original'];
+  }
+  
+  if (productData['inventory.stock']) {
+    productData.inventory = {
+      stock: parseInt(productData['inventory.stock']),
+      isInStock: parseInt(productData['inventory.stock']) > 0
+    };
+    delete productData['inventory.stock'];
+  }
+  
+  // Handle arrays (features, tags)
+  if (productData.features && !Array.isArray(productData.features)) {
+    productData.features = [productData.features];
+  }
+  if (productData.tags && !Array.isArray(productData.tags)) {
+    productData.tags = [productData.tags];
+  }
+  
   // Process uploaded images
   const uploadedFiles = processUploadedFiles(req, 'products');
   if (uploadedFiles.length > 0) {
@@ -267,6 +297,33 @@ router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
 // @access  Admin only
 router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) => {
   const productData = req.body;
+  
+  // Parse nested form data (price.current, inventory.stock, etc.)
+  if (productData['price.current']) {
+    productData.price = {
+      current: parseFloat(productData['price.current']),
+      original: productData['price.original'] ? parseFloat(productData['price.original']) : undefined,
+      currency: 'USD'
+    };
+    delete productData['price.current'];
+    delete productData['price.original'];
+  }
+  
+  if (productData['inventory.stock']) {
+    productData.inventory = {
+      stock: parseInt(productData['inventory.stock']),
+      isInStock: parseInt(productData['inventory.stock']) > 0
+    };
+    delete productData['inventory.stock'];
+  }
+  
+  // Handle arrays (features, tags)
+  if (productData.features && !Array.isArray(productData.features)) {
+    productData.features = [productData.features];
+  }
+  if (productData.tags && !Array.isArray(productData.tags)) {
+    productData.tags = [productData.tags];
+  }
   
   // Process uploaded images if any
   const uploadedFiles = processUploadedFiles(req, 'products');
@@ -348,10 +405,19 @@ router.delete('/products/:id', asyncHandler(async (req, res) => {
 // @access  Admin only
 router.get('/brands', asyncHandler(async (req, res) => {
   const brands = await Brand.find().sort({ name: 1 });
+  
+  // Transform logo base64 data to data URI for frontend
+  const brandsWithDataUri = brands.map(brand => {
+    const brandObj = brand.toObject();
+    if (brandObj.logo && brandObj.logo.data) {
+      brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
+    }
+    return brandObj;
+  });
 
   res.status(200).json({
     status: 'success',
-    data: { brands }
+    data: { brands: brandsWithDataUri }
   });
 }));
 
@@ -361,23 +427,62 @@ router.get('/brands', asyncHandler(async (req, res) => {
 router.post('/brands', brandLogoUpload, asyncHandler(async (req, res) => {
   const brandData = req.body;
   
-  // Process uploaded logo if any
+  // Generate slug from name if not provided
+  if (!brandData.slug && brandData.name) {
+    brandData.slug = brandData.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }
+  
+  // Process uploaded logo if any - store as base64 in database
   if (req.file) {
-    brandData.logo = {
-      url: req.file.path,
-      alt: req.file.originalname
-    };
+    try {
+      // Read the file and convert to base64
+      const fileBuffer = await fs.readFile(req.file.path);
+      const base64Data = fileBuffer.toString('base64');
+      const contentType = req.file.mimetype || 'image/jpeg';
+      
+      // Store in database as base64
+      brandData.logo = {
+        data: base64Data,
+        contentType: contentType,
+        alt: req.file.originalname
+      };
+      
+      // Delete the temporary file since we're storing in DB
+      await fs.unlink(req.file.path);
+    } catch (error) {
+      console.error('Error processing logo:', error);
+      // Cleanup file on error
+      if (req.file && req.file.path) {
+        try {
+          await fs.unlink(req.file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting temp file:', unlinkError);
+        }
+      }
+      throw error;
+    }
   }
 
   // Add creator info
   brandData.createdBy = req.user._id;
 
   const brand = await Brand.create(brandData);
+  // Populate virtuals to get productCount
+  await brand.populate('productCount');
+
+  // Transform logo base64 data to data URI for frontend
+  const brandObj = brand.toObject();
+  if (brandObj.logo && brandObj.logo.data) {
+    brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
+  }
 
   res.status(201).json({
     status: 'success',
     message: 'Brand created successfully',
-    data: { brand }
+    data: { brand: brandObj }
   });
 }));
 
@@ -387,12 +492,43 @@ router.post('/brands', brandLogoUpload, asyncHandler(async (req, res) => {
 router.put('/brands/:id', brandLogoUpload, asyncHandler(async (req, res) => {
   const brandData = req.body;
   
-  // Process uploaded logo if any
+  // Generate slug from name if name changed and slug not provided
+  if (brandData.name && !brandData.slug) {
+    brandData.slug = brandData.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }
+  
+  // Process uploaded logo if any - store as base64 in database
   if (req.file) {
-    brandData.logo = {
-      url: req.file.path,
-      alt: req.file.originalname
-    };
+    try {
+      // Read the file and convert to base64
+      const fileBuffer = await fs.readFile(req.file.path);
+      const base64Data = fileBuffer.toString('base64');
+      const contentType = req.file.mimetype || 'image/jpeg';
+      
+      // Store in database as base64
+      brandData.logo = {
+        data: base64Data,
+        contentType: contentType,
+        alt: req.file.originalname
+      };
+      
+      // Delete the temporary file since we're storing in DB
+      await fs.unlink(req.file.path);
+    } catch (error) {
+      console.error('Error processing logo:', error);
+      // Cleanup file on error
+      if (req.file && req.file.path) {
+        try {
+          await fs.unlink(req.file.path);
+        } catch (unlinkError) {
+          console.error('Error deleting temp file:', unlinkError);
+        }
+      }
+      throw error;
+    }
   }
 
   // Add updater info
@@ -411,10 +547,16 @@ router.put('/brands/:id', brandLogoUpload, asyncHandler(async (req, res) => {
     });
   }
 
+  // Transform logo base64 data to data URI for frontend
+  const brandObj = brand.toObject();
+  if (brandObj.logo && brandObj.logo.data) {
+    brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
+  }
+
   res.status(200).json({
     status: 'success',
     message: 'Brand updated successfully',
-    data: { brand }
+    data: { brand: brandObj }
   });
 }));
 
@@ -474,8 +616,9 @@ router.post('/categories', categoryImageUpload, asyncHandler(async (req, res) =>
   
   // Process uploaded image if any
   if (req.file) {
+    const filename = path.basename(req.file.path);
     categoryData.image = {
-      url: req.file.path,
+      url: generateFileUrl(req, filename, 'categories'),
       alt: req.file.originalname
     };
   }
@@ -500,8 +643,9 @@ router.put('/categories/:id', categoryImageUpload, asyncHandler(async (req, res)
   
   // Process uploaded image if any
   if (req.file) {
+    const filename = path.basename(req.file.path);
     categoryData.image = {
-      url: req.file.path,
+      url: generateFileUrl(req, filename, 'categories'),
       alt: req.file.originalname
     };
   }

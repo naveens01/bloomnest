@@ -1,15 +1,25 @@
-import React, { useState, useMemo } from 'react';
-import { brands } from '../data/products';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Award, Sparkles, ArrowRight, Star, TrendingUp, ShoppingBag, Crown, Target, Lightbulb } from 'lucide-react';
+import { Search, Award, Sparkles, ArrowRight, Star, TrendingUp, ShoppingBag, Crown, Target, Lightbulb, Loader2 } from 'lucide-react';
+import { useHybridBrands } from '../hooks/useHybridData';
 
 const BrandsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
 
+  // Use hybrid data hook to get brands from both static and backend
+  // The hook automatically refreshes when page becomes visible or window gains focus
+  const { data: brands, loading: brandsLoading, hasBackendData, refresh } = useHybridBrands();
+
+  // Refresh brands when component mounts to get latest data
+  useEffect(() => {
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
   const filteredBrands = useMemo(() => {
-    let filtered = brands;
+    let filtered = [...brands]; // Create a new array to ensure reactivity
 
     // Filter by search query
     if (searchQuery.trim()) {
@@ -38,7 +48,7 @@ const BrandsPage: React.FC = () => {
     }
 
     return filtered;
-  }, [searchQuery, sortBy]);
+  }, [searchQuery, sortBy, brands]); // Include brands in dependencies
 
   const categories = ['all', 'personal-care', 'home-living', 'fashion', 'food-beverages', 'electronics'];
 
@@ -175,8 +185,33 @@ const BrandsPage: React.FC = () => {
       {/* Grand Brands Grid */}
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-none mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 sm:gap-10">
-            {filteredBrands.map((brand, index) => (
+          {brandsLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+            </div>
+          ) : filteredBrands.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-eco-700 text-lg">No brands found. Try adjusting your search or filters.</p>
+            </div>
+          ) : (
+            <>
+              {hasBackendData && (
+                <div className="mb-6 text-center">
+                  <div className="inline-flex items-center space-x-2 bg-green-50 border border-green-200 rounded-full px-4 py-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-green-700 font-medium">Enhanced with live data</span>
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 sm:gap-10">
+                {filteredBrands.map((brand, index) => {
+                  // Generate the brand URL - use slug if available, otherwise generate from name
+                  const brandSlug = (brand as any).slug;
+                  const brandUrl = brandSlug 
+                    ? `/brand/${brandSlug.toLowerCase()}`
+                    : `/brand/${brand.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || brand.id}`;
+                  
+                  return (
               <div
                 key={brand.id}
                 className="group bg-gradient-to-br from-white to-eco-50 rounded-3xl p-8 sm:p-10 shadow-eco-glow hover:shadow-eco-glow-xl transition-all duration-500 transform hover:scale-105 border border-eco-200 animate-fade-in-up"
@@ -193,11 +228,24 @@ const BrandsPage: React.FC = () => {
                     />
                     {/* Brand Logo Overlay */}
                     <div className="absolute -bottom-2 -right-2 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-eco-400 to-nature-400 rounded-2xl flex items-center justify-center shadow-lg">
-                      <img
-                        src={brand.logo}
-                        alt={`${brand.name} logo`}
-                        className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                      />
+                      {brand.logo ? (
+                        <img
+                          src={brand.logo}
+                          alt={`${brand.name} logo`}
+                          className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                          onError={(e) => {
+                            // Fallback if image fails to load
+                            console.error('Failed to load brand logo:', brand.logo, 'for brand:', brand.name);
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                          onLoad={() => {
+                            console.log('Successfully loaded brand logo:', brand.logo, 'for brand:', brand.name);
+                          }}
+                        />
+                      ) : (
+                        <Award className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                      )}
                     </div>
                   </div>
                   
@@ -235,15 +283,18 @@ const BrandsPage: React.FC = () => {
 
                 {/* CTA Button */}
                 <Link
-                  to={`/brand/${brand.id}`}
+                  to={brandUrl}
                   className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-eco-500 to-nature-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105"
                 >
                   <span>Explore Brand</span>
                   <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Link>
               </div>
-            ))}
-          </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </section>
     </main>

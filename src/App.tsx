@@ -11,6 +11,7 @@ import CategoriesPage from './pages/CategoriesPage';
 import AboutPage from './pages/AboutPage';
 import SignupPage from './pages/SignupPage';
 import SigninPage from './pages/SigninPage';
+import AdminPage from './pages/AdminPage';
 import { CartItem, Product } from './types';
 import WatchlistPage from './pages/WatchlistPage.tsx';
 
@@ -154,6 +155,10 @@ function App() {
           <Route 
             path="/signin" 
             element={<SigninPage />} 
+          />
+          <Route 
+            path="/admin" 
+            element={<AdminPage />} 
           />
         </Routes>
 

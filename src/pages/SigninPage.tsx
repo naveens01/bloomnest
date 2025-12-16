@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Mail, 
@@ -27,7 +27,28 @@ const SigninPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const navigate = useNavigate();
+
+  // Check server status on mount
+  useEffect(() => {
+    const checkServer = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/health', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (response.ok) {
+          setServerStatus('online');
+        } else {
+          setServerStatus('offline');
+        }
+      } catch (err) {
+        setServerStatus('offline');
+      }
+    };
+    checkServer();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -44,19 +65,59 @@ const SigninPage: React.FC = () => {
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      if (formData.email && formData.password) {
-        setSuccess(true);
-        setTimeout(() => {
-          navigate('/');
-        }, 2000);
-      } else {
-        setError('Please fill in all fields');
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      // Check if response is ok before trying to parse JSON
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        // If response is not JSON, it might be a network error or server error
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+        throw new Error('Invalid response from server');
       }
-    } catch (err) {
-      setError('Sign in failed. Please try again.');
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || `Sign in failed: ${response.status} ${response.statusText}`);
+      }
+
+      // Store token in localStorage
+      if (data.data && data.data.token) {
+        localStorage.setItem('token', data.data.token);
+        if (data.data.user) {
+          localStorage.setItem('user', JSON.stringify(data.data.user));
+        }
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+    } catch (err: any) {
+      console.error('Sign in error:', err);
+      let errorMessage = 'Sign in failed. Please try again.';
+      
+      // Handle different types of errors
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        errorMessage = 'Cannot connect to server. Please make sure the backend server is running on port 5000.';
+      } else if (err.name === 'NetworkError' || err.message.includes('Failed to fetch')) {
+        errorMessage = 'Network error. Please check your connection and ensure the backend server is running.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -210,6 +271,18 @@ const SigninPage: React.FC = () => {
                     <span className="group-hover:scale-105 transition-transform duration-300">Forgot password?</span>
                   </button>
                 </div>
+
+                {/* Server Status */}
+                {serverStatus === 'offline' && (
+                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-4 animate-fade-in-up mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full animate-pulse"></div>
+                        <span className="text-yellow-700 text-sm font-medium">
+                          Backend server appears to be offline. Please ensure the server is running on port 5000. If port 5000 is in use by macOS AirPlay, disable it in System Settings → General → AirDrop &amp; Handoff.
+                        </span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Enhanced Error Message */}
                 {error && (
