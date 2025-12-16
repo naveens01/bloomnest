@@ -396,7 +396,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
               </div>
             </div>
           ) : (
-            <div className={`grid gap-4 sm:gap-6 lg:gap-8 ${
+            <div className={`grid gap-4 sm:gap-6 lg:gap-8 items-stretch ${
               viewMode === 'grid' 
                 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
                 : 'grid-cols-1'

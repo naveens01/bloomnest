@@ -337,7 +337,7 @@ const CategoriesTab: React.FC<CategoriesTabProps> = ({
         />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
         {categories.map((category) => (
           <CategoryCard
             key={category._id}
@@ -648,7 +648,7 @@ const BrandsTab: React.FC<BrandsTabProps> = ({
         />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
         {brands.map((brand) => (
           <BrandCard
             key={brand._id}
@@ -1082,7 +1082,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
         />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
         {products.map((product) => (
           <ProductCard
             key={product._id}
