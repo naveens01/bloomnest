@@ -6,6 +6,7 @@ const Product = require('../models/Product');
 const Brand = require('../models/Brand');
 const Category = require('../models/Category');
 const Order = require('../models/Order');
+const Promotion = require('../models/Promotion');
 const { protect, adminOnly } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { 
@@ -27,6 +28,11 @@ router.use(protect, adminOnly);
 // @route   GET /api/admin/dashboard
 // @access  Admin only
 router.get('/dashboard', asyncHandler(async (req, res) => {
+  const { period = '30' } = req.query; // days
+  const days = parseInt(period);
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
   const [
     totalUsers,
     totalProducts,
@@ -34,7 +40,13 @@ router.get('/dashboard', asyncHandler(async (req, res) => {
     totalRevenue,
     recentOrders,
     lowStockProducts,
-    topProducts
+    topProducts,
+    usersWithOrders,
+    newUsers,
+    ordersByStatus,
+    revenueByPeriod,
+    ordersByPeriod,
+    usersByPeriod
   ] = await Promise.all([
     User.countDocuments(),
     Product.countDocuments(),
@@ -48,10 +60,53 @@ router.get('/dashboard', asyncHandler(async (req, res) => {
     Product.find({ isActive: true, status: 'published' })
       .sort({ 'ratings.average': -1 })
       .limit(10)
-      .select('name price ratings images')
+      .select('name price ratings images'),
+    // Users who have placed orders
+    Order.distinct('user'),
+    // New users in period
+    User.countDocuments({ createdAt: { $gte: startDate } }),
+    // Orders by status
+    Order.aggregate([
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]),
+    // Revenue by period (daily for last N days)
+    Order.aggregate([
+      { $match: { 'payment.status': 'completed', createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          revenue: { $sum: '$total' },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]),
+    // Orders by period (daily for last N days)
+    Order.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]),
+    // Users by period (daily for last N days)
+    User.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ])
   ]);
 
   const revenue = totalRevenue.length > 0 ? totalRevenue[0].total : 0;
+  const usersWhoOrdered = usersWithOrders.length;
 
   res.status(200).json({
     status: 'success',
@@ -60,7 +115,17 @@ router.get('/dashboard', asyncHandler(async (req, res) => {
         totalUsers,
         totalProducts,
         totalOrders,
-        totalRevenue: revenue
+        totalRevenue: revenue,
+        usersWithOrders: usersWhoOrdered,
+        newUsers,
+        usersWithoutOrders: totalUsers - usersWhoOrdered,
+        averageOrderValue: totalOrders > 0 ? revenue / totalOrders : 0
+      },
+      charts: {
+        ordersByStatus: ordersByStatus.map(item => ({ status: item._id, count: item.count })),
+        revenueByPeriod: revenueByPeriod.map(item => ({ date: item._id, revenue: item.revenue, orders: item.count })),
+        ordersByPeriod: ordersByPeriod.map(item => ({ date: item._id, count: item.count })),
+        usersByPeriod: usersByPeriod.map(item => ({ date: item._id, count: item.count }))
       },
       recentOrders,
       lowStockProducts,
@@ -800,6 +865,80 @@ router.put('/orders/:id/tracking', asyncHandler(async (req, res) => {
     status: 'success',
     message: 'Tracking information added successfully',
     data: { order }
+  });
+}));
+
+// ==================== PROMOTIONS ====================
+// @desc    Get all promotions
+// @route   GET /api/admin/promotions
+// @access  Admin only
+router.get('/promotions', asyncHandler(async (req, res) => {
+  const promotions = await Promotion.find().sort({ displayOrder: 1, createdAt: -1 });
+
+  res.status(200).json({
+    status: 'success',
+    data: { promotions }
+  });
+}));
+
+// @desc    Create promotion
+// @route   POST /api/admin/promotions
+// @access  Admin only
+router.post('/promotions', asyncHandler(async (req, res) => {
+  const promotionData = req.body;
+
+  const promotion = await Promotion.create(promotionData);
+
+  res.status(201).json({
+    status: 'success',
+    message: 'Promotion created successfully',
+    data: { promotion }
+  });
+}));
+
+// @desc    Update promotion
+// @route   PUT /api/admin/promotions/:id
+// @access  Admin only
+router.put('/promotions/:id', asyncHandler(async (req, res) => {
+  const promotion = await Promotion.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    {
+      new: true,
+      runValidators: true
+    }
+  );
+
+  if (!promotion) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Promotion not found'
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Promotion updated successfully',
+    data: { promotion }
+  });
+}));
+
+// @desc    Delete promotion
+// @route   DELETE /api/admin/promotions/:id
+// @access  Admin only
+router.delete('/promotions/:id', asyncHandler(async (req, res) => {
+  const promotion = await Promotion.findByIdAndDelete(req.params.id);
+
+  if (!promotion) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Promotion not found'
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Promotion deleted successfully'
   });
 }));
 

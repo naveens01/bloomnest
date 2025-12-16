@@ -1,19 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Cart from './components/Cart';
 import Footer from './components/Footer';
-import Home from './pages/Home';
-import CategoryPage from './pages/CategoryPage';
-import BrandPage from './pages/BrandPage';
-import BrandsPage from './pages/BrandsPage';
-import CategoriesPage from './pages/CategoriesPage';
-import AboutPage from './pages/AboutPage';
-import SignupPage from './pages/SignupPage';
-import SigninPage from './pages/SigninPage';
-import AdminPage from './pages/AdminPage';
 import { CartItem, Product } from './types';
-import WatchlistPage from './pages/WatchlistPage.tsx';
+import { AuthProvider } from './contexts/AuthContext';
+import { useToast } from './hooks/useToast';
+import { ToastContainer } from './components/Toast';
+import { PageSkeleton } from './components/LoadingSkeleton';
+
+// Lazy load pages for better performance
+const Home = lazy(() => import('./pages/Home'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
+const BrandPage = lazy(() => import('./pages/BrandPage'));
+const BrandsPage = lazy(() => import('./pages/BrandsPage'));
+const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const SignupPage = lazy(() => import('./pages/SignupPage'));
+const SigninPage = lazy(() => import('./pages/SigninPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const WatchlistPage = lazy(() => import('./pages/WatchlistPage'));
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
+const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'));
 
 // ScrollToTop component to handle route changes
 const ScrollToTop: React.FC = () => {
@@ -32,25 +40,48 @@ const ScrollToTop: React.FC = () => {
 };
 
 function App() {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    // Load cart from localStorage
+    const savedCart = localStorage.getItem('cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [watchlist, setWatchlist] = useState<Product[]>([]);
+  const [watchlist, setWatchlist] = useState<Product[]>(() => {
+    // Load watchlist from localStorage
+    const savedWatchlist = localStorage.getItem('watchlist');
+    return savedWatchlist ? JSON.parse(savedWatchlist) : [];
+  });
+  const { toasts, removeToast, success, error } = useToast();
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
+
+  // Save watchlist to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('watchlist', JSON.stringify(watchlist));
+  }, [watchlist]);
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
       
       if (existingItem) {
-        return prevCart.map(item =>
+        const updated = prevCart.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
+        success(`${product.name} quantity updated in cart`);
+        return updated;
       }
       
-      return [...prevCart, { ...product, quantity: 1 }];
+      const updated = [...prevCart, { ...product, quantity: 1 }];
+      success(`${product.name} added to cart`);
+      return updated;
     });
   };
 
@@ -68,7 +99,13 @@ function App() {
   };
 
   const removeFromCart = (productId: string) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+    setCart(prevCart => {
+      const item = prevCart.find(i => i.id === productId);
+      if (item) {
+        success(`${item.name} removed from cart`);
+      }
+      return prevCart.filter(item => item.id !== productId);
+    });
   };
 
   const toggleWatchlist = (product: Product) => {
@@ -82,97 +119,157 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="min-h-screen bg-white">
-        {/* ScrollToTop component to handle route changes */}
-        <ScrollToTop />
-        
-        <Header
-          cart={cart}
-          onCartClick={() => setIsCartOpen(true)}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          watchlistCount={watchlist.length}
-        />
-        
-        <Routes>
-          <Route 
-            path="/" 
-            element={
-              <Home
-                cart={cart}
-                onAddToCart={addToCart}
-                searchQuery={searchQuery}
-                selectedCategory={selectedCategory}
-                onCategorySelect={setSelectedCategory}
-              />
-            } 
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen bg-white">
+          {/* ScrollToTop component to handle route changes */}
+          <ScrollToTop />
+          
+          <Header
+            cart={cart}
+            onCartClick={() => setIsCartOpen(true)}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            watchlistCount={watchlist.length}
           />
-          <Route 
-            path="/categories" 
-            element={<CategoriesPage />} 
-          />
-          <Route 
-            path="/category/:categoryId" 
-            element={
-              <CategoryPage
-                cart={cart}
-                onAddToCart={addToCart}
-                searchQuery={searchQuery}
-                onToggleWatchlist={toggleWatchlist}
-                isInWatchlist={(productId: string) => watchlist.some(p => p.id === productId)}
-              />
-            } 
-          />
-          <Route 
-            path="/brands" 
-            element={<BrandsPage />} 
-          />
-          <Route 
-            path="/brand/:brandId" 
-            element={
-              <BrandPage
-                cart={cart}
-                onAddToCart={addToCart}
-                searchQuery={searchQuery}
-                onToggleWatchlist={toggleWatchlist}
-                isInWatchlist={(productId: string) => watchlist.some(p => p.id === productId)}
-              />
-            } 
-          />
-          <Route 
-            path="/about" 
-            element={<AboutPage />} 
-          />
-          <Route 
-            path="/watchlist" 
-            element={<WatchlistPage items={watchlist} onToggleWatchlist={toggleWatchlist} />} 
-          />
-          <Route 
-            path="/signup" 
-            element={<SignupPage />} 
-          />
-          <Route 
-            path="/signin" 
-            element={<SigninPage />} 
-          />
-          <Route 
-            path="/admin" 
-            element={<AdminPage />} 
-          />
-        </Routes>
+          
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <Home
+                    cart={cart}
+                    onAddToCart={addToCart}
+                    searchQuery={searchQuery}
+                    selectedCategory={selectedCategory}
+                    onCategorySelect={setSelectedCategory}
+                  />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/categories" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <CategoriesPage />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/category/:categoryId" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <CategoryPage
+                    cart={cart}
+                    onAddToCart={addToCart}
+                    searchQuery={searchQuery}
+                    onToggleWatchlist={toggleWatchlist}
+                    isInWatchlist={(productId: string) => watchlist.some(p => p.id === productId)}
+                  />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/brands" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <BrandsPage />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/brand/:brandId" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <BrandPage
+                    cart={cart}
+                    onAddToCart={addToCart}
+                    searchQuery={searchQuery}
+                    onToggleWatchlist={toggleWatchlist}
+                    isInWatchlist={(productId: string) => watchlist.some(p => p.id === productId)}
+                  />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/product/:productId" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <ProductDetailPage
+                    cart={cart}
+                    onAddToCart={addToCart}
+                    onToggleWatchlist={toggleWatchlist}
+                    isInWatchlist={(productId: string) => watchlist.some(p => p.id === productId)}
+                  />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/about" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <AboutPage />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/watchlist" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <WatchlistPage items={watchlist} onToggleWatchlist={toggleWatchlist} />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/orders" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <OrderHistoryPage />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/signup" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <SignupPage />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/signin" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <SigninPage />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <AdminPage />
+                </Suspense>
+              } 
+            />
+          </Routes>
 
-        <Footer />
+          <Footer />
 
-        <Cart
-          isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
-          cart={cart}
-          onUpdateQuantity={updateQuantity}
-          onRemoveItem={removeFromCart}
-        />
-      </div>
-    </Router>
+          <Cart
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            cart={cart}
+            onUpdateQuantity={updateQuantity}
+            onRemoveItem={removeFromCart}
+            onCheckout={() => setIsCartOpen(false)}
+          />
+
+          <ToastContainer toasts={toasts} onClose={removeToast} />
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 

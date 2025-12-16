@@ -91,6 +91,7 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
                     src={brand.image}
                     alt={brand.name}
                     className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-1000 ease-out"
+                    loading="lazy"
                   />
                   
                   {/* Enhanced Overlay with Grand Gradient */}

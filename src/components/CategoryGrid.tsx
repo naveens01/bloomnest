@@ -102,6 +102,7 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ categories, loading = false
                     src={category.image}
                     alt={category.name}
                     className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-1000 ease-out"
+                    loading="lazy"
                   />
                   
                   {/* Enhanced Overlay with Gradient */}

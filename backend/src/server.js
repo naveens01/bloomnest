@@ -15,6 +15,7 @@ const brandRoutes = require('./routes/brands');
 const categoryRoutes = require('./routes/categories');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
+const promotionRoutes = require('./routes/promotions');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorHandler');
@@ -85,6 +86,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/brands', brandRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/promotions', promotionRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
