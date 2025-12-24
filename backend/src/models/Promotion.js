@@ -120,3 +120,4 @@ promotionSchema.virtual('isActiveNow').get(function() {
 
 module.exports = mongoose.model('Promotion', promotionSchema);
 
+

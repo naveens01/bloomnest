@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { CartItem, Product } from '../types';
 import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart, Filter, Search, Grid, List, ShoppingBag, TrendingUp, Shield, Users, Loader2 } from 'lucide-react';
@@ -219,6 +219,24 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
         </div>
         
         <div className="max-w-7xl mx-auto relative z-10">
+          {/* Breadcrumbs */}
+          <nav className="text-sm text-eco-900/80 mb-4">
+            <ol className="flex items-center space-x-2">
+              <li>
+                <Link to="/" className="hover:text-eco-900">
+                  Home
+                </Link>
+              </li>
+              <li>/</li>
+              <li>
+                <Link to="/categories" className="hover:text-eco-900">
+                  Categories
+                </Link>
+              </li>
+              <li>/</li>
+              <li className="font-semibold">{category.name}</li>
+            </ol>
+          </nav>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
             <div className="animate-fade-in-up">
               <div className="inline-flex items-center space-x-2 bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-eco-200 mb-6 sm:mb-8">

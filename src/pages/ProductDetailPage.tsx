@@ -438,11 +438,53 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             </div>
           )}
 
-          {/* Reviews List - Placeholder for now */}
+          {/* Reviews List */}
           <div className="space-y-4">
-            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
-              <p className="text-gray-600">No reviews yet. Be the first to review this product!</p>
-            </div>
+            {Array.isArray((product as any).reviewsList) && (product as any).reviewsList.length > 0 ? (
+              (product as any).reviewsList.map((review: any, index: number) => (
+                <div
+                  key={review._id || index}
+                  className="bg-white rounded-xl p-6 shadow-lg border border-gray-200"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        {review.user?.firstName
+                          ? `${review.user.firstName} ${review.user.lastName || ''}`.trim()
+                          : review.userName || 'Verified Buyer'}
+                      </p>
+                      {review.createdAt && (
+                        <p className="text-xs text-gray-500">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-4 w-4 ${
+                            star <= (review.rating || 0)
+                              ? 'text-yellow-400 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  {review.title && (
+                    <p className="font-semibold text-gray-900 mb-1">{review.title}</p>
+                  )}
+                  {review.comment && (
+                    <p className="text-gray-700 text-sm leading-relaxed">{review.comment}</p>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+                <p className="text-gray-600">No reviews yet. Be the first to review this product!</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

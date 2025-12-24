@@ -22,6 +22,7 @@ const AdminPage = lazy(() => import('./pages/AdminPage'));
 const WatchlistPage = lazy(() => import('./pages/WatchlistPage'));
 const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
 const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'));
+const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
 
 // ScrollToTop component to handle route changes
 const ScrollToTop: React.FC = () => {
@@ -204,6 +205,21 @@ function App() {
                   />
                 </Suspense>
               } 
+            />
+            <Route
+              path="/search"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <SearchResultsPage
+                    cart={cart}
+                    onAddToCart={addToCart}
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    onToggleWatchlist={toggleWatchlist}
+                    isInWatchlist={(productId: string) => watchlist.some(p => p.id === productId)}
+                  />
+                </Suspense>
+              }
             />
             <Route 
               path="/about" 

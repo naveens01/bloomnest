@@ -79,6 +79,16 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
                 <input
                   type="text"
                   placeholder="Search eco-friendly products..."
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const value = (e.target as HTMLInputElement).value.trim();
+                      if (value) {
+                        navigate(`/search?q=${encodeURIComponent(value)}`);
+                      }
+                    }
+                  }}
                   className="w-full pl-12 pr-4 py-3 border-2 border-eco-200 rounded-2xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-base group-hover:shadow-eco-glow"
                   style={{ lineHeight: '48px', paddingTop: '0', paddingBottom: '0' }}
                 />
@@ -224,7 +234,7 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
         </div>
 
         {/* Mobile Search Bar - Fixed positioning */}
-        <div className="sm:hidden pb-4 px-4 sm:px-6 lg:px-8">
+            <div className="sm:hidden pb-4 px-4 sm:px-6 lg:px-8">
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-eco-400 group-hover:text-eco-600 transition-colors" />
             <input
@@ -232,6 +242,14 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
               placeholder="Search eco-friendly products..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const value = (e.target as HTMLInputElement).value.trim();
+                  if (value) {
+                    navigate(`/search?q=${encodeURIComponent(value)}`);
+                  }
+                }
+              }}
               className="w-full pl-10 pr-4 py-2.5 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/80 backdrop-blur-sm leading-none"
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">

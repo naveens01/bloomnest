@@ -44,10 +44,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
                     />
         
         {/* ECO Badge */}
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 space-y-1">
           <div className="bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-semibold">
             ECO
           </div>
+          {/* Low stock indicator (for backend products with stock info) */}
+          {product.inStock && typeof (product as any).stock === 'number' && (product as any).stock > 0 && (product as any).stock <= 5 && (
+            <div className="bg-yellow-500 text-white px-2 py-0.5 rounded-lg text-[10px] font-semibold">
+              Only {(product as any).stock} left
+            </div>
+          )}
         </div>
         
         {/* Discount Badge */}

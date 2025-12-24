@@ -325,8 +325,12 @@ export const transformBackendProduct = (backendProduct: BackendProduct) => {
   description: backendProduct.description || '',
   features: backendProduct.features || [],
   inStock: backendProduct.inventory?.isInStock ?? true,
+  // Expose stock count for low-stock indicators (optional on backend)
+  stock: backendProduct.inventory?.stock,
   rating: backendProduct.ratings?.average || 0,
   reviews: backendProduct.ratings?.count || 0,
+  // Optional reviews list if backend provides it (e.g. backendProduct.ratings.reviews or backendProduct.reviews)
+  reviewsList: (backendProduct as any).reviews || (backendProduct as any).ratings?.reviews || [],
   slug: backendProduct.slug,
   isFeatured: backendProduct.isFeatured || false,
   createdAt: backendProduct.createdAt,

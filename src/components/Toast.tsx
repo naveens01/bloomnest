@@ -43,7 +43,9 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose, duration = 5000 }
   const Icon = icons[type];
 
   return (
-    <div className={`fixed top-20 right-4 z-50 animate-slide-in-right max-w-md w-full sm:w-auto`}>
+    <div
+      className={`fixed top-24 left-1/2 -translate-x-1/2 sm:top-20 sm:right-4 sm:left-auto sm:translate-x-0 z-50 animate-slide-in-right max-w-md w-[calc(100%-2rem)] sm:w-auto`}
+    >
       <div className={`${colors[type]} border rounded-xl shadow-lg p-4 flex items-start space-x-3`}>
         <Icon className={`h-5 w-5 flex-shrink-0 mt-0.5 ${iconColors[type]}`} />
         <p className="flex-1 text-sm font-medium">{message}</p>
@@ -65,7 +67,7 @@ interface ToastContainerProps {
 
 export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onClose }) => {
   return (
-    <div className="fixed top-20 right-4 z-50 space-y-2">
+    <div className="fixed top-24 left-1/2 -translate-x-1/2 sm:top-20 sm:right-4 sm:left-auto sm:translate-x-0 z-50 space-y-2 w-full sm:w-auto px-4 sm:px-0">
       {toasts.map((toast, index) => (
         <div
           key={toast.id}
