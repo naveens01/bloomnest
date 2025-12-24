@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Lock, Eye, EyeOff, Shield, CheckCircle, XCircle, Leaf, Sparkles, Zap, Globe, Recycle, Heart, Star } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../hooks/useToast';
 
 const SignupPage: React.FC = () => {
-  const [authMethod, setAuthMethod] = useState<'mobile' | 'email'>('mobile');
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const { success: showSuccess, error: showError } = useToast();
+  const [authMethod, setAuthMethod] = useState<'mobile' | 'email'>('email');
   const [step, setStep] = useState<'input' | 'otp' | 'success'>('input');
-  const [formData, setFormData] = useState({ mobile: '', email: '', password: '', confirmPassword: '', otp: '', name: '' });
+  const [formData, setFormData] = useState({ mobile: '', email: '', password: '', confirmPassword: '', otp: '', firstName: '', lastName: '', phone: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,9 +26,6 @@ const SignupPage: React.FC = () => {
     setIsLoading(true);
     setError('');
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
     if (authMethod === 'mobile') {
       if (formData.mobile.length < 10) {
         setError('Please enter a valid mobile number');
@@ -31,20 +33,62 @@ const SignupPage: React.FC = () => {
         return;
       }
       setStep('otp');
-    } else {
-      if (!formData.email || !formData.password || !formData.confirmPassword) {
-        setError('Please fill in all fields');
-        setIsLoading(false);
-        return;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError('Passwords do not match');
-        setIsLoading(false);
-        return;
-      }
-      setStep('success');
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
+
+    // Email registration
+    if (!formData.email || !formData.password || !formData.confirmPassword || !formData.firstName || !formData.lastName) {
+      setError('Please fill in all fields');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      if (data.data && data.data.token && data.data.user) {
+        login(data.data.token, data.data.user);
+        showSuccess('Account created successfully!');
+        setStep('success');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
+      showError(err.message || 'Registration failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOTPSubmit = async (e: React.FormEvent) => {
@@ -98,13 +142,16 @@ const SignupPage: React.FC = () => {
               Your account has been created successfully. Start exploring our eco-friendly products!
             </p>
             <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-              <Link
-                to="/"
+              <button
+                onClick={() => {
+                  navigate('/');
+                  setStep('input');
+                }}
                 className="w-full flex items-center justify-center space-x-2 bg-eco-gradient text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105"
               >
                 <span>Start Shopping</span>
                 <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6 rotate-180" />
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -219,17 +266,45 @@ const SignupPage: React.FC = () => {
                   </div>
                 ) : (
                   <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm sm:text-base font-medium text-eco-700 mb-2">First Name</label>
+                        <input
+                          type="text"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          placeholder="First name"
+                          className="w-full px-4 py-3 sm:py-4 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm text-sm sm:text-base"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm sm:text-base font-medium text-eco-700 mb-2">Last Name</label>
+                        <input
+                          type="text"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          placeholder="Last name"
+                          className="w-full px-4 py-3 sm:py-4 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm text-sm sm:text-base"
+                          required
+                        />
+                      </div>
+                    </div>
                     <div>
-                      <label className="block text-sm sm:text-base font-medium text-eco-700 mb-2">Full Name</label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        placeholder="Enter your full name"
-                        className="w-full px-4 py-3 sm:py-4 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm text-sm sm:text-base"
-                        required
-                      />
+                      <label className="block text-sm sm:text-base font-medium text-eco-700 mb-2">Phone (Optional)</label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-eco-400" />
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          placeholder="Enter your phone number"
+                          className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm text-sm sm:text-base"
+                        />
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm sm:text-base font-medium text-eco-700 mb-2">Email Address</label>

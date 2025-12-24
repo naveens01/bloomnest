@@ -203,7 +203,7 @@ const BrandsPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 sm:gap-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 sm:gap-8 lg:gap-10 items-stretch">
                 {filteredBrands.map((brand, index) => {
                   // Generate the brand URL - use slug if available, otherwise generate from name
                   const brandSlug = (brand as any).slug;

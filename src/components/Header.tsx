@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, Leaf, Sparkles, User, LogIn, Heart, ChevronDown, UserPlus } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Leaf, Sparkles, User, LogIn, Heart, ChevronDown, UserPlus, LogOut, Package } from 'lucide-react';
 import { CartItem } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
   cart: CartItem[];
@@ -13,11 +14,18 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearchChange, watchlistCount }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false); // New state for cart modal
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate(); // New navigate function
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
+
+  const handleLogout = () => {
+    logout();
+    setIsUserMenuOpen(false);
+    navigate('/');
+  };
 
   const navItems = [
     { path: '/', name: 'Home' },
@@ -71,6 +79,16 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
                 <input
                   type="text"
                   placeholder="Search eco-friendly products..."
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const value = (e.target as HTMLInputElement).value.trim();
+                      if (value) {
+                        navigate(`/search?q=${encodeURIComponent(value)}`);
+                      }
+                    }
+                  }}
                   className="w-full pl-12 pr-4 py-3 border-2 border-eco-200 rounded-2xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-base group-hover:shadow-eco-glow"
                   style={{ lineHeight: '48px', paddingTop: '0', paddingBottom: '0' }}
                 />
@@ -101,7 +119,7 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
 
               {/* Enhanced Cart Button */}
               <button 
-                onClick={() => setIsCartOpen(true)}
+                onClick={onCartClick}
                 className="relative group p-2 sm:p-3 rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow"
               >
                 <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-eco-600 group-hover:scale-110 transition-transform duration-300" />
@@ -115,36 +133,93 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
               </button>
 
               {/* Enhanced User Profile */}
-              <div className="relative group">
-                <button className="flex items-center space-x-2 p-2 sm:p-3 rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center space-x-2 p-2 sm:p-3 rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow"
+                >
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full flex items-center justify-center transition-transform duration-300">
+                    {isAuthenticated && user ? (
+                      <span className="text-white font-semibold text-sm sm:text-base">
+                        {user.initials || user.firstName?.[0] || 'U'}
+                      </span>
+                    ) : (
+                      <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                    )}
                   </div>
-                  <span className="hidden sm:block text-eco-700 font-medium group-hover:text-eco-600 transition-colors duration-300">
-                    Sign In
+                  <span className="hidden sm:block text-eco-700 font-medium transition-colors duration-300">
+                    {isAuthenticated && user ? user.firstName || 'Account' : 'Sign In'}
                   </span>
-                  <ChevronDown className="h-4 w-4 text-eco-600 group-hover:rotate-180 transition-transform duration-300" />
+                  <ChevronDown className={`h-4 w-4 text-eco-600 transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {/* Enhanced dropdown with animations */}
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-eco-glow-lg border border-eco-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                  <div className="p-2">
-                    <Link 
-                      to="/signup"
-                      className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
-                    >
-                      <UserPlus className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
-                      <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Sign Up</span>
-                    </Link>
-                    <Link 
-                      to="/signin"
-                      className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
-                    >
-                      <LogIn className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
-                      <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Sign In</span>
-                    </Link>
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-eco-glow-lg border border-eco-200 z-50">
+                    <div className="p-2">
+                      {isAuthenticated && user ? (
+                        <>
+                          <div className="px-4 py-3 border-b border-gray-200">
+                            <div className="font-semibold text-gray-900">{user.fullName || `${user.firstName} ${user.lastName}`}</div>
+                            <div className="text-sm text-gray-600">{user.email}</div>
+                          </div>
+                          <Link 
+                            to="/orders"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
+                          >
+                            <Package className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
+                            <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">My Orders</span>
+                          </Link>
+                          <Link 
+                            to="/watchlist"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
+                          >
+                            <Heart className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
+                            <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Watchlist</span>
+                          </Link>
+                          {user.role === 'admin' && (
+                            <Link 
+                              to="/admin"
+                              onClick={() => setIsUserMenuOpen(false)}
+                              className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
+                            >
+                              <User className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
+                              <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Admin</span>
+                            </Link>
+                          )}
+                          <button
+                            onClick={handleLogout}
+                            className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors duration-200 group/item text-left"
+                          >
+                            <LogOut className="h-5 w-5 text-red-600 group-hover/item:scale-110 transition-transform duration-200" />
+                            <span className="text-red-700 group-hover/item:text-red-800 transition-colors duration-200">Sign Out</span>
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <Link 
+                            to="/signup"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
+                          >
+                            <UserPlus className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
+                            <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Sign Up</span>
+                          </Link>
+                          <Link 
+                            to="/signin"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
+                          >
+                            <LogIn className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
+                            <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Sign In</span>
+                          </Link>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Enhanced Mobile Menu Button */}
@@ -159,7 +234,7 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
         </div>
 
         {/* Mobile Search Bar - Fixed positioning */}
-        <div className="sm:hidden pb-4 px-4 sm:px-6 lg:px-8">
+            <div className="sm:hidden pb-4 px-4 sm:px-6 lg:px-8">
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-eco-400 group-hover:text-eco-600 transition-colors" />
             <input
@@ -167,6 +242,14 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
               placeholder="Search eco-friendly products..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const value = (e.target as HTMLInputElement).value.trim();
+                  if (value) {
+                    navigate(`/search?q=${encodeURIComponent(value)}`);
+                  }
+                }
+              }}
               className="w-full pl-10 pr-4 py-2.5 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/80 backdrop-blur-sm leading-none"
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">

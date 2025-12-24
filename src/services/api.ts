@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 export interface ApiResponse<T> {
   status: string;
@@ -313,6 +313,7 @@ export const transformBackendProduct = (backendProduct: BackendProduct) => {
   
   return {
   id: backendProduct._id,
+  _id: backendProduct._id, // Also store MongoDB _id for API calls
   name: backendProduct.name,
   brand: brandName,
   brandId: brandId, // Store brand ID for filtering
@@ -324,8 +325,12 @@ export const transformBackendProduct = (backendProduct: BackendProduct) => {
   description: backendProduct.description || '',
   features: backendProduct.features || [],
   inStock: backendProduct.inventory?.isInStock ?? true,
+  // Expose stock count for low-stock indicators (optional on backend)
+  stock: backendProduct.inventory?.stock,
   rating: backendProduct.ratings?.average || 0,
   reviews: backendProduct.ratings?.count || 0,
+  // Optional reviews list if backend provides it (e.g. backendProduct.ratings.reviews or backendProduct.reviews)
+  reviewsList: (backendProduct as any).reviews || (backendProduct as any).ratings?.reviews || [],
   slug: backendProduct.slug,
   isFeatured: backendProduct.isFeatured || false,
   createdAt: backendProduct.createdAt,
@@ -381,6 +386,63 @@ export const transformBackendCategory = (backendCategory: BackendCategory) => {
 };
 
 // Admin API calls (requires authentication)
+// Promotion API calls
+export interface BackendPromotion {
+  _id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  type: 'banner' | 'card';
+  image?: {
+    url?: string;
+    alt?: string;
+  };
+  icon?: string;
+  ecoIcon?: string;
+  badge?: string;
+  cta?: {
+    text?: string;
+    link?: string;
+  };
+  bgColor?: string;
+  textColor?: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  sortOrder?: number;
+  displayOrder?: number;
+  startDate?: string;
+  endDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export const promotionApi = {
+  // Get all active promotions
+  getAll: async (params?: { type?: 'banner' | 'card' }): Promise<ApiResponse<{ promotions: BackendPromotion[] }>> => {
+    const searchParams = new URLSearchParams();
+    if (params?.type) searchParams.append('type', params.type);
+    
+    const queryString = searchParams.toString();
+    const endpoint = queryString ? `/promotions?${queryString}` : '/promotions';
+    return apiCall(endpoint);
+  },
+
+  // Get featured promotions
+  getFeatured: async (params?: { type?: 'banner' | 'card' }): Promise<ApiResponse<{ promotions: BackendPromotion[] }>> => {
+    const searchParams = new URLSearchParams();
+    if (params?.type) searchParams.append('type', params.type);
+    
+    const queryString = searchParams.toString();
+    const endpoint = queryString ? `/promotions/featured?${queryString}` : '/promotions/featured';
+    return apiCall(endpoint);
+  },
+
+  // Get promotion by ID
+  getById: async (id: string): Promise<ApiResponse<{ promotion: BackendPromotion }>> => {
+    return apiCall(`/promotions/${id}`);
+  },
+};
+
 export const adminApi = {
   // Get auth token from localStorage
   getAuthHeaders: (): HeadersInit => {
@@ -561,6 +623,33 @@ export const adminApi = {
         method: 'PUT',
         headers: adminApi.getAuthHeaders(),
         body: JSON.stringify({ isFeatured }),
+      });
+    },
+  },
+  promotions: {
+    getAll: async (): Promise<ApiResponse<{ promotions: BackendPromotion[] }>> => {
+      return apiCall('/admin/promotions', {
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+    create: async (promotionData: Partial<BackendPromotion>): Promise<ApiResponse<{ promotion: BackendPromotion }>> => {
+      return apiCall('/admin/promotions', {
+        method: 'POST',
+        headers: adminApi.getAuthHeaders(),
+        body: JSON.stringify(promotionData),
+      });
+    },
+    update: async (id: string, promotionData: Partial<BackendPromotion>): Promise<ApiResponse<{ promotion: BackendPromotion }>> => {
+      return apiCall(`/admin/promotions/${id}`, {
+        method: 'PUT',
+        headers: adminApi.getAuthHeaders(),
+        body: JSON.stringify(promotionData),
+      });
+    },
+    delete: async (id: string): Promise<ApiResponse<void>> => {
+      return apiCall(`/admin/promotions/${id}`, {
+        method: 'DELETE',
+        headers: adminApi.getAuthHeaders(),
       });
     },
   },

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../hooks/useToast';
 import { 
   Mail, 
   Lock, 
@@ -29,6 +31,8 @@ const SigninPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const { success: showSuccess, error: showError } = useToast();
 
   // Check server status on mount
   useEffect(() => {
@@ -92,12 +96,10 @@ const SigninPage: React.FC = () => {
         throw new Error(data.message || data.error || `Sign in failed: ${response.status} ${response.statusText}`);
       }
 
-      // Store token in localStorage
-      if (data.data && data.data.token) {
-        localStorage.setItem('token', data.data.token);
-        if (data.data.user) {
-          localStorage.setItem('user', JSON.stringify(data.data.user));
-        }
+      // Store token and user via auth context
+      if (data.data && data.data.token && data.data.user) {
+        login(data.data.token, data.data.user);
+        showSuccess('Signed in successfully!');
       }
 
       setSuccess(true);

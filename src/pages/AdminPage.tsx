@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { adminApi, brandApi, categoryApi, productApi, transformBackendCategory, transformBackendBrand, transformBackendProduct } from '../services/api';
-import { BackendCategory, BackendBrand, BackendProduct } from '../services/api';
-import { Plus, Edit, Trash2, X, Save, Upload, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, LogIn } from 'lucide-react';
+import { adminApi, brandApi, categoryApi, productApi, promotionApi, transformBackendCategory, transformBackendBrand, transformBackendProduct } from '../services/api';
+import { BackendCategory, BackendBrand, BackendProduct, BackendPromotion } from '../services/api';
+import { Plus, Edit, Trash2, X, Save, Upload, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, LogIn, Megaphone, BarChart3, Users, ShoppingCart, DollarSign, TrendingUp } from 'lucide-react';
 
-type TabType = 'categories' | 'brands' | 'products';
+type TabType = 'dashboard' | 'categories' | 'brands' | 'products' | 'promotions';
 
 const AdminPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('categories');
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
 
   // Categories state
   const [categories, setCategories] = useState<BackendCategory[]>([]);
@@ -27,6 +28,11 @@ const AdminPage: React.FC = () => {
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<BackendProduct | null>(null);
 
+  // Promotions state
+  const [promotions, setPromotions] = useState<BackendPromotion[]>([]);
+  const [showPromotionForm, setShowPromotionForm] = useState(false);
+  const [editingPromotion, setEditingPromotion] = useState<BackendPromotion | null>(null);
+
   // Load data
   useEffect(() => {
     loadData();
@@ -36,7 +42,18 @@ const AdminPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      if (activeTab === 'categories') {
+      if (activeTab === 'dashboard') {
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/admin/dashboard?period=30`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) throw new Error('Failed to load dashboard data');
+        const data = await response.json();
+        setDashboardData(data.data);
+      } else if (activeTab === 'categories') {
         const response = await adminApi.categories.getAll();
         setCategories(response.data.categories);
       } else if (activeTab === 'brands') {
@@ -45,6 +62,9 @@ const AdminPage: React.FC = () => {
       } else if (activeTab === 'products') {
         const response = await adminApi.products.getAll({ limit: 50 });
         setProducts(response.data.products);
+      } else if (activeTab === 'promotions') {
+        const response = await adminApi.promotions.getAll();
+        setPromotions(response.data.promotions);
       }
     } catch (err: any) {
       console.error('Load data error:', err);
@@ -81,7 +101,7 @@ const AdminPage: React.FC = () => {
           <h1 className="text-3xl sm:text-4xl font-bold text-gradient-eco mb-2">
             Admin Dashboard
           </h1>
-          <p className="text-eco-700">Manage categories, brands, and featured products</p>
+          <p className="text-eco-700">Manage your store, view analytics, and track performance</p>
         </div>
 
         {/* Messages */}
@@ -122,17 +142,19 @@ const AdminPage: React.FC = () => {
 
         {/* Tabs */}
         <div className="mb-6 flex flex-wrap gap-2 border-b border-eco-200">
-          {(['categories', 'brands', 'products'] as TabType[]).map((tab) => (
+          {(['dashboard', 'categories', 'brands', 'products', 'promotions'] as TabType[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 sm:px-6 sm:py-3 font-semibold rounded-t-xl transition-all duration-300 ${
+              className={`px-4 py-2 sm:px-6 sm:py-3 font-semibold rounded-t-xl transition-all duration-300 flex items-center space-x-2 ${
                 activeTab === tab
                   ? 'bg-eco-500 text-white shadow-lg'
                   : 'bg-white text-eco-700 hover:bg-eco-50'
               }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab === 'dashboard' && <BarChart3 className="h-4 w-4" />}
+              {tab === 'promotions' && <Megaphone className="h-4 w-4" />}
+              <span>{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
             </button>
           ))}
         </div>
@@ -144,6 +166,9 @@ const AdminPage: React.FC = () => {
           </div>
         ) : (
           <>
+            {activeTab === 'dashboard' && (
+              <DashboardTab dashboardData={dashboardData} />
+            )}
             {activeTab === 'categories' && (
               <CategoriesTab
                 categories={categories}
@@ -177,9 +202,293 @@ const AdminPage: React.FC = () => {
                 setEditingProduct={setEditingProduct}
               />
             )}
+            {activeTab === 'promotions' && (
+              <PromotionsTab
+                promotions={promotions}
+                onRefresh={loadData}
+                onMessage={showMessage}
+                showForm={showPromotionForm}
+                setShowForm={setShowPromotionForm}
+                editingPromotion={editingPromotion}
+                setEditingPromotion={setEditingPromotion}
+              />
+            )}
           </>
         )}
       </div>
+    </div>
+  );
+};
+
+// Dashboard Tab Component
+interface DashboardTabProps {
+  dashboardData: any;
+}
+
+const DashboardTab: React.FC<DashboardTabProps> = ({ dashboardData }) => {
+  if (!dashboardData) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+        <p>Loading dashboard data...</p>
+      </div>
+    );
+  }
+
+  const { stats, charts, recentOrders, topProducts, lowStockProducts } = dashboardData;
+
+  // Calculate max values for charts
+  const maxRevenue = Math.max(...(charts.revenueByPeriod.map((d: any) => d.revenue) || [0]), 1);
+  const maxOrders = Math.max(...(charts.ordersByPeriod.map((d: any) => d.count) || [0]), 1);
+  const maxUsers = Math.max(...(charts.usersByPeriod.map((d: any) => d.count) || [0]), 1);
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Total Users</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
+              <p className="text-xs text-green-600 mt-1">+{stats.newUsers} new (30 days)</p>
+            </div>
+            <div className="bg-blue-100 p-3 rounded-full">
+              <Users className="h-8 w-8 text-blue-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Total Orders</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.totalOrders}</p>
+              <p className="text-xs text-gray-500 mt-1">Avg: ${stats.averageOrderValue.toFixed(2)}</p>
+            </div>
+            <div className="bg-green-100 p-3 rounded-full">
+              <ShoppingCart className="h-8 w-8 text-green-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
+              <p className="text-3xl font-bold text-gray-900">${stats.totalRevenue.toFixed(2)}</p>
+              <p className="text-xs text-green-600 mt-1">Completed orders</p>
+            </div>
+            <div className="bg-yellow-100 p-3 rounded-full">
+              <DollarSign className="h-8 w-8 text-yellow-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600 mb-1">Users with Orders</p>
+              <p className="text-3xl font-bold text-gray-900">{stats.usersWithOrders}</p>
+              <p className="text-xs text-gray-500 mt-1">{stats.usersWithoutOrders} without orders</p>
+            </div>
+            <div className="bg-purple-100 p-3 rounded-full">
+              <TrendingUp className="h-8 w-8 text-purple-600" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Chart */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue (Last 30 Days)</h3>
+          <div className="h-64 flex items-end justify-between space-x-1">
+            {charts.revenueByPeriod && charts.revenueByPeriod.length > 0 ? (
+              charts.revenueByPeriod.map((item: any, index: number) => (
+                <div key={index} className="flex-1 flex flex-col items-center">
+                  <div
+                    className="w-full bg-gradient-to-t from-green-500 to-green-400 rounded-t transition-all hover:opacity-80 cursor-pointer"
+                    style={{ height: `${(item.revenue / maxRevenue) * 100}%` }}
+                    title={`${item.date}: $${item.revenue.toFixed(2)}`}
+                  />
+                  <span className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-top-left whitespace-nowrap">
+                    {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="w-full text-center text-gray-400 py-12">No revenue data</div>
+            )}
+          </div>
+        </div>
+
+        {/* Orders Chart */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Orders (Last 30 Days)</h3>
+          <div className="h-64 flex items-end justify-between space-x-1">
+            {charts.ordersByPeriod && charts.ordersByPeriod.length > 0 ? (
+              charts.ordersByPeriod.map((item: any, index: number) => (
+                <div key={index} className="flex-1 flex flex-col items-center">
+                  <div
+                    className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t transition-all hover:opacity-80 cursor-pointer"
+                    style={{ height: `${(item.count / maxOrders) * 100}%` }}
+                    title={`${item.date}: ${item.count} orders`}
+                  />
+                  <span className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-top-left whitespace-nowrap">
+                    {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="w-full text-center text-gray-400 py-12">No orders data</div>
+            )}
+          </div>
+        </div>
+
+        {/* User Registrations Chart */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">New Users (Last 30 Days)</h3>
+          <div className="h-64 flex items-end justify-between space-x-1">
+            {charts.usersByPeriod && charts.usersByPeriod.length > 0 ? (
+              charts.usersByPeriod.map((item: any, index: number) => (
+                <div key={index} className="flex-1 flex flex-col items-center">
+                  <div
+                    className="w-full bg-gradient-to-t from-purple-500 to-purple-400 rounded-t transition-all hover:opacity-80 cursor-pointer"
+                    style={{ height: `${(item.count / maxUsers) * 100}%` }}
+                    title={`${item.date}: ${item.count} users`}
+                  />
+                  <span className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-top-left whitespace-nowrap">
+                    {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="w-full text-center text-gray-400 py-12">No user data</div>
+            )}
+          </div>
+        </div>
+
+        {/* Orders by Status */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Orders by Status</h3>
+          <div className="space-y-3">
+            {charts.ordersByStatus && charts.ordersByStatus.length > 0 ? (
+              charts.ordersByStatus.map((item: any) => {
+                const total = charts.ordersByStatus.reduce((sum: number, i: any) => sum + i.count, 0);
+                const percentage = total > 0 ? (item.count / total) * 100 : 0;
+                return (
+                  <div key={item.status} className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium text-gray-700 capitalize">{item.status}</span>
+                      <span className="text-gray-600">{item.count} ({percentage.toFixed(1)}%)</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${
+                          item.status === 'delivered' ? 'bg-green-500' :
+                          item.status === 'shipped' ? 'bg-blue-500' :
+                          item.status === 'processing' ? 'bg-yellow-500' :
+                          item.status === 'pending' ? 'bg-gray-500' :
+                          'bg-red-500'
+                        }`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center text-gray-400 py-12">No order status data</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Orders and Top Products */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Orders */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Orders</h3>
+          <div className="space-y-3">
+            {recentOrders && recentOrders.length > 0 ? (
+              recentOrders.map((order: any) => (
+                <div key={order._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">#{order.orderNumber}</p>
+                    <p className="text-sm text-gray-600">
+                      {order.user?.firstName} {order.user?.lastName}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">${order.total.toFixed(2)}</p>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                      order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                      order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-gray-400 py-8">No recent orders</div>
+            )}
+          </div>
+        </div>
+
+        {/* Top Products */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Rated Products</h3>
+          <div className="space-y-3">
+            {topProducts && topProducts.length > 0 ? (
+              topProducts.slice(0, 5).map((product: any) => (
+                <div key={product._id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  {product.images && product.images[0] && (
+                    <img
+                      src={product.images[0].url}
+                      alt={product.name}
+                      className="w-12 h-12 object-cover rounded"
+                      loading="lazy"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{product.name}</p>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-yellow-600">★ {product.ratings?.average?.toFixed(1) || 0}</span>
+                      <span className="text-xs text-gray-500">({product.ratings?.count || 0} reviews)</span>
+                    </div>
+                  </div>
+                  <p className="font-semibold text-gray-900">${product.price?.current || 0}</p>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-gray-400 py-8">No products</div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Low Stock Alert */}
+      {lowStockProducts && lowStockProducts.length > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-yellow-900 mb-4 flex items-center space-x-2">
+            <AlertCircle className="h-5 w-5" />
+            <span>Low Stock Products</span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {lowStockProducts.map((product: any) => (
+              <div key={product._id} className="bg-white p-3 rounded-lg border border-yellow-200">
+                <p className="font-medium text-gray-900">{product.name}</p>
+                <p className="text-sm text-red-600">Stock: {product.inventory?.stock || 0}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -337,7 +646,7 @@ const CategoriesTab: React.FC<CategoriesTabProps> = ({
         />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
         {categories.map((category) => (
           <CategoryCard
             key={category._id}
@@ -648,7 +957,7 @@ const BrandsTab: React.FC<BrandsTabProps> = ({
         />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
         {brands.map((brand) => (
           <BrandCard
             key={brand._id}
@@ -1082,7 +1391,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
         />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
         {products.map((product) => (
           <ProductCard
             key={product._id}
@@ -1399,6 +1708,344 @@ const ProductCard: React.FC<{
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Promotions Tab Component
+interface PromotionsTabProps {
+  promotions: BackendPromotion[];
+  onRefresh: () => void;
+  onMessage: (message: string, isSuccess?: boolean) => void;
+  showForm: boolean;
+  setShowForm: (show: boolean) => void;
+  editingPromotion: BackendPromotion | null;
+  setEditingPromotion: (promotion: BackendPromotion | null) => void;
+}
+
+const PromotionsTab: React.FC<PromotionsTabProps> = ({
+  promotions,
+  onRefresh,
+  onMessage,
+  showForm,
+  setShowForm,
+  editingPromotion,
+  setEditingPromotion,
+}) => {
+  const [formData, setFormData] = useState<Partial<BackendPromotion>>({
+    title: '',
+    subtitle: '',
+    description: '',
+    type: 'card',
+    badge: '',
+    bgColor: 'bg-eco-gradient',
+    textColor: 'text-eco-900',
+    icon: 'Gift',
+    ecoIcon: 'Leaf',
+    cta: { text: 'Shop Now', link: '' },
+    isActive: true,
+    isFeatured: false,
+    displayOrder: 0,
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (editingPromotion) {
+      setFormData({
+        title: editingPromotion.title || '',
+        subtitle: editingPromotion.subtitle || '',
+        description: editingPromotion.description || '',
+        type: editingPromotion.type || 'card',
+        badge: editingPromotion.badge || '',
+        bgColor: editingPromotion.bgColor || 'bg-eco-gradient',
+        textColor: editingPromotion.textColor || 'text-eco-900',
+        icon: editingPromotion.icon || 'Gift',
+        ecoIcon: editingPromotion.ecoIcon || 'Leaf',
+        cta: editingPromotion.cta || { text: 'Shop Now', link: '' },
+        image: editingPromotion.image || { url: '', alt: '' },
+        isActive: editingPromotion.isActive ?? true,
+        isFeatured: editingPromotion.isFeatured ?? false,
+        displayOrder: editingPromotion.displayOrder || 0,
+        startDate: editingPromotion.startDate,
+        endDate: editingPromotion.endDate,
+      });
+    } else {
+      setFormData({
+        title: '',
+        subtitle: '',
+        description: '',
+        type: 'card',
+        badge: '',
+        bgColor: 'bg-eco-gradient',
+        textColor: 'text-eco-900',
+        icon: 'Gift',
+        ecoIcon: 'Leaf',
+        cta: { text: 'Shop Now', link: '' },
+        isActive: true,
+        isFeatured: false,
+        displayOrder: 0,
+      });
+    }
+  }, [editingPromotion, showForm]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      if (editingPromotion) {
+        await adminApi.promotions.update(editingPromotion._id, formData);
+        onMessage('Promotion updated successfully!');
+      } else {
+        await adminApi.promotions.create(formData);
+        onMessage('Promotion created successfully!');
+      }
+      setShowForm(false);
+      setEditingPromotion(null);
+      onRefresh();
+    } catch (err: any) {
+      onMessage(err.message || 'Failed to save promotion', false);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this promotion?')) return;
+    try {
+      await adminApi.promotions.delete(id);
+      onMessage('Promotion deleted successfully!');
+      onRefresh();
+    } catch (err: any) {
+      onMessage(err.message || 'Failed to delete promotion', false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-eco-800">Promotions</h2>
+        <button
+          onClick={() => {
+            setEditingPromotion(null);
+            setShowForm(true);
+          }}
+          className="bg-eco-500 text-white px-4 py-2 rounded-lg hover:bg-eco-600 transition-colors flex items-center space-x-2"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Add Promotion</span>
+        </button>
+      </div>
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
+              <input
+                type="text"
+                value={formData.subtitle}
+                onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type *</label>
+              <select
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'banner' | 'card' })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+                required
+              >
+                <option value="banner">Banner</option>
+                <option value="card">Card</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Badge</label>
+              <input
+                type="text"
+                value={formData.badge}
+                onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+                placeholder="e.g., LIMITED TIME"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+              <input
+                type="text"
+                value={formData.bgColor}
+                onChange={(e) => setFormData({ ...formData, bgColor: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+                placeholder="bg-eco-gradient"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
+              <input
+                type="text"
+                value={formData.textColor}
+                onChange={(e) => setFormData({ ...formData, textColor: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+                placeholder="text-eco-900"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+              <input
+                type="url"
+                value={formData.image?.url || ''}
+                onChange={(e) => setFormData({ ...formData, image: { ...formData.image, url: e.target.value } })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CTA Text</label>
+              <input
+                type="text"
+                value={formData.cta?.text || ''}
+                onChange={(e) => setFormData({ ...formData, cta: { ...formData.cta, text: e.target.value } })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+                placeholder="Shop Now"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CTA Link</label>
+              <input
+                type="url"
+                value={formData.cta?.link || ''}
+                onChange={(e) => setFormData({ ...formData, cta: { ...formData.cta, link: e.target.value } })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+                placeholder="/products"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+              <input
+                type="number"
+                value={formData.displayOrder}
+                onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-400"
+              />
+            </div>
+            <div className="flex items-center space-x-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="rounded border-gray-300"
+                />
+                <span className="text-sm font-medium text-gray-700">Active</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.isFeatured}
+                  onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                  className="rounded border-gray-300"
+                />
+                <span className="text-sm font-medium text-gray-700">Featured</span>
+              </label>
+            </div>
+          </div>
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              type="button"
+              onClick={() => {
+                setShowForm(false);
+                setEditingPromotion(null);
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-4 py-2 bg-eco-500 text-white rounded-lg hover:bg-eco-600 disabled:opacity-50 flex items-center space-x-2"
+            >
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              <span>{editingPromotion ? 'Update' : 'Create'}</span>
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+        {promotions.map((promotion) => (
+          <div key={promotion._id} className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">{promotion.title}</h3>
+                {promotion.subtitle && (
+                  <p className="text-sm text-gray-600">{promotion.subtitle}</p>
+                )}
+              </div>
+              <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                promotion.type === 'banner' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+              }`}>
+                {promotion.type}
+              </span>
+            </div>
+            {promotion.description && (
+              <p className="text-sm text-gray-700 mb-4 line-clamp-2">{promotion.description}</p>
+            )}
+            <div className="flex items-center space-x-2 mb-4">
+              {promotion.isActive && (
+                <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">Active</span>
+              )}
+              {promotion.isFeatured && (
+                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-semibold">Featured</span>
+              )}
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => {
+                  setEditingPromotion(promotion);
+                  setShowForm(true);
+                }}
+                className="flex-1 px-3 py-2 bg-eco-500 text-white rounded-lg hover:bg-eco-600 transition-colors flex items-center justify-center space-x-1"
+              >
+                <Edit className="h-4 w-4" />
+                <span>Edit</span>
+              </button>
+              <button
+                onClick={() => handleDelete(promotion._id)}
+                className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+        {promotions.length === 0 && (
+          <div className="col-span-full text-center py-12 text-gray-500">
+            <Megaphone className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p>No promotions yet. Create your first promotion!</p>
+          </div>
+        )}
       </div>
     </div>
   );

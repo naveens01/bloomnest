@@ -224,6 +224,24 @@ const BrandPage: React.FC<BrandPageProps> = ({
         </div>
         
         <div className="max-w-7xl mx-auto relative z-10">
+          {/* Breadcrumbs */}
+          <nav className="text-sm text-white/90 mb-4">
+            <ol className="flex items-center space-x-2">
+              <li>
+                <Link to="/" className="hover:text-white">
+                  Home
+                </Link>
+              </li>
+              <li>/</li>
+              <li>
+                <Link to="/brands" className="hover:text-white">
+                  Brands
+                </Link>
+              </li>
+              <li>/</li>
+              <li className="font-semibold">{brand.name}</li>
+            </ol>
+          </nav>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
             <div className="animate-fade-in-up">
               {/* Brand Logo and Badge */}
@@ -452,7 +470,7 @@ const BrandPage: React.FC<BrandPageProps> = ({
               </div>
             </div>
           ) : (
-            <div className={`grid gap-4 sm:gap-6 lg:gap-8 ${
+            <div className={`grid gap-4 sm:gap-6 lg:gap-8 items-stretch ${
               viewMode === 'grid' 
                 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
                 : 'grid-cols-1'

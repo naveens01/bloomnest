@@ -15,6 +15,7 @@ const brandRoutes = require('./routes/brands');
 const categoryRoutes = require('./routes/categories');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
+const promotionRoutes = require('./routes/promotions');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorHandler');
@@ -85,6 +86,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/brands', brandRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/promotions', promotionRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
@@ -113,22 +115,67 @@ const mongodbUri = DB_TARGET === 'atlas'
   ? (process.env.MONGODB_URI_ATLAS || process.env.MONGODB_URI_PROD)
   : process.env.MONGODB_URI;
 
-mongoose.connect(mongodbUri)
-  .then(() => {
+if (!mongodbUri) {
+  console.error('❌ MongoDB URI is not defined. Please set MONGODB_URI or MONGODB_URI_ATLAS environment variable.');
+  process.exit(1);
+}
+
+// MongoDB connection options with retry logic
+const mongooseOptions = {
+  serverSelectionTimeoutMS: 10000, // 10 seconds timeout
+  socketTimeoutMS: 45000,
+  connectTimeoutMS: 10000,
+  retryWrites: true,
+  retryReads: true,
+};
+
+// Function to connect to MongoDB with retries
+async function connectToMongoDB() {
+  try {
+    await mongoose.connect(mongodbUri, mongooseOptions);
     console.log(`✅ Connected to MongoDB successfully (${DB_TARGET})`);
-    
-    // Start server
-    app.listen(PORT, () => {
-      console.log(`🚀 BloomNest server running on port ${PORT}`);
-      console.log(`📱 Environment: ${process.env.NODE_ENV}`);
-      console.log(`🗄️ DB Target: ${DB_TARGET}`);
-      console.log(`🔗 API URL: http://localhost:${PORT}/api`);
-    });
-  })
-  .catch((error) => {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
-  });
+    return true;
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error.message);
+    return false;
+  }
+}
+
+// Start server regardless of MongoDB connection status
+// MongoDB will reconnect automatically when available
+app.listen(PORT, async () => {
+  console.log(`🚀 BloomNest server running on port ${PORT}`);
+  console.log(`📱 Environment: ${process.env.NODE_ENV}`);
+  console.log(`🗄️ DB Target: ${DB_TARGET}`);
+  console.log(`🔗 API URL: http://localhost:${PORT}/api`);
+  
+  // Try to connect to MongoDB
+  const connected = await connectToMongoDB();
+  if (!connected) {
+    console.log('⚠️  Server started but MongoDB is not connected. Retrying connection...');
+    // Retry connection every 5 seconds
+    const retryInterval = setInterval(async () => {
+      const connected = await connectToMongoDB();
+      if (connected) {
+        clearInterval(retryInterval);
+        console.log('✅ MongoDB connection established!');
+      }
+    }, 5000);
+  }
+});
+
+// Handle MongoDB connection events
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected. Attempting to reconnect...');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('✅ MongoDB reconnected successfully');
+});
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

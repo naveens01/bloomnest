@@ -23,12 +23,15 @@ export function useHybridProducts(options: UseHybridDataOptions = {}) {
     error: null,
     hasBackendData: false,
   });
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!enableBackend) return;
 
+    let isMounted = true;
+
     const fetchBackendProducts = async () => {
-      if (showLoading) {
+      if (showLoading && isMounted) {
         setState(prev => ({ ...prev, loading: true }));
       }
 
@@ -46,27 +49,64 @@ export function useHybridProducts(options: UseHybridDataOptions = {}) {
           }
         });
 
-        setState({
-          data: combinedProducts,
-          loading: false,
-          error: null,
-          hasBackendData: true,
-        });
+        if (isMounted) {
+          setState({
+            data: combinedProducts,
+            loading: false,
+            error: null,
+            hasBackendData: true,
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch backend products:', error);
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: 'Failed to load additional products',
-          hasBackendData: false,
-        }));
+        if (isMounted) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: 'Failed to load additional products',
+            hasBackendData: false,
+          }));
+        }
       }
     };
 
     fetchBackendProducts();
-  }, [enableBackend, showLoading]);
 
-  return state;
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableBackend, showLoading, refreshKey]);
+
+  // Refetch when page becomes visible (user switches back to tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && enableBackend) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [enableBackend]);
+
+  // Refetch on focus (user clicks back to window)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (enableBackend) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [enableBackend]);
+
+  const refresh = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
+
+  return { ...state, refresh };
 }
 
 export function useHybridBrands(options: UseHybridDataOptions = {}) {
@@ -279,12 +319,15 @@ export function useHybridFeaturedProducts(options: UseHybridDataOptions = {}) {
     error: null,
     hasBackendData: false,
   });
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!enableBackend) return;
 
+    let isMounted = true;
+
     const fetchBackendFeaturedProducts = async () => {
-      if (showLoading) {
+      if (showLoading && isMounted) {
         setState(prev => ({ ...prev, loading: true }));
       }
 
@@ -303,27 +346,64 @@ export function useHybridFeaturedProducts(options: UseHybridDataOptions = {}) {
           )
           .slice(0, 8);
 
-        setState({
-          data: uniqueFeatured,
-          loading: false,
-          error: null,
-          hasBackendData: true,
-        });
+        if (isMounted) {
+          setState({
+            data: uniqueFeatured,
+            loading: false,
+            error: null,
+            hasBackendData: true,
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch backend featured products:', error);
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: 'Failed to load additional featured products',
-          hasBackendData: false,
-        }));
+        if (isMounted) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: 'Failed to load additional featured products',
+            hasBackendData: false,
+          }));
+        }
       }
     };
 
     fetchBackendFeaturedProducts();
-  }, [enableBackend, showLoading]);
 
-  return state;
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableBackend, showLoading, refreshKey]);
+
+  // Refetch when page becomes visible (user switches back to tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && enableBackend) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [enableBackend]);
+
+  // Refetch on focus (user clicks back to window)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (enableBackend) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [enableBackend]);
+
+  const refresh = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
+
+  return { ...state, refresh };
 }
 
 export function useHybridFeaturedBrands(options: UseHybridDataOptions = {}) {

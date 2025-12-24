@@ -80,7 +80,7 @@ const WatchlistPage: React.FC<WatchlistPageProps> = ({ items, onToggleWatchlist 
           ) : (
             <>
               {/* Mobile Grid - Single Column */}
-              <div className="grid grid-cols-1 gap-4 sm:hidden">
+              <div className="grid grid-cols-1 gap-4 sm:hidden items-stretch">
                 {items.map((product, index) => (
                   <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
                     <ProductCard 
