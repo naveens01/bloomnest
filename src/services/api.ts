@@ -1,6 +1,12 @@
+// Debug: Log environment variables at build time
+console.log('🔧 Build-time VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('🔧 Build-time MODE:', import.meta.env.MODE);
+
 const API_BASE_URL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : 'http://localhost:5000/api';
+
+console.log('🚀 Final API_BASE_URL:', API_BASE_URL);
 
 export interface ApiResponse<T> {
   status: string;
