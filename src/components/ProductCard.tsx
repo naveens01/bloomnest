@@ -1,5 +1,5 @@
-import React from 'react';
-import { Star, Heart, Shield } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, Heart, Shield, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 
@@ -12,6 +12,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWatchlist = false, onToggleWatchlist }) => {
   const navigate = useNavigate();
+  const [showNotification, setShowNotification] = useState(false);
   
   const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -27,6 +28,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
   const handleCardClick = () => {
     // Navigate to product detail page using product slug or id
     navigate(`/product/${product.id}`);
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddToCart(product);
+    
+    // Show notification
+    setShowNotification(true);
+    
+    // Hide notification after 2 seconds
+    setTimeout(() => {
+      setShowNotification(false);
+    }, 2000);
   };
 
   return (
@@ -139,10 +153,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
           </div>
           
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart(product);
-            }}
+            onClick={handleAddToCart}
             disabled={!product.inStock}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
               product.inStock
@@ -154,6 +165,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
           </button>
         </div>
       </div>
+      
+      {/* Add to Cart Notification */}
+      {showNotification && (
+        <div className="fixed top-20 right-4 z-50 animate-slide-in-right">
+          <div className="bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2">
+            <CheckCircle className="h-5 w-5" />
+            <span className="font-medium">Added to cart!</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
