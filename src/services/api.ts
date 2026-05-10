@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : 'http://localhost:5000/api';
 
 export interface ApiResponse<T> {
   status: string;
@@ -295,12 +297,14 @@ const normalizeImageUrl = (url: string | undefined): string => {
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
+  // Get backend URL from environment or use localhost
+  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   // If starts with /uploads, prepend backend URL
   if (url.startsWith('/uploads')) {
-    return `http://localhost:5000${url}`;
+    return `${backendUrl}${url}`;
   }
   // Otherwise, assume it's a relative path from uploads
-  return `http://localhost:5000/uploads/${url}`;
+  return `${backendUrl}/uploads/${url}`;
 };
 
 // Utility function to transform backend data to frontend format
@@ -344,13 +348,15 @@ export const transformBackendBrand = (backendBrand: BackendBrand) => {
   
   // Only normalize if it's not already a data URI and not a full URL
   if (logoUrl && !logoUrl.startsWith('data:') && !logoUrl.startsWith('http://') && !logoUrl.startsWith('https://')) {
+    // Get backend URL from environment or use localhost
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     // Handle legacy file paths
     if (logoUrl.startsWith('/uploads')) {
-      normalizedLogoUrl = `http://localhost:5000${logoUrl}`;
+      normalizedLogoUrl = `${backendUrl}${logoUrl}`;
     } else if (logoUrl.includes('brands/')) {
-      normalizedLogoUrl = `http://localhost:5000/uploads/${logoUrl}`;
+      normalizedLogoUrl = `${backendUrl}/uploads/${logoUrl}`;
     } else {
-      normalizedLogoUrl = `http://localhost:5000/uploads/brands/${logoUrl}`;
+      normalizedLogoUrl = `${backendUrl}/uploads/brands/${logoUrl}`;
     }
   }
   
