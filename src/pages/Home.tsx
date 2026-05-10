@@ -263,10 +263,13 @@ const Home: React.FC<HomeProps> = ({
               </span>
             </div>
             
-            <button className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 mx-auto group hover:shadow-eco-glow-lg rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-eco-glow animate-fade-in-up animation-delay-800">
+            <Link
+              to="/products"
+              className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 mx-auto group hover:shadow-eco-glow-lg rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-eco-glow animate-fade-in-up animation-delay-800"
+            >
               <span>View All Products</span>
               <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-2 transition-transform duration-300" />
-            </button>
+            </Link>
             
             <p className="text-eco-600 text-xs sm:text-sm mt-3 sm:mt-4 px-4 animate-fade-in-up animation-delay-1000">
               Join thousands of eco-conscious shoppers making sustainable choices

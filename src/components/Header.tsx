@@ -53,17 +53,17 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
     <>
       {/* Enhanced Header with more animations */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-eco-200 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            {/* Enhanced Logo with animations - Fixed spacing */}
-            <div className="flex items-center space-x-3 group cursor-pointer hover:scale-105 transition-transform duration-300">
+            {/* Enhanced Logo with animations - Mobile optimized */}
+            <div className="flex items-center space-x-1.5 sm:space-x-3 group cursor-pointer hover:scale-105 transition-transform duration-300">
               <div className="relative">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-eco-500 to-nature-500 rounded-2xl flex items-center justify-center shadow-eco-glow group-hover:shadow-eco-glow-lg transition-all duration-300 animate-pulse-slow">
-                  <Leaf className="h-6 w-6 sm:h-7 sm:w-7 text-white animate-spin-slow" />
+                <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-eco-500 to-nature-500 rounded-2xl flex items-center justify-center shadow-eco-glow group-hover:shadow-eco-glow-lg transition-all duration-300 animate-pulse-slow">
+                  <Leaf className="h-5 w-5 sm:h-7 sm:w-7 text-white animate-spin-slow" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-nature-400 rounded-full animate-ping"></div>
+                <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-nature-400 rounded-full animate-ping"></div>
               </div>
-              <span className="text-xl sm:text-2xl font-bold text-gradient-eco group-hover:scale-105 transition-transform duration-300">
+              <span className="text-base sm:text-2xl font-bold text-gradient-eco group-hover:scale-105 transition-transform duration-300">
                 BloomNest
               </span>
             </div>
@@ -102,16 +102,16 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
               </div>
             </div>
 
-            {/* Enhanced Right Section with more animations - Fixed spacing */}
-            <div className="flex items-center space-x-3 sm:space-x-4 lg:space-x-6">
-              {/* Enhanced Watchlist Button */}
-              <button 
+            {/* Enhanced Right Section - Mobile optimized */}
+            <div className="flex items-center space-x-1.5 sm:space-x-4 lg:space-x-6">
+              {/* Enhanced Watchlist Button - Mobile optimized */}
+              <button
                 onClick={() => navigate('/watchlist')}
-                className="relative group p-2 sm:p-3 rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow"
+                className="relative group p-1.5 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow"
               >
-                <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-eco-600 group-hover:scale-110 transition-transform duration-300 animate-pulse-slow" />
+                <Heart className="h-4 w-4 sm:h-6 sm:w-6 text-eco-600 group-hover:scale-110 transition-transform duration-300 animate-pulse-slow" />
                 {watchlistCount > 0 && (
-                  <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+                  <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] sm:text-xs font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center animate-bounce">
                     {watchlistCount}
                   </div>
                 )}
@@ -122,14 +122,14 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
                 </div>
               </button>
 
-              {/* Enhanced Cart Button */}
+              {/* Enhanced Cart Button - Mobile optimized */}
               <button
                 onClick={onCartClick}
-                className="relative group p-2 sm:p-3 rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow"
+                className="relative group p-1.5 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow"
               >
-                <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-eco-600 group-hover:scale-110 transition-transform duration-300" />
+                <ShoppingCart className="h-4 w-4 sm:h-6 sm:w-6 text-eco-600 group-hover:scale-110 transition-transform duration-300" />
                 {cart.length > 0 && (
-                  <div className="absolute -top-2 -right-2 bg-gradient-to-r from-eco-500 to-nature-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+                  <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-gradient-to-r from-eco-500 to-nature-500 text-white text-[10px] sm:text-xs font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center animate-bounce">
                     {cart.length}
                   </div>
                 )}
@@ -137,16 +137,16 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-eco-400/20 to-nature-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-lg"></div>
               </button>
 
-              {/* Enhanced User Profile */}
+              {/* Enhanced User Profile - Mobile optimized */}
               <div className="relative group">
-                <button className="flex items-center space-x-2 p-2 sm:p-3 rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                <button className="flex items-center space-x-1 sm:space-x-2 p-1.5 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow">
+                  <div className="w-7 h-7 sm:w-10 sm:h-10 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <User className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-white" />
                   </div>
-                  <span className="hidden sm:block text-eco-700 font-medium group-hover:text-eco-600 transition-colors duration-300">
+                  <span className="hidden md:block text-eco-700 font-medium group-hover:text-eco-600 transition-colors duration-300 text-sm">
                     {currentUser ? currentUser.firstName || 'Account' : 'Sign In'}
                   </span>
-                  <ChevronDown className="h-4 w-4 text-eco-600 group-hover:rotate-180 transition-transform duration-300" />
+                  <ChevronDown className="hidden sm:block h-4 w-4 text-eco-600 group-hover:rotate-180 transition-transform duration-300" />
                 </button>
                 
                 {/* Enhanced dropdown with animations */}
@@ -193,12 +193,12 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
                 </div>
               </div>
 
-              {/* Enhanced Mobile Menu Button */}
+              {/* Enhanced Mobile Menu Button - Mobile optimized */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow"
+                className="md:hidden p-1.5 rounded-xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow"
               >
-                <Menu className="h-6 w-6 text-eco-600" />
+                <Menu className="h-5 w-5 text-eco-600" />
               </button>
             </div>
           </div>
