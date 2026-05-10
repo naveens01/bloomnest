@@ -167,7 +167,7 @@ const SigninPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4 pt-24 sm:pt-28 lg:pt-32">
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4 pt-32 sm:pt-36 lg:pt-40">
         <div className="w-full max-w-md">
           {/* Enhanced Header with better spacing */}
           <div className="text-center mb-10 animate-fade-in-up">
