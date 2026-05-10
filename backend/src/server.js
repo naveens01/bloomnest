@@ -36,8 +36,12 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
+  origin: process.env.NODE_ENV === 'production'
+    ? [
+        'https://bloomnest-pi.vercel.app',
+        'https://bloomnest-naveens01.vercel.app',
+        process.env.FRONTEND_URL
+      ].filter(Boolean)
     : ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true
 }));
