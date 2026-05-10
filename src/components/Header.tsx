@@ -55,8 +55,8 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-eco-200 shadow-lg">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            {/* Enhanced Logo with animations - Mobile optimized */}
-            <div className="flex items-center space-x-1.5 sm:space-x-3 group cursor-pointer hover:scale-105 transition-transform duration-300">
+            {/* Enhanced Logo with animations - Mobile optimized - Clickable to home */}
+            <Link to="/" className="flex items-center space-x-1.5 sm:space-x-3 group cursor-pointer hover:scale-105 transition-transform duration-300">
               <div className="relative">
                 <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-eco-500 to-nature-500 rounded-2xl flex items-center justify-center shadow-eco-glow group-hover:shadow-eco-glow-lg transition-all duration-300 animate-pulse-slow">
                   <Leaf className="h-5 w-5 sm:h-7 sm:w-7 text-white animate-spin-slow" />
@@ -66,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
               <span className="text-base sm:text-2xl font-bold text-gradient-eco group-hover:scale-105 transition-transform duration-300">
                 BloomNest
               </span>
-            </div>
+            </Link>
 
             {/* Enhanced Navigation with more animations - Fixed spacing */}
             <nav className="hidden md:flex items-center space-x-10 ml-8">

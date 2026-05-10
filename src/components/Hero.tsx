@@ -1,7 +1,15 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight, Leaf, Recycle, Heart, Sparkles, Star, Globe, Zap, Award, Users, TrendingUp, Shield } from 'lucide-react';
 
 const Hero: React.FC = () => {
+  const scrollToFooter = () => {
+    const footer = document.querySelector('footer');
+    if (footer) {
+      footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <section className="relative bg-eco-gradient py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Enhanced Animated Background Elements */}
@@ -93,14 +101,20 @@ const Hero: React.FC = () => {
 
             {/* Enhanced CTA Buttons with more animations */}
             <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up animation-delay-400">
-              <button className="btn-eco px-10 py-4 text-lg font-semibold flex items-center justify-center space-x-3 group hover:scale-105 transition-all duration-300 animate-pulse-slow">
+              <Link
+                to="/products"
+                className="btn-eco px-10 py-4 text-lg font-semibold flex items-center justify-center space-x-3 group hover:scale-105 transition-all duration-300 animate-pulse-slow relative"
+              >
                 <span>Shop Now</span>
                 <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform duration-300 animate-bounce-slow" />
                 {/* Enhanced button glow effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-eco-400/20 to-nature-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl blur-xl"></div>
-              </button>
+              </Link>
               
-              <button className="border-2 border-eco-500 text-eco-600 hover:bg-eco-500 hover:text-white px-10 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-eco-glow group">
+              <button
+                onClick={scrollToFooter}
+                className="border-2 border-eco-500 text-eco-600 hover:bg-eco-500 hover:text-white px-10 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-eco-glow group"
+              >
                 <span className="flex items-center space-x-2">
                   <span>Learn More</span>
                   <Leaf className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
