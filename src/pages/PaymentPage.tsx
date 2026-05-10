@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../config/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ShieldCheck, CreditCard, Lock, CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -54,7 +55,7 @@ const PaymentPage = () => {
       }
 
       // Create Razorpay order
-      const response = await fetch('http://localhost:5000/api/payment/create-order', {
+      const response = await fetch('API_ENDPOINTS.createOrder', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,7 +132,7 @@ const PaymentPage = () => {
         handler: async function (response: any) {
           try {
             // Verify payment
-            const verifyResponse = await fetch('http://localhost:5000/api/payment/verify', {
+            const verifyResponse = await fetch('API_ENDPOINTS.verifyPayment', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -204,7 +205,7 @@ const PaymentPage = () => {
       }
 
       // Update order to COD
-      const response = await fetch(`http://localhost:5000/api/orders/${orderData.orderId}`, {
+      const response = await fetch(`API_ENDPOINTS.orders/${orderData.orderId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { CartItem } from '../types';
 import { CreditCard, MapPin, Package, ArrowLeft, Check, Truck, Lock } from 'lucide-react';
+import { API_ENDPOINTS } from '../config/api';
 
 interface CheckoutPageProps {
   cart: CartItem[];
@@ -64,7 +65,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cart, onClearCart }) => {
       }
 
       try {
-        const response = await fetch('http://localhost:5000/api/auth/me', {
+        const response = await fetch(API_ENDPOINTS.me, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -121,7 +122,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cart, onClearCart }) => {
       const orderNumber = `BN${Date.now()}`;
 
       // Create order on backend
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await fetch(API_ENDPOINTS.orders, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

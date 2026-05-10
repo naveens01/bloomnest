@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { Link } from 'react-router-dom';
 import { adminApi, brandApi, categoryApi, productApi, transformBackendCategory, transformBackendBrand, transformBackendProduct } from '../services/api';
 import { BackendCategory, BackendBrand, BackendProduct } from '../services/api';
@@ -362,8 +363,8 @@ const CategoryCard: React.FC<{
   const getImageUrl = (url: string | undefined) => {
     if (!url) return null;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
-    return `http://localhost:5000/uploads/categories/${url}`;
+    if (url.startsWith('/uploads')) return `API_BASE_URL${url}`;
+    return `API_BASE_URL/uploads/categories/${url}`;
   };
   const imageUrl = getImageUrl(category.image?.url);
 
@@ -673,8 +674,8 @@ const BrandCard: React.FC<{
   const getImageUrl = (url: string | undefined) => {
     if (!url) return null;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
-    return `http://localhost:5000/uploads/brands/${url}`;
+    if (url.startsWith('/uploads')) return `API_BASE_URL${url}`;
+    return `API_BASE_URL/uploads/brands/${url}`;
   };
   const logoUrl = getImageUrl(brand.logo?.url);
 
@@ -1372,8 +1373,8 @@ const ProductCard: React.FC<{
   const getImageUrl = (url: string | undefined) => {
     if (!url) return null;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
-    return `http://localhost:5000/uploads/products/${url}`;
+    if (url.startsWith('/uploads')) return `API_BASE_URL${url}`;
+    return `API_BASE_URL/uploads/products/${url}`;
   };
   const imageUrl = getImageUrl(product.images?.[0]?.url);
 

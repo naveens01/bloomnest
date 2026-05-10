@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { Package, Search, Filter, SlidersHorizontal } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -34,7 +35,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/products?limit=100&sort=${sortBy}`);
+      const response = await fetch(`${API_BASE_URL}/api/products?limit=100&sort=${sortBy}`);
       if (!response.ok) throw new Error('Failed to fetch products');
       const data = await response.json();
       setProducts(data.data?.products || data.products || []);
@@ -49,7 +50,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/categories');
+      const response = await fetch('${API_BASE_URL}/api/categories');
       if (!response.ok) throw new Error('Failed to fetch categories');
       const data = await response.json();
       setCategories(data.categories || []);
