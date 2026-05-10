@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
 import PromotionBanner from '../components/PromotionBanner';
 import CategoryGrid from '../components/CategoryGrid';
