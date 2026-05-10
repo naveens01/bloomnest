@@ -3,7 +3,8 @@ import { useParams, Navigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { CartItem, Product } from '../types';
 import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart, Filter, Search, Grid, List, ShoppingBag, TrendingUp, Shield, Users, Loader2 } from 'lucide-react';
-import { useHybridCategories, useHybridProducts } from '../hooks/useHybridData';
+import { useHybridCategories } from '../hooks/useHybridData';
+import { categoryApi, transformBackendProduct, BackendProduct, PaginationInfo } from '../services/api';
 
 interface CategoryPageProps {
   cart: CartItem[];
@@ -23,11 +24,13 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   const { categoryId } = useParams<{ categoryId: string }>();
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [page, setPage] = useState(1);
+  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiPagination, setApiPagination] = useState<PaginationInfo | null>(null);
   
   // Use hybrid data hooks
   const { data: categories, loading: categoriesLoading, refresh: refreshCategories } = useHybridCategories();
-  const { data: allProducts, loading: productsLoading } = useHybridProducts();
   
   // State to track if we've waited enough for categories to load
   const [hasWaitedForCategories, setHasWaitedForCategories] = useState(false);
@@ -142,27 +145,8 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   }
 
   const filteredProducts = useMemo(() => {
-    // Filter products by category ID, slug, or name
-    let filtered = allProducts.filter(product => {
-      // Check if product has categoryId (backend product)
-      if ((product as any).categoryId) {
-        return (product as any).categoryId === category.id || (product as any).categoryId === categoryId;
-      }
-      // For static products, category is a string like "personal-care"
-      // Match by category slug or name
-      const productCategory = product.category.toLowerCase().replace(/\s+/g, '-');
-      const categorySlug = (category as any).slug || category.id.toLowerCase().replace(/\s+/g, '-');
-      const categoryIdNormalized = categoryId?.toLowerCase().replace(/\s+/g, '-');
-      const categoryNameSlug = category.name.toLowerCase().replace(/\s+/g, '-');
-      
-      return productCategory === categoryIdNormalized || 
-             productCategory === categorySlug ||
-             productCategory === categoryNameSlug ||
-             product.category === categoryId ||
-             product.category === category.name.toLowerCase();
-    });
+    let filtered = [...apiProducts];
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(product =>
@@ -173,27 +157,40 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
       );
     }
 
-    // Sort products
-    switch (sortBy) {
-      case 'price-low':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'newest':
-        filtered.sort((a, b) => Math.random() - 0.5); // Simulate newest
-        break;
-      default:
-        // Featured - keep original order
-        break;
-    }
-
     return filtered;
-  }, [categoryId, searchQuery, sortBy, allProducts, category]);
+  }, [searchQuery, apiProducts]);
+
+  useEffect(() => {
+    if (!category) return;
+
+    const loadCategoryProducts = async () => {
+      try {
+        setApiLoading(true);
+        const slug = (category as any).slug || categoryId || '';
+        const sortParam =
+          sortBy === 'price-low' || sortBy === 'price-high' || sortBy === 'rating' || sortBy === 'newest'
+            ? sortBy
+            : 'newest';
+
+        const response = await categoryApi.getProducts(slug, page, 12, sortParam);
+        const backendProducts: BackendProduct[] = response.data.products || [];
+        setApiProducts(backendProducts.map(transformBackendProduct));
+        setApiPagination(response.data.pagination || null);
+      } catch (error) {
+        console.error('Failed loading category products:', error);
+        setApiProducts([]);
+        setApiPagination(null);
+      } finally {
+        setApiLoading(false);
+      }
+    };
+
+    loadCategoryProducts();
+  }, [category, categoryId, page, sortBy]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [categoryId, sortBy]);
 
   return (
     <main className="min-h-screen bg-eco-pattern">
@@ -375,7 +372,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
             </div>
           </div>
 
-          {productsLoading ? (
+          {apiLoading ? (
             <div className="flex justify-center items-center py-20">
               <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
             </div>
@@ -415,6 +412,28 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
                   />
                 </div>
               ))}
+            </div>
+          )}
+
+          {apiPagination && apiPagination.totalPages > 1 && (
+            <div className="flex justify-center items-center gap-3 mt-10">
+              <button
+                onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                disabled={!apiPagination.hasPrev}
+                className="px-4 py-2 rounded-xl border border-eco-200 disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span className="text-eco-700 font-medium">
+                Page {apiPagination.currentPage} / {apiPagination.totalPages}
+              </span>
+              <button
+                onClick={() => setPage(prev => prev + 1)}
+                disabled={!apiPagination.hasNext}
+                className="px-4 py-2 rounded-xl border border-eco-200 disabled:opacity-50"
+              >
+                Next
+              </button>
             </div>
           )}
         </div>

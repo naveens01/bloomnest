@@ -23,9 +23,12 @@ export function useHybridProducts(options: UseHybridDataOptions = {}) {
     error: null,
     hasBackendData: false,
   });
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!enableBackend) return;
+
+    let isMounted = true;
 
     const fetchBackendProducts = async () => {
       if (showLoading) {
@@ -34,39 +37,86 @@ export function useHybridProducts(options: UseHybridDataOptions = {}) {
 
       try {
         const response = await productApi.getAll({ limit: 50 });
+        if (!isMounted) return;
         const backendProducts = response.data.products.map(transformBackendProduct);
-        
-        // Combine static and backend products, avoiding duplicates
-        const combinedProducts = [...products];
-        const existingIds = new Set(products.map(p => p.id));
-        
-        backendProducts.forEach(backendProduct => {
-          if (!existingIds.has(backendProduct.id)) {
-            combinedProducts.push(backendProduct);
+
+        // Prioritize backend data, then append unique static fallback products
+        const combinedProducts: Product[] = [...backendProducts];
+        const existingIds = new Set(backendProducts.map(p => p.id));
+        const existingSlugs = new Set(backendProducts.map(p => p.slug || '').filter(Boolean));
+        const existingNameBrand = new Set(
+          backendProducts.map(p => `${p.name.toLowerCase()}::${p.brand.toLowerCase()}`)
+        );
+
+        products.forEach(staticProduct => {
+          const staticNameBrand = `${staticProduct.name.toLowerCase()}::${staticProduct.brand.toLowerCase()}`;
+          if (
+            !existingIds.has(staticProduct.id) &&
+            !existingSlugs.has(staticProduct.slug || '') &&
+            !existingNameBrand.has(staticNameBrand)
+          ) {
+            combinedProducts.push(staticProduct);
+            existingIds.add(staticProduct.id);
+            if (staticProduct.slug) existingSlugs.add(staticProduct.slug);
+            existingNameBrand.add(staticNameBrand);
           }
         });
 
-        setState({
-          data: combinedProducts,
-          loading: false,
-          error: null,
-          hasBackendData: true,
-        });
+        if (isMounted) {
+          setState({
+            data: combinedProducts,
+            loading: false,
+            error: null,
+            hasBackendData: true,
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch backend products:', error);
-        setState(prev => ({
-          ...prev,
-          loading: false,
-          error: 'Failed to load additional products',
-          hasBackendData: false,
-        }));
+        if (isMounted) {
+          setState(prev => ({
+            ...prev,
+            loading: false,
+            error: 'Failed to load additional products',
+            hasBackendData: false,
+          }));
+        }
       }
     };
 
     fetchBackendProducts();
-  }, [enableBackend, showLoading]);
 
-  return state;
+    return () => {
+      isMounted = false;
+    };
+  }, [enableBackend, showLoading, refreshKey]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && enableBackend) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [enableBackend]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (enableBackend) {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [enableBackend]);
+
+  const refresh = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
+
+  return { ...state, refresh };
 }
 
 export function useHybridBrands(options: UseHybridDataOptions = {}) {
@@ -95,18 +145,20 @@ export function useHybridBrands(options: UseHybridDataOptions = {}) {
 
         const backendBrands = response.data.brands.map(transformBackendBrand);
         
-        // Combine static and backend brands, avoiding duplicates by ID
-        const combinedBrands = [...brands];
-        const existingIds = new Set(brands.map(b => b.id));
-        const existingSlugs = new Set(brands.map(b => (b as any).slug || '').filter(Boolean));
+        // Prioritize backend brands, then append unique static fallback brands
+        const combinedBrands: Brand[] = [...backendBrands];
+        const existingIds = new Set(backendBrands.map(b => b.id));
+        const existingSlugs = new Set(backendBrands.map(b => (b as any).slug || '').filter(Boolean));
+        const existingNames = new Set(backendBrands.map(b => b.name.toLowerCase()));
         
-        backendBrands.forEach(backendBrand => {
-          // Check by ID first, then by slug to avoid duplicates
-          const brandSlug = (backendBrand as any).slug || '';
-          if (!existingIds.has(backendBrand.id) && !existingSlugs.has(brandSlug)) {
-            combinedBrands.push(backendBrand);
-            existingIds.add(backendBrand.id);
+        brands.forEach(staticBrand => {
+          const brandSlug = (staticBrand as any).slug || '';
+          const lowerName = staticBrand.name.toLowerCase();
+          if (!existingIds.has(staticBrand.id) && !existingSlugs.has(brandSlug) && !existingNames.has(lowerName)) {
+            combinedBrands.push(staticBrand);
+            existingIds.add(staticBrand.id);
             if (brandSlug) existingSlugs.add(brandSlug);
+            existingNames.add(lowerName);
           }
         });
 
@@ -196,18 +248,20 @@ export function useHybridCategories(options: UseHybridDataOptions = {}) {
 
         const backendCategories = response.data.categories.map(transformBackendCategory);
         
-        // Combine static and backend categories, avoiding duplicates by ID
-        const combinedCategories = [...categories];
-        const existingIds = new Set(categories.map(c => c.id));
-        const existingSlugs = new Set(categories.map(c => (c as any).slug || '').filter(Boolean));
+        // Prioritize backend categories, then append unique static fallback categories
+        const combinedCategories: Category[] = [...backendCategories];
+        const existingIds = new Set(backendCategories.map(c => c.id));
+        const existingSlugs = new Set(backendCategories.map(c => (c as any).slug || '').filter(Boolean));
+        const existingNames = new Set(backendCategories.map(c => c.name.toLowerCase()));
         
-        backendCategories.forEach(backendCategory => {
-          // Check by ID first, then by slug to avoid duplicates
-          const categorySlug = (backendCategory as any).slug || '';
-          if (!existingIds.has(backendCategory.id) && !existingSlugs.has(categorySlug)) {
-            combinedCategories.push(backendCategory);
-            existingIds.add(backendCategory.id);
+        categories.forEach(staticCategory => {
+          const categorySlug = (staticCategory as any).slug || '';
+          const lowerName = staticCategory.name.toLowerCase();
+          if (!existingIds.has(staticCategory.id) && !existingSlugs.has(categorySlug) && !existingNames.has(lowerName)) {
+            combinedCategories.push(staticCategory);
+            existingIds.add(staticCategory.id);
             if (categorySlug) existingSlugs.add(categorySlug);
+            existingNames.add(lowerName);
           }
         });
 
@@ -274,7 +328,7 @@ export function useHybridCategories(options: UseHybridDataOptions = {}) {
 export function useHybridFeaturedProducts(options: UseHybridDataOptions = {}) {
   const { enableBackend = true, showLoading = true } = options;
   const [state, setState] = useState<HybridDataState<Product>>({
-    data: products.filter(p => p.rating >= 4.5).slice(0, 8), // Static featured products
+    data: products.slice(0, 6),
     loading: false,
     error: null,
     hasBackendData: false,
@@ -289,25 +343,21 @@ export function useHybridFeaturedProducts(options: UseHybridDataOptions = {}) {
       }
 
       try {
-        const response = await productApi.getFeatured(8);
+        const response = await productApi.getFeatured(6);
         const backendFeaturedProducts = response.data.products.map(transformBackendProduct);
         
-        // Combine static and backend featured products
-        const staticFeatured = products.filter(p => p.rating >= 4.5).slice(0, 4);
-        const combinedFeatured = [...staticFeatured, ...backendFeaturedProducts];
-        
-        // Remove duplicates and limit to 8
-        const uniqueFeatured = combinedFeatured
-          .filter((product, index, self) => 
-            index === self.findIndex(p => p.id === product.id)
-          )
-          .slice(0, 8);
+        // Admin has full control: show ONLY backend-featured products (max 6)
+        // If backend has featured products, use them exclusively
+        // Otherwise fall back to static products
+        const finalProducts = backendFeaturedProducts.length > 0
+          ? backendFeaturedProducts.slice(0, 6)
+          : products.slice(0, 6);
 
         setState({
-          data: uniqueFeatured,
+          data: finalProducts,
           loading: false,
           error: null,
-          hasBackendData: true,
+          hasBackendData: backendFeaturedProducts.length > 0,
         });
       } catch (error) {
         console.error('Failed to fetch backend featured products:', error);
@@ -384,7 +434,7 @@ export function useHybridFeaturedBrands(options: UseHybridDataOptions = {}) {
 export function useHybridFeaturedCategories(options: UseHybridDataOptions = {}) {
   const { enableBackend = true, showLoading = true } = options;
   const [state, setState] = useState<HybridDataState<Category>>({
-    data: categories.filter(c => c.count > 50).slice(0, 6), // Static featured categories
+    data: categories.slice(0, 6),
     loading: false,
     error: null,
     hasBackendData: false,
@@ -402,22 +452,18 @@ export function useHybridFeaturedCategories(options: UseHybridDataOptions = {}) 
         const response = await categoryApi.getFeatured();
         const backendFeaturedCategories = response.data.categories.map(transformBackendCategory);
         
-        // Combine static and backend featured categories
-        const staticFeatured = categories.filter(c => c.count > 50).slice(0, 3);
-        const combinedFeatured = [...staticFeatured, ...backendFeaturedCategories];
-        
-        // Remove duplicates and limit to 6
-        const uniqueFeatured = combinedFeatured
-          .filter((category, index, self) => 
-            index === self.findIndex(c => c.id === category.id)
-          )
-          .slice(0, 6);
+        // Admin has full control: show ONLY backend-featured categories (max 6)
+        // If backend has featured categories, use them exclusively
+        // Otherwise fall back to static categories
+        const finalCategories = backendFeaturedCategories.length > 0
+          ? backendFeaturedCategories.slice(0, 6)
+          : categories.slice(0, 6);
 
         setState({
-          data: uniqueFeatured,
+          data: finalCategories,
           loading: false,
           error: null,
-          hasBackendData: true,
+          hasBackendData: backendFeaturedCategories.length > 0,
         });
       } catch (error) {
         console.error('Failed to fetch backend featured categories:', error);

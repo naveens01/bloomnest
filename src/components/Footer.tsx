@@ -112,8 +112,7 @@ const Footer: React.FC = () => {
                 'Home & Living',
                 'Personal Care',
                 'Fashion',
-                'Food & Beverages',
-                'Electronics'
+                'Food & Beverages'
               ].map((category, index) => (
                 <li key={category} style={{ animationDelay: `${index * 100}ms` }}>
                   <Link
@@ -138,9 +137,9 @@ const Footer: React.FC = () => {
             </h3>
             <div className="space-y-4">
               {[
-                { icon: Mail, text: 'hello@bloomnest.com', href: 'mailto:hello@bloomnest.com' },
-                { icon: Phone, text: '+1 (555) 123-4567', href: 'tel:+15551234567' },
-                { icon: MapPin, text: '123 Eco Street, Green City, GC 12345', href: '#' }
+                { icon: Mail, text: 'bloomnest.india@gmail.com', href: 'mailto:bloomnest.india@gmail.com' },
+                { icon: Phone, text: '+91 9994509575', href: 'tel:+919994509575' },
+                { icon: MapPin, text: 'Tirupur, Tamil Nadu, India', href: '#' }
               ].map((contact, index) => (
                 <a
                   key={contact.text}

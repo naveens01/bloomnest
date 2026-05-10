@@ -102,7 +102,8 @@ const SigninPage: React.FC = () => {
 
       setSuccess(true);
       setTimeout(() => {
-        navigate('/');
+        const userRole = data?.data?.user?.role;
+        navigate(userRole === 'admin' ? '/admin' : '/');
       }, 2000);
     } catch (err: any) {
       console.error('Sign in error:', err);

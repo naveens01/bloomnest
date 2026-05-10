@@ -22,6 +22,12 @@ const router = express.Router();
 // Apply admin middleware to all routes
 router.use(protect, adminOnly);
 
+const parseBoolean = (value) => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value.toLowerCase() === 'true';
+  return false;
+};
+
 // ==================== DASHBOARD ====================
 // @desc    Get admin dashboard stats
 // @route   GET /api/admin/dashboard
@@ -240,6 +246,16 @@ router.get('/products', asyncHandler(async (req, res) => {
 // @access  Admin only
 router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
   const productData = req.body;
+  const isFeaturedRequested = parseBoolean(productData.isFeatured);
+  if (isFeaturedRequested) {
+    const featuredCount = await Product.countDocuments({ isFeatured: true, isActive: true, status: 'published' });
+    if (featuredCount >= 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 6 featured products are allowed on home. Unfeature one product before adding another featured product.'
+      });
+    }
+  }
   
   // Parse nested form data (price.current, inventory.stock, etc.)
   if (productData['price.current']) {
@@ -297,6 +313,24 @@ router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
 // @access  Admin only
 router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) => {
   const productData = req.body;
+  const existingProduct = await Product.findById(req.params.id);
+  if (!existingProduct) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Product not found'
+    });
+  }
+
+  const isFeaturedRequested = parseBoolean(productData.isFeatured);
+  if (isFeaturedRequested && !existingProduct.isFeatured) {
+    const featuredCount = await Product.countDocuments({ isFeatured: true, isActive: true, status: 'published' });
+    if (featuredCount >= 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 6 featured products are allowed on home. Unfeature one product before adding another featured product.'
+      });
+    }
+  }
   
   // Parse nested form data (price.current, inventory.stock, etc.)
   if (productData['price.current']) {
@@ -328,7 +362,6 @@ router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) =
   // Process uploaded images if any
   const uploadedFiles = processUploadedFiles(req, 'products');
   if (uploadedFiles.length > 0) {
-    const existingProduct = await Product.findById(req.params.id);
     if (existingProduct && existingProduct.images.length > 0) {
       // Merge existing and new images
       productData.images = [
@@ -613,6 +646,16 @@ router.get('/categories', asyncHandler(async (req, res) => {
 // @access  Admin only
 router.post('/categories', categoryImageUpload, asyncHandler(async (req, res) => {
   const categoryData = req.body;
+  const isFeaturedRequested = parseBoolean(categoryData.isFeatured);
+  if (isFeaturedRequested) {
+    const featuredCount = await Category.countDocuments({ isFeatured: true, isActive: true });
+    if (featuredCount >= 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 6 featured categories are allowed on home. Unfeature one category before adding another featured category.'
+      });
+    }
+  }
   
   // Process uploaded image if any
   if (req.file) {
@@ -640,6 +683,24 @@ router.post('/categories', categoryImageUpload, asyncHandler(async (req, res) =>
 // @access  Admin only
 router.put('/categories/:id', categoryImageUpload, asyncHandler(async (req, res) => {
   const categoryData = req.body;
+  const existingCategory = await Category.findById(req.params.id);
+  if (!existingCategory) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Category not found'
+    });
+  }
+
+  const isFeaturedRequested = parseBoolean(categoryData.isFeatured);
+  if (isFeaturedRequested && !existingCategory.isFeatured) {
+    const featuredCount = await Category.countDocuments({ isFeatured: true, isActive: true });
+    if (featuredCount >= 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 6 featured categories are allowed on home. Unfeature one category before adding another featured category.'
+      });
+    }
+  }
   
   // Process uploaded image if any
   if (req.file) {
@@ -658,13 +719,6 @@ router.put('/categories/:id', categoryImageUpload, asyncHandler(async (req, res)
     categoryData,
     { new: true, runValidators: true }
   );
-
-  if (!category) {
-    return res.status(404).json({
-      status: 'error',
-      message: 'Category not found'
-    });
-  }
 
   res.status(200).json({
     status: 'success',
