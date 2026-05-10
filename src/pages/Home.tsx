@@ -5,7 +5,7 @@ import CategoryGrid from '../components/CategoryGrid';
 import BrandGrid from '../components/BrandGrid';
 import PromotionCards from '../components/PromotionCards';
 import ProductCard from '../components/ProductCard';
-import { useHybridProducts, useHybridCategories, useHybridBrands, useHybridFeaturedProducts } from '../hooks/useHybridData';
+import { useHybridProducts, useHybridCategories, useHybridBrands, useHybridFeaturedProducts, useHybridFeaturedCategories } from '../hooks/useHybridData';
 import { CartItem, Product } from '../types';
 import { Leaf, Sparkles, ArrowRight, Star, TrendingUp, ShoppingCart } from 'lucide-react';
 
@@ -29,9 +29,21 @@ const Home: React.FC<HomeProps> = ({
   const { data: allCategories, loading: categoriesLoading, hasBackendData: hasBackendCategories } = useHybridCategories();
   const { data: allBrands, loading: brandsLoading, hasBackendData: hasBackendBrands } = useHybridBrands();
   const { data: featuredProducts, loading: featuredLoading, hasBackendData: hasBackendFeatured } = useHybridFeaturedProducts();
+  const { data: featuredCategories } = useHybridFeaturedCategories();
+  const homeCategories = useMemo(
+    () => (featuredCategories.length > 0 ? featuredCategories.slice(0, 6) : allCategories.slice(0, 6)),
+    [featuredCategories, allCategories]
+  );
 
   const filteredProducts = useMemo(() => {
-    let filtered = allProducts;
+    // Default home experience should highlight backend-managed featured products.
+    // If user applies category/search filters, fall back to all products.
+    const sourceProducts =
+      selectedCategory === 'all' && !searchQuery.trim() && featuredProducts.length > 0
+        ? featuredProducts
+        : allProducts;
+
+    let filtered = sourceProducts;
 
     // Filter by category
     if (selectedCategory !== 'all') {
@@ -49,32 +61,18 @@ const Home: React.FC<HomeProps> = ({
       );
     }
 
-    return filtered.slice(0, 8); // Show only 8 products on home page
-  }, [selectedCategory, searchQuery, allProducts]);
+    return filtered.slice(0, 6); // Keep home focused: only 6 featured cards
+  }, [selectedCategory, searchQuery, allProducts, featuredProducts]);
 
   return (
     <main>
       <Hero />
       
       <PromotionBanner />
-      
-      <CategoryGrid
-        categories={allCategories}
-        loading={categoriesLoading}
-        hasBackendData={hasBackendCategories}
-      />
-
-      <PromotionCards />
-
-      <BrandGrid 
-        brands={allBrands} 
-        loading={brandsLoading}
-        hasBackendData={hasBackendBrands}
-      />
 
       {/* Backend Data Status Indicator */}
-      {(hasBackendCategories || hasBackendBrands || hasBackendProducts) && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+      {(hasBackendCategories || hasBackendBrands || hasBackendProducts || hasBackendFeatured) && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 mt-8">
           <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-2xl p-4 text-center">
             <div className="flex items-center justify-center space-x-2 text-green-700">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -85,7 +83,8 @@ const Home: React.FC<HomeProps> = ({
           </div>
         </div>
       )}
-
+      
+      {/* Featured Products Section - Moved to top */}
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 relative overflow-hidden">
         {/* Grand Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
@@ -211,7 +210,7 @@ const Home: React.FC<HomeProps> = ({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-2 h-2 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full animate-pulse"></div>
-                          <span className="text-sm font-semibold text-eco-700">${product.price}</span>
+                          <span className="text-sm font-semibold text-eco-700">₹{product.price}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Star className="h-3 w-3 text-yellow-400" />
@@ -275,6 +274,20 @@ const Home: React.FC<HomeProps> = ({
           </div>
         </div>
       </section>
+
+      <CategoryGrid
+        categories={homeCategories}
+        loading={categoriesLoading}
+        hasBackendData={hasBackendCategories}
+      />
+
+      <PromotionCards />
+
+      <BrandGrid
+        brands={allBrands}
+        loading={brandsLoading}
+        hasBackendData={hasBackendBrands}
+      />
 
       {/* Customer Reviews Section */}
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-eco-pattern">

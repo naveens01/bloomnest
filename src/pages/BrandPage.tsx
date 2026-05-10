@@ -3,7 +3,8 @@ import { useParams, Navigate, Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { CartItem, Product } from '../types';
 import { MapPin, Calendar, Award, Loader2, Star, Search, Grid, List, Filter, TrendingUp, Sparkles, Leaf, ShoppingBag, ArrowRight, Shield, Heart } from 'lucide-react';
-import { useHybridBrands, useHybridProducts } from '../hooks/useHybridData';
+import { useHybridBrands } from '../hooks/useHybridData';
+import { brandApi, transformBackendProduct, BackendProduct, PaginationInfo } from '../services/api';
 
 interface BrandPageProps {
   cart: CartItem[];
@@ -24,10 +25,13 @@ const BrandPage: React.FC<BrandPageProps> = ({
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiPagination, setApiPagination] = useState<PaginationInfo | null>(null);
   
   // Use hybrid data hooks
   const { data: brands, loading: brandsLoading, refresh: refreshBrands } = useHybridBrands();
-  const { data: allProducts, loading: productsLoading } = useHybridProducts();
   
   // State to track if we've waited enough for brands to load
   const [hasWaitedForBrands, setHasWaitedForBrands] = useState(false);
@@ -104,23 +108,7 @@ const BrandPage: React.FC<BrandPageProps> = ({
     // Combine global search query with local search
     const effectiveSearchQuery = localSearchQuery.trim() || searchQuery.trim();
     
-    // Filter products by brand ID, slug, or name
-    let filtered = allProducts.filter(product => {
-      // Check if product has brandId (backend product)
-      if ((product as any).brandId) {
-        return (product as any).brandId === brand.id || (product as any).brandId === brandId;
-      }
-      // For static products, brand is a string (brand name)
-      // Match by brand name or normalized brand name
-      const productBrand = product.brand.toLowerCase();
-      const brandName = brand.name.toLowerCase();
-      const brandIdNormalized = brandId?.toLowerCase().replace(/\s+/g, '');
-      const productBrandNormalized = productBrand.replace(/\s+/g, '');
-      
-      return productBrand === brandName || 
-             productBrandNormalized === brandIdNormalized ||
-             productBrand === brandId?.toLowerCase();
-    });
+    let filtered = [...apiProducts];
 
     // Filter by search query
     if (effectiveSearchQuery) {
@@ -152,7 +140,38 @@ const BrandPage: React.FC<BrandPageProps> = ({
     }
 
     return filtered;
-  }, [brandId, searchQuery, localSearchQuery, sortBy, allProducts, brand]);
+  }, [searchQuery, localSearchQuery, apiProducts, brand]);
+
+  useEffect(() => {
+    if (!brand) return;
+
+    const loadBrandProducts = async () => {
+      try {
+        setApiLoading(true);
+        const slug = (brand as any).slug || brandId || '';
+        const sortParam =
+          sortBy === 'price-low' || sortBy === 'price-high' || sortBy === 'rating' || sortBy === 'newest'
+            ? sortBy
+            : 'newest';
+        const response = await brandApi.getProducts(slug, page, 12, sortParam);
+        const backendProducts: BackendProduct[] = response.data.products || [];
+        setApiProducts(backendProducts.map(transformBackendProduct));
+        setApiPagination(response.data.pagination || null);
+      } catch (error) {
+        console.error('Failed loading brand products:', error);
+        setApiProducts([]);
+        setApiPagination(null);
+      } finally {
+        setApiLoading(false);
+      }
+    };
+
+    loadBrandProducts();
+  }, [brand, brandId, page, sortBy]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [brandId, sortBy]);
 
   // Loading state - AFTER all hooks
   // Show loading while brands are loading, but don't redirect yet
@@ -407,7 +426,7 @@ const BrandPage: React.FC<BrandPageProps> = ({
               {brand.name} Products
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-eco-600 max-w-3xl mx-auto leading-relaxed px-4">
-              {productsLoading ? 'Loading products...' : `${filteredProducts.length} sustainable product${filteredProducts.length !== 1 ? 's' : ''}`}
+              {apiLoading ? 'Loading products...' : `${filteredProducts.length} sustainable product${filteredProducts.length !== 1 ? 's' : ''}`}
               {(localSearchQuery || searchQuery) && ` matching "${localSearchQuery || searchQuery}"`}
               {' - all carefully selected for quality and environmental impact'}
             </p>
@@ -428,7 +447,7 @@ const BrandPage: React.FC<BrandPageProps> = ({
             </div>
           </div>
 
-          {productsLoading ? (
+          {apiLoading ? (
             <div className="flex justify-center items-center py-20">
               <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
             </div>
@@ -471,6 +490,28 @@ const BrandPage: React.FC<BrandPageProps> = ({
                   />
                 </div>
               ))}
+            </div>
+          )}
+
+          {apiPagination && apiPagination.totalPages > 1 && (
+            <div className="flex justify-center items-center gap-3 mt-10">
+              <button
+                onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                disabled={!apiPagination.hasPrev}
+                className="px-4 py-2 rounded-xl border border-eco-200 disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span className="text-eco-700 font-medium">
+                Page {apiPagination.currentPage} / {apiPagination.totalPages}
+              </span>
+              <button
+                onClick={() => setPage(prev => prev + 1)}
+                disabled={!apiPagination.hasNext}
+                className="px-4 py-2 rounded-xl border border-eco-200 disabled:opacity-50"
+              >
+                Next
+              </button>
             </div>
           )}
         </div>

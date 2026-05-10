@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { Link } from 'react-router-dom';
 import { adminApi, brandApi, categoryApi, productApi, transformBackendCategory, transformBackendBrand, transformBackendProduct } from '../services/api';
 import { BackendCategory, BackendBrand, BackendProduct } from '../services/api';
@@ -362,8 +363,8 @@ const CategoryCard: React.FC<{
   const getImageUrl = (url: string | undefined) => {
     if (!url) return null;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
-    return `http://localhost:5000/uploads/categories/${url}`;
+    if (url.startsWith('/uploads')) return `API_BASE_URL${url}`;
+    return `API_BASE_URL/uploads/categories/${url}`;
   };
   const imageUrl = getImageUrl(category.image?.url);
 
@@ -461,7 +462,7 @@ const CategoryForm: React.FC<{
               onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
               className="rounded border-eco-300 text-eco-600 focus:ring-eco-400"
             />
-            <span className="text-sm text-eco-700">Featured</span>
+            <span className="text-sm text-eco-700 font-medium">Show on Home Page (Featured, max 6)</span>
           </label>
         </div>
         <div className="flex space-x-3">
@@ -673,8 +674,8 @@ const BrandCard: React.FC<{
   const getImageUrl = (url: string | undefined) => {
     if (!url) return null;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
-    return `http://localhost:5000/uploads/brands/${url}`;
+    if (url.startsWith('/uploads')) return `API_BASE_URL${url}`;
+    return `API_BASE_URL/uploads/brands/${url}`;
   };
   const logoUrl = getImageUrl(brand.logo?.url);
 
@@ -797,7 +798,7 @@ const BrandForm: React.FC<{
               onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
               className="rounded border-eco-300 text-eco-600 focus:ring-eco-400"
             />
-            <span className="text-sm text-eco-700">Featured</span>
+            <span className="text-sm text-eco-700 font-medium">Show on Home Page (Featured, max 6)</span>
           </label>
         </div>
         <div className="flex space-x-3">
@@ -912,6 +913,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
     category: '',
     status: 'published',
     isFeatured: false,
+    displayOrder: 0,
     features: '',
     tags: '',
   });
@@ -929,8 +931,9 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
         stock: editingProduct.inventory?.stock?.toString() || '',
         brand: typeof editingProduct.brand === 'object' ? editingProduct.brand._id : editingProduct.brand || '',
         category: typeof editingProduct.category === 'object' ? editingProduct.category._id : editingProduct.category || '',
-        status: editingProduct.status || 'published',
+        status: (editingProduct as any).status || 'published',
         isFeatured: editingProduct.isFeatured || false,
+        displayOrder: (editingProduct as any).displayOrder || 0,
         features: editingProduct.features?.join(', ') || '',
         tags: editingProduct.tags?.join(', ') || '',
       });
@@ -952,6 +955,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
       category: '',
       status: 'published',
       isFeatured: false,
+      displayOrder: 0,
       features: '',
       tags: '',
     });
@@ -995,6 +999,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
       formDataToSend.append('category', formData.category);
       formDataToSend.append('status', formData.status);
       formDataToSend.append('isFeatured', formData.isFeatured.toString());
+      formDataToSend.append('displayOrder', formData.displayOrder.toString());
       
       if (formData.features) {
         formData.features.split(',').forEach(feature => {
@@ -1306,8 +1311,26 @@ const ProductForm: React.FC<{
               onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
               className="rounded border-eco-300 text-eco-600 focus:ring-eco-400"
             />
-            <span className="text-sm text-eco-700">Featured</span>
+            <span className="text-sm text-eco-700 font-medium">Show on Home Page (Featured, max 6)</span>
           </label>
+        </div>
+
+        {/* Display Order */}
+        <div>
+          <label className="block text-sm font-medium text-eco-700 mb-2">
+            Display Order (Products Page)
+          </label>
+          <input
+            type="number"
+            min="0"
+            value={formData.displayOrder}
+            onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+            className="w-full px-4 py-2 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all"
+            placeholder="0"
+          />
+          <p className="mt-1 text-xs text-eco-600">
+            Lower numbers appear first. Products with same order are sorted by creation date.
+          </p>
         </div>
 
         <div className="flex space-x-3">
@@ -1350,8 +1373,8 @@ const ProductCard: React.FC<{
   const getImageUrl = (url: string | undefined) => {
     if (!url) return null;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    if (url.startsWith('/uploads')) return `http://localhost:5000${url}`;
-    return `http://localhost:5000/uploads/products/${url}`;
+    if (url.startsWith('/uploads')) return `API_BASE_URL${url}`;
+    return `API_BASE_URL/uploads/products/${url}`;
   };
   const imageUrl = getImageUrl(product.images?.[0]?.url);
 
@@ -1373,7 +1396,7 @@ const ProductCard: React.FC<{
       </div>
       <h3 className="font-bold text-lg text-eco-800 mb-2 line-clamp-1">{product.name}</h3>
       <p className="text-eco-600 text-sm mb-2">{product.brand?.name || 'Unknown Brand'}</p>
-      <p className="text-eco-800 font-bold text-lg mb-4">${product.price.current}</p>
+      <p className="text-eco-800 font-bold text-lg mb-4">₹{product.price.current}</p>
       <div className="flex items-center justify-between">
         <button
           onClick={() => onSetFeatured(!product.isFeatured)}

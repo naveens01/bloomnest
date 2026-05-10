@@ -1,0 +1,6 @@
+backend/
+backend/**
+*.md
+docs/
+.bolt/
+test.sh

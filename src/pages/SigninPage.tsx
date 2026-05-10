@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  User, 
-  Shield, 
-  CheckCircle, 
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  Shield,
+  CheckCircle,
   ArrowRight,
   Leaf,
   Sparkles,
@@ -17,6 +17,7 @@ import {
   Zap,
   Award
 } from 'lucide-react';
+import { API_ENDPOINTS } from '../config/api';
 
 const SigninPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ const SigninPage: React.FC = () => {
   useEffect(() => {
     const checkServer = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/health', {
+        const response = await fetch(API_ENDPOINTS.health, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -65,7 +66,7 @@ const SigninPage: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(API_ENDPOINTS.login, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +103,8 @@ const SigninPage: React.FC = () => {
 
       setSuccess(true);
       setTimeout(() => {
-        navigate('/');
+        const userRole = data?.data?.user?.role;
+        navigate(userRole === 'admin' ? '/admin' : '/');
       }, 2000);
     } catch (err: any) {
       console.error('Sign in error:', err);
@@ -112,7 +114,7 @@ const SigninPage: React.FC = () => {
       if (err.message) {
         errorMessage = err.message;
       } else if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        errorMessage = 'Cannot connect to server. Please make sure the backend server is running on port 5000.';
+        errorMessage = 'Cannot connect to server. Please make sure the backend server is running.';
       } else if (err.name === 'NetworkError' || err.message.includes('Failed to fetch')) {
         errorMessage = 'Network error. Please check your connection and ensure the backend server is running.';
       }
