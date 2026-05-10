@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, Leaf, Sparkles, User, LogIn, Heart, ChevronDown, UserPlus } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Leaf, Sparkles, User, LogIn, Heart, ChevronDown, UserPlus, Shield, LogOut } from 'lucide-react';
 import { CartItem } from '../types';
 
 interface HeaderProps {
@@ -13,14 +13,37 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearchChange, watchlistCount }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false); // New state for cart modal
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const location = useLocation();
-  const navigate = useNavigate(); // New navigate function
+  const navigate = useNavigate();
 
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
 
+  useEffect(() => {
+    const readAuthUser = () => {
+      try {
+        const rawUser = localStorage.getItem('user');
+        setCurrentUser(rawUser ? JSON.parse(rawUser) : null);
+      } catch {
+        setCurrentUser(null);
+      }
+    };
+
+    readAuthUser();
+    window.addEventListener('storage', readAuthUser);
+    return () => window.removeEventListener('storage', readAuthUser);
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+    navigate('/signin');
+  };
+
   const navItems = [
     { path: '/', name: 'Home' },
+    { path: '/products', name: 'Products' },
     { path: '/categories', name: 'Categories' },
     { path: '/brands', name: 'Brands' },
     { path: '/about', name: 'About' },
@@ -100,8 +123,8 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
               </button>
 
               {/* Enhanced Cart Button */}
-              <button 
-                onClick={() => setIsCartOpen(true)}
+              <button
+                onClick={onCartClick}
                 className="relative group p-2 sm:p-3 rounded-2xl bg-gradient-to-r from-eco-100 to-nature-100 hover:from-eco-200 hover:to-nature-200 transition-all duration-300 hover:scale-110 hover:shadow-eco-glow"
               >
                 <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-eco-600 group-hover:scale-110 transition-transform duration-300" />
@@ -121,7 +144,7 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
                     <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                   <span className="hidden sm:block text-eco-700 font-medium group-hover:text-eco-600 transition-colors duration-300">
-                    Sign In
+                    {currentUser ? currentUser.firstName || 'Account' : 'Sign In'}
                   </span>
                   <ChevronDown className="h-4 w-4 text-eco-600 group-hover:rotate-180 transition-transform duration-300" />
                 </button>
@@ -129,20 +152,43 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
                 {/* Enhanced dropdown with animations */}
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-eco-glow-lg border border-eco-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                   <div className="p-2">
-                    <Link 
-                      to="/signup"
-                      className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
-                    >
-                      <UserPlus className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
-                      <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Sign Up</span>
-                    </Link>
-                    <Link 
-                      to="/signin"
-                      className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
-                    >
-                      <LogIn className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
-                      <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Sign In</span>
-                    </Link>
+                    {currentUser ? (
+                      <>
+                        {currentUser.role === 'admin' && (
+                          <Link 
+                            to="/admin"
+                            className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
+                          >
+                            <Shield className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
+                            <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Admin</span>
+                          </Link>
+                        )}
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item text-left"
+                        >
+                          <LogOut className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
+                          <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Logout</span>
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link 
+                          to="/signup"
+                          className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
+                        >
+                          <UserPlus className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
+                          <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Sign Up</span>
+                        </Link>
+                        <Link 
+                          to="/signin"
+                          className="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-eco-50 transition-colors duration-200 group/item"
+                        >
+                          <LogIn className="h-5 w-5 text-eco-600 group-hover/item:scale-110 transition-transform duration-200" />
+                          <span className="text-eco-700 group-hover/item:text-eco-600 transition-colors duration-200">Sign In</span>
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -199,22 +245,49 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
                   <Heart className="h-5 w-5" />
                   <span>Watchlist ({watchlistCount})</span>
                 </Link>
-                <Link 
-                  to="/signup" 
-                  className="flex items-center justify-center space-x-2 bg-gradient-to-r from-eco-500 to-nature-500 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-eco-glow-lg transition-all duration-300"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <UserPlus className="h-5 w-5" />
-                  <span>Sign Up</span>
-                </Link>
-                <Link 
-                  to="/signin" 
-                  className="flex items-center justify-center space-x-2 bg-gradient-to-r from-nature-500 to-ocean-500 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-eco-glow-lg transition-all duration-300"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <LogIn className="h-5 w-5" />
-                  <span>Sign In</span>
-                </Link>
+                {currentUser ? (
+                  <>
+                    {currentUser.role === 'admin' && (
+                      <Link 
+                        to="/admin" 
+                        className="flex items-center justify-center space-x-2 bg-gradient-to-r from-eco-500 to-nature-500 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-eco-glow-lg transition-all duration-300"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Shield className="h-5 w-5" />
+                        <span>Admin</span>
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-nature-500 to-ocean-500 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-eco-glow-lg transition-all duration-300"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      <span>Logout</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      to="/signup" 
+                      className="flex items-center justify-center space-x-2 bg-gradient-to-r from-eco-500 to-nature-500 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-eco-glow-lg transition-all duration-300"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <UserPlus className="h-5 w-5" />
+                      <span>Sign Up</span>
+                    </Link>
+                    <Link 
+                      to="/signin" 
+                      className="flex items-center justify-center space-x-2 bg-gradient-to-r from-nature-500 to-ocean-500 text-white px-4 py-3 rounded-xl font-semibold hover:shadow-eco-glow-lg transition-all duration-300"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <LogIn className="h-5 w-5" />
+                      <span>Sign In</span>
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
           </div>

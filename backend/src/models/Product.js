@@ -186,6 +186,11 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  displayOrder: {
+    type: Number,
+    default: 0,
+    min: [0, 'Display order cannot be negative']
+  },
   isActive: {
     type: Boolean,
     default: true

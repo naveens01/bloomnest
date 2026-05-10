@@ -54,6 +54,17 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  // Default address (collected during registration)
+  defaultAddress: {
+    street: String,
+    city: String,
+    state: String,
+    pincode: String,
+    country: {
+      type: String,
+      default: 'India'
+    }
+  },
   addresses: [{
     type: {
       type: String,
@@ -66,7 +77,7 @@ const userSchema = new mongoose.Schema({
     zipCode: String,
     country: {
       type: String,
-      default: 'United States'
+      default: 'India'
     },
     isDefault: {
       type: Boolean,

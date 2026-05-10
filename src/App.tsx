@@ -4,6 +4,8 @@ import Header from './components/Header';
 import Cart from './components/Cart';
 import Footer from './components/Footer';
 import Home from './pages/Home';
+import ProductsPage from './pages/ProductsPage';
+import ProductDetailPage from './pages/ProductDetailPage';
 import CategoryPage from './pages/CategoryPage';
 import BrandPage from './pages/BrandPage';
 import BrandsPage from './pages/BrandsPage';
@@ -12,6 +14,10 @@ import AboutPage from './pages/AboutPage';
 import SignupPage from './pages/SignupPage';
 import SigninPage from './pages/SigninPage';
 import AdminPage from './pages/AdminPage';
+import CheckoutPage from './pages/CheckoutPage';
+import PaymentPage from './pages/PaymentPage';
+import OrderConfirmationPage from './pages/OrderConfirmationPage';
+import ProfilePage from './pages/ProfilePage';
 import { CartItem, Product } from './types';
 import WatchlistPage from './pages/WatchlistPage.tsx';
 
@@ -106,11 +112,33 @@ function App() {
                 selectedCategory={selectedCategory}
                 onCategorySelect={setSelectedCategory}
               />
-            } 
+            }
           />
-          <Route 
-            path="/categories" 
-            element={<CategoriesPage />} 
+          <Route
+            path="/products"
+            element={
+              <ProductsPage
+                cart={cart}
+                onAddToCart={addToCart}
+                searchQuery={searchQuery}
+                onToggleWatchlist={toggleWatchlist}
+                isInWatchlist={(productId: string) => watchlist.some(p => p.id === productId)}
+              />
+            }
+          />
+          <Route
+            path="/product/:productId"
+            element={
+              <ProductDetailPage
+                onAddToCart={addToCart}
+                onToggleWatchlist={toggleWatchlist}
+                isInWatchlist={(productId: string) => watchlist.some(p => p.id === productId)}
+              />
+            }
+          />
+          <Route
+            path="/categories"
+            element={<CategoriesPage />}
           />
           <Route 
             path="/category/:categoryId" 
@@ -156,9 +184,25 @@ function App() {
             path="/signin" 
             element={<SigninPage />} 
           />
-          <Route 
-            path="/admin" 
-            element={<AdminPage />} 
+          <Route
+            path="/admin"
+            element={<AdminPage />}
+          />
+          <Route
+            path="/checkout"
+            element={<CheckoutPage cart={cart} onClearCart={() => setCart([])} />}
+          />
+          <Route
+            path="/payment"
+            element={<PaymentPage />}
+          />
+          <Route
+            path="/order-confirmation"
+            element={<OrderConfirmationPage />}
+          />
+          <Route
+            path="/profile"
+            element={<ProfilePage />}
           />
         </Routes>
 

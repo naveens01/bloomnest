@@ -1,5 +1,6 @@
 import React from 'react';
 import { Star, Heart, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 
 interface ProductCardProps {
@@ -10,6 +11,7 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWatchlist = false, onToggleWatchlist }) => {
+  const navigate = useNavigate();
   
   const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -22,8 +24,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
     }
   };
 
+  const handleCardClick = () => {
+    // Navigate to product detail page using product slug or id
+    navigate(`/product/${product.id}`);
+  };
+
   return (
-    <div className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+    <div
+      onClick={handleCardClick}
+      className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer"
+    >
       
       {/* Image Container */}
       <div className="relative h-64 w-full overflow-hidden">
@@ -43,8 +53,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
         {/* Discount Badge */}
         {discountPercentage > 0 && (
           <div className="absolute top-3 right-3">
-            <div className="bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-semibold">
-              -{discountPercentage}%
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg">
+              {discountPercentage}% offer
             </div>
           </div>
         )}
@@ -120,16 +130,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
         {/* Price and Action */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold text-green-600">${product.price}</span>
+            <span className="text-lg font-bold text-green-600">₹{product.price}</span>
             {product.originalPrice && (
               <span className="text-sm text-gray-400 line-through">
-                ${product.originalPrice}
+                ₹{product.originalPrice}
               </span>
             )}
           </div>
           
           <button
-            onClick={() => onAddToCart(product)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
             disabled={!product.inStock}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
               product.inStock
