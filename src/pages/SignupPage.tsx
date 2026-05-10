@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Lock, Eye, EyeOff, User, MapPin, Map, Hash, Leaf, CheckCircle } from 'lucide-react';
+<<<<<<< HEAD
 import { API_ENDPOINTS } from '../config/api';
+=======
+>>>>>>> cd0c967e3aea30dc69e3da013967abeb1b6164f9
 
 const SignupPage = () => {
   const navigate = useNavigate();
