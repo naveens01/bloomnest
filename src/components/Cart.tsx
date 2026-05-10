@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { CartItem } from '../types';
 
@@ -17,9 +18,15 @@ const Cart: React.FC<CartProps> = ({
   onUpdateQuantity,
   onRemoveItem
 }) => {
+  const navigate = useNavigate();
   const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   const shipping = subtotal > 50 ? 0 : 9.99;
   const total = subtotal + shipping;
+
+  const handleCheckout = () => {
+    onClose();
+    navigate('/checkout');
+  };
 
   if (!isOpen) return null;
 
@@ -59,7 +66,7 @@ const Cart: React.FC<CartProps> = ({
                         {item.name}
                       </h3>
                       <p className="text-sm text-gray-500">{item.brand}</p>
-                      <p className="text-sm font-medium text-gray-900">${item.price}</p>
+                      <p className="text-sm font-medium text-gray-900">₹{item.price}</p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
@@ -96,24 +103,27 @@ const Cart: React.FC<CartProps> = ({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
-                  <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+                  <span>{shipping === 0 ? 'Free' : `₹${shipping.toFixed(2)}`}</span>
                 </div>
                 {subtotal < 50 && (
                   <p className="text-xs text-gray-500">
-                    Add ${(50 - subtotal).toFixed(2)} more for free shipping
+                    Add ₹{(50 - subtotal).toFixed(2)} more for free shipping
                   </p>
                 )}
                 <div className="flex justify-between font-semibold text-lg border-t pt-2">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>₹{total.toFixed(2)}</span>
                 </div>
               </div>
               
-              <button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition-colors">
+              <button
+                onClick={handleCheckout}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition-colors"
+              >
                 Checkout
               </button>
             </div>

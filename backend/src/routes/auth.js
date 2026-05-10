@@ -6,13 +6,14 @@ const User = require('../models/User');
 const { protect, generateToken } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
 const rateLimit = require('express-rate-limit');
+const { sendWelcomeEmail } = require('../utils/email');
 
 const router = express.Router();
 
 // Rate limiting for auth routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  max: process.env.NODE_ENV === 'development' ? 1000 : 5, // avoid local lockouts during development
   message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -22,7 +23,7 @@ const authLimiter = rateLimit({
 // @route   POST /api/auth/register
 // @access  Public
 router.post('/register', authLimiter, asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password, phone } = req.body;
+  const { firstName, lastName, email, password, phone, address, state, pincode } = req.body;
 
   // Check if user already exists
   const existingUser = await User.findOne({ email });
@@ -33,22 +34,34 @@ router.post('/register', authLimiter, asyncHandler(async (req, res) => {
     });
   }
 
-  // Create user
+  // Create user with default address
   const user = await User.create({
     firstName,
     lastName,
     email,
     password,
-    phone
+    phone,
+    defaultAddress: address && state && pincode ? {
+      street: address,
+      state,
+      pincode
+    } : undefined
   });
 
   // Generate token
   const token = generateToken(user._id);
 
+  // Send welcome email (non-blocking)
+  const fullName = `${firstName} ${lastName}`.trim();
+  sendWelcomeEmail(email, fullName).catch(err => {
+    console.error('Failed to send welcome email:', err);
+    // Don't fail registration if email fails
+  });
+
   // Send response
   res.status(201).json({
     status: 'success',
-    message: 'User registered successfully',
+    message: 'User registered successfully. A welcome email has been sent to your email address.',
     data: {
       user: user.getPublicProfile(),
       token
