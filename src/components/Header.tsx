@@ -89,8 +89,8 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
               ))}
             </nav>
 
-            {/* Enhanced Search Bar with autocomplete - Desktop */}
-            <div className="flex-1 max-w-md mx-8 hidden lg:block">
+            {/* Compact Search Bar - Desktop */}
+            <div className="flex-1 max-w-sm mx-4 hidden lg:block">
               <SearchBar
                 searchQuery={searchQuery}
                 onSearchChange={onSearchChange}

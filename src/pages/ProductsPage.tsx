@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
-import { Package, Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { Package, Search, Filter, SlidersHorizontal, Sparkles } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Product } from '../types';
@@ -113,38 +113,51 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen pt-28 sm:pt-32 pb-12 bg-gradient-to-b from-eco-50 to-white">
+    <div className="min-h-screen pt-28 sm:pt-32 pb-12 bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header Section */}
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-eco-500 to-nature-500 rounded-2xl mb-3 sm:mb-4 shadow-eco-glow">
-            <Package className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+        {/* Enhanced Header Section with animations */}
+        <div className="text-center mb-8 sm:mb-12 relative">
+          {/* Floating background elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-0 left-1/4 w-32 h-32 bg-eco-200 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob"></div>
+            <div className="absolute top-0 right-1/4 w-32 h-32 bg-nature-200 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob animation-delay-2000"></div>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gradient-eco mb-3 sm:mb-4 px-2">
-            All Products
-          </h1>
-          <p className="text-base sm:text-lg text-eco-700 max-w-2xl mx-auto px-4">
-            Discover our complete collection of eco-friendly products
-          </p>
-          <div className="mt-3 sm:mt-4 text-sm text-eco-600">
-            Showing {filteredProducts.length} of {products.length} products
+          
+          <div className="relative z-10">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-eco-500 to-nature-500 rounded-3xl mb-4 sm:mb-6 shadow-eco-glow animate-pulse-slow">
+              <Package className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gradient-eco mb-4 sm:mb-6 px-2 animate-fade-in">
+              All Products
+            </h1>
+            <p className="text-lg sm:text-xl text-eco-700 max-w-3xl mx-auto px-4 leading-relaxed">
+              Discover our complete collection of eco-friendly products for sustainable living
+            </p>
+            <div className="mt-4 sm:mt-6 inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full border-2 border-eco-200 shadow-lg">
+              <Sparkles className="h-5 w-5 text-eco-600" />
+              <span className="text-sm font-semibold text-eco-700">
+                Showing {filteredProducts.length} of {products.length} products
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Filters Section - Improved Mobile Layout */}
-        <div className="mb-6 sm:mb-8 bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 border border-eco-200">
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        {/* Enhanced Filters Section with gradient background */}
+        <div className="mb-8 sm:mb-10 bg-gradient-to-r from-white via-eco-50 to-white rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-8 border-2 border-eco-200 backdrop-blur-sm">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
             
-            {/* Category Filter - Compact Mobile */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-1">
-              <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600 flex-shrink-0" />
+            {/* Category Filter with icon */}
+            <div className="flex items-center gap-3 flex-1 group">
+              <div className="p-2 bg-eco-100 rounded-xl group-hover:bg-eco-200 transition-colors">
+                <Filter className="h-5 w-5 text-eco-600" />
+              </div>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="flex-1 px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base border-2 border-eco-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all bg-white text-eco-700 font-medium"
+                className="flex-1 px-4 py-3 text-base border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-500 focus:border-eco-500 transition-all bg-white text-eco-700 font-medium shadow-sm hover:shadow-md cursor-pointer"
               >
-                <option value="all">All Categories</option>
+                <option value="all">🌿 All Categories</option>
                 {categories.map((category) => (
                   <option key={category._id} value={category._id}>
                     {category.name}
@@ -153,35 +166,45 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
               </select>
             </div>
 
-            {/* Sort Options - Compact Mobile */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-1">
-              <SlidersHorizontal className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600 flex-shrink-0" />
+            {/* Sort Options with icon */}
+            <div className="flex items-center gap-3 flex-1 group">
+              <div className="p-2 bg-nature-100 rounded-xl group-hover:bg-nature-200 transition-colors">
+                <SlidersHorizontal className="h-5 w-5 text-nature-600" />
+              </div>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="flex-1 px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base border-2 border-eco-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all bg-white text-eco-700 font-medium"
+                className="flex-1 px-4 py-3 text-base border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-nature-500 focus:border-nature-500 transition-all bg-white text-eco-700 font-medium shadow-sm hover:shadow-md cursor-pointer"
               >
-                <option value="displayOrder">Default</option>
-                <option value="price-low">Price: Low-High</option>
-                <option value="price-high">Price: High-Low</option>
-                <option value="rating">Top Rated</option>
-                <option value="newest">Newest</option>
+                <option value="displayOrder">⭐ Default</option>
+                <option value="price-low">💰 Price: Low to High</option>
+                <option value="price-high">💎 Price: High to Low</option>
+                <option value="rating">🏆 Top Rated</option>
+                <option value="newest">✨ Newest First</option>
               </select>
             </div>
           </div>
         </div>
 
-        {/* Products Grid */}
+        {/* Enhanced Products Grid with stagger animation */}
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-16">
-            <Search className="h-16 w-16 text-eco-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-eco-700 mb-2">No products found</h3>
-            <p className="text-eco-600">
+          <div className="text-center py-20 bg-white rounded-3xl shadow-xl border-2 border-eco-200">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-eco-100 rounded-full mb-6">
+              <Search className="h-10 w-10 text-eco-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-eco-700 mb-3">No products found</h3>
+            <p className="text-lg text-eco-600 mb-6">
               {searchQuery ? 'Try adjusting your search terms' : 'No products available in this category'}
             </p>
+            <button
+              onClick={() => setFilterCategory('all')}
+              className="px-6 py-3 bg-gradient-to-r from-eco-500 to-nature-500 text-white rounded-xl font-semibold hover:shadow-eco-glow transition-all"
+            >
+              Clear Filters
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product._id}
