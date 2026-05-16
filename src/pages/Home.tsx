@@ -6,6 +6,7 @@ import CategoryGrid from '../components/CategoryGrid';
 import BrandGrid from '../components/BrandGrid';
 import PromotionCards from '../components/PromotionCards';
 import ProductCard from '../components/ProductCard';
+import SEO from '../components/SEO';
 import { useHybridProducts, useHybridCategories, useHybridBrands, useHybridFeaturedProducts, useHybridFeaturedCategories } from '../hooks/useHybridData';
 import { CartItem, Product } from '../types';
 import { Leaf, Sparkles, ArrowRight, Star, TrendingUp, ShoppingCart } from 'lucide-react';
@@ -67,6 +68,12 @@ const Home: React.FC<HomeProps> = ({
 
   return (
     <main>
+      <SEO
+        title="BloomNest - Eco-Friendly Products for a Sustainable Future"
+        description="Discover sustainable products from trusted brands that care about our planet. Shop eco-friendly home goods, personal care, fashion, and more at BloomNest."
+        keywords="eco-friendly, sustainable, green products, organic, natural, environmentally friendly, zero waste, ethical shopping, sustainable living"
+        type="website"
+      />
       <Hero />
       
       <PromotionBanner />

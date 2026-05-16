@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Star, Heart, Shield, CheckCircle, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
+import LazyImage from './LazyImage';
 
 interface ProductCardProps {
   product: Product;
@@ -65,10 +66,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
       
       {/* Image Container */}
       <div className="relative h-64 w-full overflow-hidden">
-        <img
+        <LazyImage
           src={product.image}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          placeholderClassName="rounded-t-2xl"
         />
         
         {/* ECO Badge */}

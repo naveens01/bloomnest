@@ -60,14 +60,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
     const query = searchQuery.toLowerCase();
     const newSuggestions: SearchSuggestion[] = [];
 
-    // Search products
+    // Search products only (removed categories and brands)
     const matchingProducts = products
       .filter(p =>
         p.name.toLowerCase().includes(query) ||
         p.description.toLowerCase().includes(query) ||
         p.features.some(f => f.toLowerCase().includes(query))
       )
-      .slice(0, 5);
+      .slice(0, 8); // Show up to 8 product suggestions
 
     matchingProducts.forEach(product => {
       newSuggestions.push({
@@ -79,35 +79,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       });
     });
 
-    // Search categories
-    const categories = [...new Set(products.map(p => p.category))];
-    const matchingCategories = categories
-      .filter(c => c.toLowerCase().includes(query))
-      .slice(0, 3);
-
-    matchingCategories.forEach(category => {
-      newSuggestions.push({
-        type: 'category',
-        label: category,
-        value: category,
-      });
-    });
-
-    // Search brands
-    const brands = [...new Set(products.map(p => p.brand))];
-    const matchingBrands = brands
-      .filter(b => b.toLowerCase().includes(query))
-      .slice(0, 3);
-
-    matchingBrands.forEach(brand => {
-      newSuggestions.push({
-        type: 'brand',
-        label: brand,
-        value: brand,
-      });
-    });
-
-    setSuggestions(newSuggestions.slice(0, 8));
+    setSuggestions(newSuggestions);
     setSelectedIndex(-1);
   }, [searchQuery, products, recentSearches]);
 
