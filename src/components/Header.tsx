@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, Leaf, Sparkles, User, LogIn, Heart, ChevronDown, UserPlus, Shield, LogOut } from 'lucide-react';
-import { CartItem } from '../types';
+import { ShoppingCart, Menu, Leaf, User, LogIn, Heart, ChevronDown, UserPlus, Shield, LogOut } from 'lucide-react';
+import { CartItem, Product } from '../types';
+import SearchBar from './SearchBar';
 
 interface HeaderProps {
   cart: CartItem[];
@@ -9,9 +10,10 @@ interface HeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   watchlistCount: number;
+  products: Product[];
 }
 
-const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearchChange, watchlistCount }) => {
+const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearchChange, watchlistCount, products }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const location = useLocation();
@@ -87,19 +89,14 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
               ))}
             </nav>
 
-            {/* Enhanced Search Bar with animations - Fixed positioning */}
+            {/* Enhanced Search Bar with autocomplete - Desktop */}
             <div className="flex-1 max-w-md mx-8 hidden lg:block">
-              <div className="relative group">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-eco-400 group-hover:text-eco-600 transition-colors duration-300 animate-pulse-slow" />
-                <input
-                  type="text"
-                  placeholder="Search eco-friendly products..."
-                  className="w-full pl-12 pr-4 py-3 border-2 border-eco-200 rounded-2xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-base group-hover:shadow-eco-glow"
-                  style={{ lineHeight: '48px', paddingTop: '0', paddingBottom: '0' }}
-                />
-                {/* Enhanced search bar glow effect */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-eco-400/20 to-nature-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-xl"></div>
-              </div>
+              <SearchBar
+                searchQuery={searchQuery}
+                onSearchChange={onSearchChange}
+                products={products}
+                isMobile={false}
+              />
             </div>
 
             {/* Enhanced Right Section - Mobile optimized */}
@@ -204,21 +201,14 @@ const Header: React.FC<HeaderProps> = ({ cart, onCartClick, searchQuery, onSearc
           </div>
         </div>
 
-        {/* Mobile Search Bar - Fixed positioning */}
-        <div className="sm:hidden pb-4 px-4 sm:px-6 lg:px-8">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-eco-400 group-hover:text-eco-600 transition-colors" />
-            <input
-              type="text"
-              placeholder="Search eco-friendly products..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/80 backdrop-blur-sm leading-none"
-            />
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Sparkles className="h-4 w-4 text-eco-400" />
-            </div>
-          </div>
+        {/* Mobile Search Bar with autocomplete */}
+        <div className="sm:hidden pb-4 px-4">
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchChange={onSearchChange}
+            products={products}
+            isMobile={true}
+          />
         </div>
 
         {/* Mobile Menu - Fixed positioning */}

@@ -20,6 +20,7 @@ import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import ProfilePage from './pages/ProfilePage';
 import { CartItem, Product } from './types';
 import WatchlistPage from './pages/WatchlistPage.tsx';
+import { useHybridProducts } from './hooks/useHybridData';
 
 // ScrollToTop component to handle route changes
 const ScrollToTop: React.FC = () => {
@@ -43,6 +44,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [watchlist, setWatchlist] = useState<Product[]>([]);
+  const { data: allProducts } = useHybridProducts();
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
@@ -99,6 +101,7 @@ function App() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           watchlistCount={watchlist.length}
+          products={allProducts}
         />
         
         <Routes>
