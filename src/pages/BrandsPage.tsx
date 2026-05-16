@@ -53,9 +53,9 @@ const BrandsPage: React.FC = () => {
   const categories = ['all', 'personal-care', 'home-living', 'fashion', 'food-beverages', 'electronics'];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-20 sm:pt-0">
+    <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-32 sm:pt-24 md:pt-28">
       {/* Grand Hero Section */}
-      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-20 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Magnificent Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           {/* Grand Floating Orbs */}
@@ -136,25 +136,25 @@ const BrandsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-8 sm:mb-12">
+            {/* Filter Buttons - Mobile optimized */}
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-4 lg:gap-6 mb-8 sm:mb-12">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base transition-all duration-300 transform hover:scale-105 ${
+                  className={`px-3 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl font-semibold text-xs sm:text-sm lg:text-base transition-all duration-300 transform hover:scale-105 whitespace-nowrap ${
                     selectedCategory === category
                       ? 'bg-gradient-to-r from-eco-500 to-nature-500 text-white shadow-eco-glow-lg'
                       : 'bg-white/80 text-eco-700 hover:bg-white hover:shadow-lg border-2 border-eco-200'
                   }`}
                 >
-                  {category === 'all' ? 'All Categories' : category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  {category === 'all' ? 'All' : category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                 </button>
               ))}
             </div>
 
-            {/* Sort Options */}
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+            {/* Sort Options - Mobile optimized */}
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-4 lg:gap-6">
               {[
                 { value: 'featured', label: 'Featured', icon: Star },
                 { value: 'name', label: 'Name', icon: TrendingUp },
@@ -166,13 +166,13 @@ const BrandsPage: React.FC = () => {
                   <button
                     key={option.value}
                     onClick={() => setSortBy(option.value)}
-                    className={`flex items-center space-x-2 px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base transition-all duration-300 transform hover:scale-105 ${
+                    className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl font-semibold text-xs sm:text-sm lg:text-base transition-all duration-300 transform hover:scale-105 whitespace-nowrap ${
                       sortBy === option.value
                         ? 'bg-gradient-to-r from-nature-500 to-ocean-500 text-white shadow-nature-glow-lg'
                         : 'bg-white/80 text-nature-700 hover:bg-white hover:shadow-lg border-2 border-nature-200'
                     }`}
                   >
-                    <IconComponent className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <IconComponent className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
                     <span>{option.label}</span>
                   </button>
                 );

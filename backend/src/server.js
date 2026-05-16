@@ -15,6 +15,7 @@ const brandRoutes = require('./routes/brands');
 const categoryRoutes = require('./routes/categories');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
+const paymentRoutes = require('./routes/payment');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorHandler');
@@ -35,8 +36,12 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
+  origin: process.env.NODE_ENV === 'production'
+    ? [
+        'https://bloomnest-pi.vercel.app',
+        'https://bloomnest-naveens01.vercel.app',
+        process.env.FRONTEND_URL
+      ].filter(Boolean)
     : ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true
 }));
@@ -86,6 +91,7 @@ app.use('/api/brands', brandRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

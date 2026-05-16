@@ -117,44 +117,44 @@ const PromotionBanner: React.FC = () => {
                     <div className="absolute top-1/2 left-1/2 w-40 sm:w-48 md:w-56 lg:w-64 h-40 sm:h-48 md:h-56 lg:h-64 bg-white rounded-full -translate-x-20 sm:-translate-x-24 md:-translate-x-28 lg:-translate-x-32 -translate-y-20 sm:-translate-y-24 md:-translate-y-28 lg:-translate-y-32 animate-blob animation-delay-4000"></div>
                   </div>
 
-                  <div className="relative z-10 h-full flex items-center">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 w-full px-4 sm:px-6 md:px-8 lg:px-20">
+                  <div className="relative z-10 h-full flex items-center py-6 sm:py-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 w-full px-4 sm:px-6 md:px-8 lg:px-16 xl:px-20">
                       {/* Content */}
-                      <div className="flex flex-col justify-center">
-                        <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 mb-4 sm:mb-6">
-                          <div className="bg-glass p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-lg">
-                            <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-white" />
+                      <div className="flex flex-col justify-center space-y-3 sm:space-y-4 md:space-y-6">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                          <div className="bg-glass p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-xl shadow-lg">
+                            <IconComponent className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 text-white" />
                           </div>
-                          <div className="bg-glass-eco px-2 sm:px-3 md:px-4 py-1 sm:py-2 rounded-full border border-eco-200">
-                            <span className="text-xs sm:text-sm font-bold uppercase tracking-wide text-eco-700">
+                          <div className="bg-glass-eco px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-full border border-eco-200">
+                            <span className="text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-wide text-eco-700">
                               {promo.badge}
                             </span>
                           </div>
                         </div>
 
-                        <div className="flex items-center space-x-2 sm:space-x-3 mb-2 sm:mb-4">
-                          <EcoIconComponent className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-white/90" />
-                          <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold ${promo.textColor}`}>
+                        <div className="flex items-start gap-2 sm:gap-3">
+                          <EcoIconComponent className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8 text-white/90 flex-shrink-0 mt-1" />
+                          <h2 className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold ${promo.textColor} leading-tight`}>
                             {promo.title}
                           </h2>
                         </div>
                         
-                        <h3 className={`text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold mb-3 sm:mb-4 md:mb-6 ${promo.textColor} text-opacity-90`}>
+                        <h3 className={`text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-semibold ${promo.textColor} text-opacity-90 leading-tight`}>
                           {promo.subtitle}
                         </h3>
                         
-                        <p className={`text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-6 sm:mb-8 md:mb-10 ${promo.textColor} text-opacity-80 leading-relaxed max-w-lg`}>
+                        <p className={`text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl ${promo.textColor} text-opacity-80 leading-relaxed max-w-lg`}>
                           {promo.description}
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                          <button className="bg-white text-nature-900 px-6 sm:px-8 md:px-10 py-2 sm:py-3 md:py-4 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base md:text-lg hover:bg-eco-50 transition-all transform hover:scale-105 shadow-eco-glow hover:shadow-eco-glow-lg group">
-                            <span className="flex items-center space-x-2">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
+                          <button className="bg-white text-nature-900 px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-4 rounded-lg sm:rounded-xl md:rounded-2xl font-bold text-xs sm:text-sm md:text-base lg:text-lg hover:bg-eco-50 transition-all transform hover:scale-105 shadow-eco-glow hover:shadow-eco-glow-lg group">
+                            <span className="flex items-center justify-center space-x-2">
                               <span>{promo.cta}</span>
-                              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
+                              <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-transform" />
                             </span>
                           </button>
-                          <button className="border-2 border-white text-white px-6 sm:px-8 md:px-10 py-2 sm:py-3 md:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base md:text-lg hover:bg-white hover:text-nature-900 transition-all duration-300 hover:shadow-eco-glow">
+                          <button className="border-2 border-white text-white px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-4 rounded-lg sm:rounded-xl md:rounded-2xl font-semibold text-xs sm:text-sm md:text-base lg:text-lg hover:bg-white hover:text-nature-900 transition-all duration-300 hover:shadow-eco-glow">
                             Learn More
                           </button>
                         </div>

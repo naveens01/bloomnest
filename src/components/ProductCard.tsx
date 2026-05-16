@@ -1,15 +1,26 @@
-import React from 'react';
-import { Star, Heart, Shield } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, Heart, Shield, CheckCircle, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
+import LazyImage from './LazyImage';
 
 interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product) => void;
   isInWatchlist?: boolean;
   onToggleWatchlist?: (product: Product) => void;
+  onQuickView?: (product: Product) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWatchlist = false, onToggleWatchlist }) => {
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onAddToCart,
+  isInWatchlist = false,
+  onToggleWatchlist,
+  onQuickView
+}) => {
+  const navigate = useNavigate();
+  const [showNotification, setShowNotification] = useState(false);
   
   const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -22,15 +33,44 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
     }
   };
 
+  const handleCardClick = () => {
+    // Navigate to product detail page using product slug or id
+    navigate(`/product/${product.id}`);
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddToCart(product);
+    
+    // Show notification
+    setShowNotification(true);
+    
+    // Hide notification after 2 seconds
+    setTimeout(() => {
+      setShowNotification(false);
+    }, 2000);
+  };
+
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onQuickView) {
+      onQuickView(product);
+    }
+  };
+
   return (
-    <div className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+    <div
+      onClick={handleCardClick}
+      className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer"
+    >
       
       {/* Image Container */}
       <div className="relative h-64 w-full overflow-hidden">
-        <img
+        <LazyImage
           src={product.image}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          placeholderClassName="rounded-t-2xl"
         />
         
         {/* ECO Badge */}
@@ -43,8 +83,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
         {/* Discount Badge */}
         {discountPercentage > 0 && (
           <div className="absolute top-3 right-3">
-            <div className="bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-semibold">
-              -{discountPercentage}%
+            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg">
+              {discountPercentage}% offer
             </div>
           </div>
         )}
@@ -61,6 +101,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
         >
           <Heart className={`h-4 w-4 ${isInWatchlist ? 'fill-current' : ''}`} />
         </button>
+
+        {/* Quick View Button - Shows on hover */}
+        {onQuickView && (
+          <button
+            onClick={handleQuickView}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white text-gray-900 px-4 py-2 rounded-lg shadow-lg hover:bg-gray-50 flex items-center space-x-2 font-medium text-sm"
+          >
+            <Eye className="h-4 w-4" />
+            <span>Quick View</span>
+          </button>
+        )}
         
         {/* Out of Stock Overlay */}
         {!product.inStock && (
@@ -120,16 +171,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
         {/* Price and Action */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold text-green-600">${product.price}</span>
+            <span className="text-lg font-bold text-green-600">₹{product.price}</span>
             {product.originalPrice && (
               <span className="text-sm text-gray-400 line-through">
-                ${product.originalPrice}
+                ₹{product.originalPrice}
               </span>
             )}
           </div>
           
           <button
-            onClick={() => onAddToCart(product)}
+            onClick={handleAddToCart}
             disabled={!product.inStock}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
               product.inStock
@@ -141,6 +192,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
           </button>
         </div>
       </div>
+      
+      {/* Add to Cart Notification */}
+      {showNotification && (
+        <div className="fixed top-20 right-4 z-50 animate-slide-in-right">
+          <div className="bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2">
+            <CheckCircle className="h-5 w-5" />
+            <span className="font-medium">Added to cart!</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

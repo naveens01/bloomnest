@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Hero from '../components/Hero';
 import PromotionBanner from '../components/PromotionBanner';
 import CategoryGrid from '../components/CategoryGrid';
 import BrandGrid from '../components/BrandGrid';
 import PromotionCards from '../components/PromotionCards';
 import ProductCard from '../components/ProductCard';
-import { useHybridProducts, useHybridCategories, useHybridBrands, useHybridFeaturedProducts } from '../hooks/useHybridData';
+import SEO from '../components/SEO';
+import { useHybridProducts, useHybridCategories, useHybridBrands, useHybridFeaturedProducts, useHybridFeaturedCategories } from '../hooks/useHybridData';
 import { CartItem, Product } from '../types';
 import { Leaf, Sparkles, ArrowRight, Star, TrendingUp, ShoppingCart } from 'lucide-react';
 
@@ -24,14 +26,28 @@ const Home: React.FC<HomeProps> = ({
   selectedCategory,
   onCategorySelect
 }) => {
+  const navigate = useNavigate();
+  
   // Use hybrid data hooks
   const { data: allProducts, loading: productsLoading, hasBackendData: hasBackendProducts } = useHybridProducts();
   const { data: allCategories, loading: categoriesLoading, hasBackendData: hasBackendCategories } = useHybridCategories();
   const { data: allBrands, loading: brandsLoading, hasBackendData: hasBackendBrands } = useHybridBrands();
   const { data: featuredProducts, loading: featuredLoading, hasBackendData: hasBackendFeatured } = useHybridFeaturedProducts();
+  const { data: featuredCategories } = useHybridFeaturedCategories();
+  const homeCategories = useMemo(
+    () => (featuredCategories.length > 0 ? featuredCategories.slice(0, 6) : allCategories.slice(0, 6)),
+    [featuredCategories, allCategories]
+  );
 
   const filteredProducts = useMemo(() => {
-    let filtered = allProducts;
+    // Default home experience should highlight backend-managed featured products.
+    // If user applies category/search filters, fall back to all products.
+    const sourceProducts =
+      selectedCategory === 'all' && !searchQuery.trim() && featuredProducts.length > 0
+        ? featuredProducts
+        : allProducts;
+
+    let filtered = sourceProducts;
 
     // Filter by category
     if (selectedCategory !== 'all') {
@@ -49,32 +65,24 @@ const Home: React.FC<HomeProps> = ({
       );
     }
 
-    return filtered.slice(0, 8); // Show only 8 products on home page
-  }, [selectedCategory, searchQuery, allProducts]);
+    return filtered.slice(0, 6); // Keep home focused: only 6 featured cards
+  }, [selectedCategory, searchQuery, allProducts, featuredProducts]);
 
   return (
     <main>
+      <SEO
+        title="BloomNest - Eco-Friendly Products for a Sustainable Future"
+        description="Discover sustainable products from trusted brands that care about our planet. Shop eco-friendly home goods, personal care, fashion, and more at BloomNest."
+        keywords="eco-friendly, sustainable, green products, organic, natural, environmentally friendly, zero waste, ethical shopping, sustainable living"
+        type="website"
+      />
       <Hero />
       
       <PromotionBanner />
-      
-      <CategoryGrid
-        categories={allCategories}
-        loading={categoriesLoading}
-        hasBackendData={hasBackendCategories}
-      />
-
-      <PromotionCards />
-
-      <BrandGrid 
-        brands={allBrands} 
-        loading={brandsLoading}
-        hasBackendData={hasBackendBrands}
-      />
 
       {/* Backend Data Status Indicator */}
-      {(hasBackendCategories || hasBackendBrands || hasBackendProducts) && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+      {(hasBackendCategories || hasBackendBrands || hasBackendProducts || hasBackendFeatured) && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 mt-8">
           <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-2xl p-4 text-center">
             <div className="flex items-center justify-center space-x-2 text-green-700">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -85,7 +93,8 @@ const Home: React.FC<HomeProps> = ({
           </div>
         </div>
       )}
-
+      
+      {/* Featured Products Section - Moved to top */}
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 relative overflow-hidden">
         {/* Grand Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
@@ -127,6 +136,7 @@ const Home: React.FC<HomeProps> = ({
                 key={product.id}
                 className="group relative cursor-pointer animate-fade-in-up"
                 style={{ animationDelay: `${index * 200}ms` }}
+                onClick={() => navigate(`/product/${product.id}`)}
               >
                 {/* Main Card Container */}
                 <div className="bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-3xl shadow-eco-glow hover:shadow-eco-glow-xl transition-all duration-700 cursor-pointer overflow-hidden hover:-translate-y-4 border border-eco-200 relative">
@@ -211,7 +221,7 @@ const Home: React.FC<HomeProps> = ({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-2 h-2 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full animate-pulse"></div>
-                          <span className="text-sm font-semibold text-eco-700">${product.price}</span>
+                          <span className="text-sm font-semibold text-eco-700">₹{product.price}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Star className="h-3 w-3 text-yellow-400" />
@@ -264,10 +274,13 @@ const Home: React.FC<HomeProps> = ({
               </span>
             </div>
             
-            <button className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 mx-auto group hover:shadow-eco-glow-lg rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-eco-glow animate-fade-in-up animation-delay-800">
+            <Link
+              to="/products"
+              className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 mx-auto group hover:shadow-eco-glow-lg rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-eco-glow animate-fade-in-up animation-delay-800"
+            >
               <span>View All Products</span>
               <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-2 transition-transform duration-300" />
-            </button>
+            </Link>
             
             <p className="text-eco-600 text-xs sm:text-sm mt-3 sm:mt-4 px-4 animate-fade-in-up animation-delay-1000">
               Join thousands of eco-conscious shoppers making sustainable choices
@@ -275,6 +288,20 @@ const Home: React.FC<HomeProps> = ({
           </div>
         </div>
       </section>
+
+      <CategoryGrid
+        categories={homeCategories}
+        loading={categoriesLoading}
+        hasBackendData={hasBackendCategories}
+      />
+
+      <PromotionCards />
+
+      <BrandGrid
+        brands={allBrands}
+        loading={brandsLoading}
+        hasBackendData={hasBackendBrands}
+      />
 
       {/* Customer Reviews Section */}
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-eco-pattern">
