@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Heart, Shield, CheckCircle } from 'lucide-react';
+import { Star, Heart, Shield, CheckCircle, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 
@@ -8,9 +8,16 @@ interface ProductCardProps {
   onAddToCart: (product: Product) => void;
   isInWatchlist?: boolean;
   onToggleWatchlist?: (product: Product) => void;
+  onQuickView?: (product: Product) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWatchlist = false, onToggleWatchlist }) => {
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onAddToCart,
+  isInWatchlist = false,
+  onToggleWatchlist,
+  onQuickView
+}) => {
   const navigate = useNavigate();
   const [showNotification, setShowNotification] = useState(false);
   
@@ -41,6 +48,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
     setTimeout(() => {
       setShowNotification(false);
     }, 2000);
+  };
+
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onQuickView) {
+      onQuickView(product);
+    }
   };
 
   return (
@@ -85,6 +99,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isInWat
         >
           <Heart className={`h-4 w-4 ${isInWatchlist ? 'fill-current' : ''}`} />
         </button>
+
+        {/* Quick View Button - Shows on hover */}
+        {onQuickView && (
+          <button
+            onClick={handleQuickView}
+            className="absolute bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white text-gray-900 px-4 py-2 rounded-lg shadow-lg hover:bg-gray-50 flex items-center space-x-2 font-medium text-sm"
+          >
+            <Eye className="h-4 w-4" />
+            <span>Quick View</span>
+          </button>
+        )}
         
         {/* Out of Stock Overlay */}
         {!product.inStock && (
