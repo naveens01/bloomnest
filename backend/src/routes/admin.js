@@ -459,6 +459,16 @@ router.get('/brands', asyncHandler(async (req, res) => {
 // @access  Admin only
 router.post('/brands', brandLogoUpload, asyncHandler(async (req, res) => {
   const brandData = req.body;
+  const isFeaturedRequested = parseBoolean(brandData.isFeatured);
+  if (isFeaturedRequested) {
+    const featuredCount = await Brand.countDocuments({ isFeatured: true, isActive: true });
+    if (featuredCount >= 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 6 featured brands are allowed on home. Unfeature one brand before adding another featured brand.'
+      });
+    }
+  }
   
   // Generate slug from name if not provided
   if (!brandData.slug && brandData.name) {
@@ -524,6 +534,24 @@ router.post('/brands', brandLogoUpload, asyncHandler(async (req, res) => {
 // @access  Admin only
 router.put('/brands/:id', brandLogoUpload, asyncHandler(async (req, res) => {
   const brandData = req.body;
+  const existingBrand = await Brand.findById(req.params.id);
+  if (!existingBrand) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Brand not found'
+    });
+  }
+
+  const isFeaturedRequested = parseBoolean(brandData.isFeatured);
+  if (isFeaturedRequested && !existingBrand.isFeatured) {
+    const featuredCount = await Brand.countDocuments({ isFeatured: true, isActive: true });
+    if (featuredCount >= 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 6 featured brands are allowed on home. Unfeature one brand before adding another featured brand.'
+      });
+    }
+  }
   
   // Generate slug from name if name changed and slug not provided
   if (brandData.name && !brandData.slug) {

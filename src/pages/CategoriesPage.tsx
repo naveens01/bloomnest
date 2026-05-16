@@ -230,7 +230,7 @@ const CategoriesPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
                 {filteredCategories.map((category, index) => (
                   <Link
                     key={category.id}
@@ -238,10 +238,10 @@ const CategoriesPage: React.FC = () => {
                     className="group relative cursor-pointer animate-fade-in-up"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    {/* Main Card Container - Mobile optimized */}
-                    <div className="h-full bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-2xl sm:rounded-3xl shadow-eco hover:shadow-eco-glow-xl transition-all duration-700 overflow-hidden hover:-translate-y-2 sm:hover:-translate-y-3 border border-eco-200">
-                      {/* Enhanced Image Section - Mobile optimized */}
-                      <div className="relative h-48 sm:h-56 overflow-hidden">
+                    {/* Main Card Container - Improved spacing */}
+                    <div className="h-full bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-2xl sm:rounded-3xl shadow-eco hover:shadow-eco-glow-xl transition-all duration-700 overflow-hidden hover:-translate-y-2 border border-eco-200 flex flex-col">
+                      {/* Enhanced Image Section - Better proportions */}
+                      <div className="relative h-56 sm:h-64 overflow-hidden flex-shrink-0">
                         <img
                           src={category.image}
                           alt={category.name}
@@ -268,20 +268,20 @@ const CategoriesPage: React.FC = () => {
                           </div>
                         </div>
                         
-                        {/* Category Name Overlay - Mobile optimized */}
-                        <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white">
-                          <div className="flex items-center justify-between mb-2 sm:mb-3">
-                            <h3 className="text-lg sm:text-2xl font-bold line-clamp-1 group-hover:scale-105 transition-transform duration-500">
+                        {/* Category Name Overlay - Better spacing */}
+                        <div className="absolute bottom-4 left-4 right-4 text-white">
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-xl sm:text-2xl font-bold line-clamp-1 group-hover:scale-105 transition-transform duration-500">
                               {category.name}
                             </h3>
-                            <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 flex-shrink-0" />
+                            <ArrowRight className="h-6 w-6 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 flex-shrink-0" />
                           </div>
-                          <div className="flex items-center space-x-2 sm:space-x-3">
-                            <div className="bg-white/20 backdrop-blur-sm px-2 py-1 sm:px-4 sm:py-2 rounded-full border border-white/30">
-                              <span className="text-xs sm:text-sm font-semibold">{category.count} Products</span>
+                          <div className="flex items-center space-x-3">
+                            <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30">
+                              <span className="text-sm font-semibold">{category.count} Products</span>
                             </div>
-                            <div className="bg-white/20 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-2 rounded-full border border-white/30">
-                              <Award className="h-3 w-3 sm:h-4 sm:w-4 text-eco-300" />
+                            <div className="bg-white/20 backdrop-blur-sm px-3 py-2 rounded-full border border-white/30">
+                              <Award className="h-4 w-4 text-eco-300" />
                             </div>
                           </div>
                         </div>
@@ -294,51 +294,51 @@ const CategoriesPage: React.FC = () => {
                         </div>
                       </div>
                       
-                      {/* Content Section - Mobile optimized with better spacing */}
-                      <div className="p-4 sm:p-6">
-                        <p className="text-eco-700 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
+                      {/* Content Section - Better spacing and readability */}
+                      <div className="p-6 flex flex-col flex-grow">
+                        <p className="text-eco-700 text-sm leading-relaxed mb-4 line-clamp-2">
                           Discover amazing {category.name.toLowerCase()} products that are sustainable and eco-friendly
                         </p>
                         
-                        {/* Feature Tags - Mobile optimized */}
-                        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                          <div className="bg-gradient-to-r from-eco-100 to-nature-100 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full border border-eco-200 shadow-sm">
-                            <span className="text-[10px] sm:text-xs font-medium text-eco-700">Sustainable</span>
+                        {/* Feature Tags - Better spacing */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <div className="bg-gradient-to-r from-eco-100 to-nature-100 px-3 py-1.5 rounded-full border border-eco-200 shadow-sm">
+                            <span className="text-xs font-medium text-eco-700">Sustainable</span>
                           </div>
-                          <div className="bg-gradient-to-r from-nature-100 to-ocean-100 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full border border-nature-200 shadow-sm">
-                            <span className="text-[10px] sm:text-xs font-medium text-nature-700">Natural</span>
+                          <div className="bg-gradient-to-r from-nature-100 to-ocean-100 px-3 py-1.5 rounded-full border border-nature-200 shadow-sm">
+                            <span className="text-xs font-medium text-nature-700">Natural</span>
                           </div>
-                          <div className="bg-gradient-to-r from-ocean-100 to-eco-100 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full border border-ocean-200 shadow-sm">
-                            <span className="text-[10px] sm:text-xs font-medium text-ocean-700">Quality</span>
+                          <div className="bg-gradient-to-r from-ocean-100 to-eco-100 px-3 py-1.5 rounded-full border border-ocean-200 shadow-sm">
+                            <span className="text-xs font-medium text-ocean-700">Quality</span>
                           </div>
                         </div>
                         
-                        {/* Stats Row - Mobile optimized */}
-                        <div className="flex items-center justify-between mb-3 sm:mb-4">
-                          <div className="flex items-center space-x-1.5 sm:space-x-2">
-                            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full animate-pulse"></div>
-                            <span className="text-xs sm:text-sm font-semibold text-eco-700">{category.count} Items</span>
+                        {/* Stats Row - Better spacing */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full animate-pulse"></div>
+                            <span className="text-sm font-semibold text-eco-700">{category.count} Items</span>
                           </div>
                           <div className="flex items-center space-x-1">
-                            <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-eco-500" />
-                            <span className="text-[10px] sm:text-xs text-eco-600">Updated</span>
+                            <Clock className="h-3 w-3 text-eco-500" />
+                            <span className="text-xs text-eco-600">Updated</span>
                           </div>
                         </div>
                         
-                        {/* Action Section - Mobile optimized */}
-                        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-eco-200">
-                          <div className="flex items-center space-x-2 sm:space-x-3">
-                            <div className="bg-gradient-to-r from-eco-200 to-nature-200 p-2 sm:p-2.5 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
+                        {/* Action Section - Better spacing, pushed to bottom */}
+                        <div className="flex items-center justify-between pt-4 border-t border-eco-200 mt-auto">
+                          <div className="flex items-center space-x-3">
+                            <div className="bg-gradient-to-r from-eco-200 to-nature-200 p-2.5 rounded-xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                              <Sparkles className="h-5 w-5 text-eco-600" />
                             </div>
-                            <span className="text-xs sm:text-sm font-medium text-eco-700">Premium</span>
+                            <span className="text-sm font-medium text-eco-700">Premium</span>
                           </div>
                           
-                          {/* CTA Button - Mobile optimized */}
-                          <button className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-eco-glow-xl">
-                            <span className="flex items-center space-x-1 sm:space-x-2">
+                          {/* CTA Button - Better sizing */}
+                          <button className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-eco-glow-xl">
+                            <span className="flex items-center space-x-2">
                               <span>Explore</span>
-                              <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
                             </span>
                           </button>
                         </div>
