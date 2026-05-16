@@ -220,9 +220,9 @@ const BrandPage: React.FC<BrandPageProps> = ({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-24 sm:pt-28">
+    <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-32 sm:pt-24 md:pt-28">
       {/* Enhanced Brand Header */}
-      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 sm:-top-40 -right-20 sm:-right-40 w-48 sm:w-96 h-48 sm:h-96 bg-eco-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob"></div>

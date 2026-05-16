@@ -53,9 +53,9 @@ const BrandsPage: React.FC = () => {
   const categories = ['all', 'personal-care', 'home-living', 'fashion', 'food-beverages', 'electronics'];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-24 sm:pt-28">
+    <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-32 sm:pt-24 md:pt-28">
       {/* Grand Hero Section */}
-      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Magnificent Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           {/* Grand Floating Orbs */}
