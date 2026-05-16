@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Hero from '../components/Hero';
 import PromotionBanner from '../components/PromotionBanner';
 import CategoryGrid from '../components/CategoryGrid';
@@ -26,6 +26,8 @@ const Home: React.FC<HomeProps> = ({
   selectedCategory,
   onCategorySelect
 }) => {
+  const navigate = useNavigate();
+  
   // Use hybrid data hooks
   const { data: allProducts, loading: productsLoading, hasBackendData: hasBackendProducts } = useHybridProducts();
   const { data: allCategories, loading: categoriesLoading, hasBackendData: hasBackendCategories } = useHybridCategories();
@@ -134,6 +136,7 @@ const Home: React.FC<HomeProps> = ({
                 key={product.id}
                 className="group relative cursor-pointer animate-fade-in-up"
                 style={{ animationDelay: `${index * 200}ms` }}
+                onClick={() => navigate(`/product/${product.id}`)}
               >
                 {/* Main Card Container */}
                 <div className="bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-3xl shadow-eco-glow hover:shadow-eco-glow-xl transition-all duration-700 cursor-pointer overflow-hidden hover:-translate-y-4 border border-eco-200 relative">

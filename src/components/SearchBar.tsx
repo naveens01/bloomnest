@@ -249,11 +249,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     {suggestion.type === 'recent' ? 'Recent search' : suggestion.type}
                   </div>
                 </div>
-                {suggestion.price && (
-                  <div className="text-sm font-semibold text-eco-600">
-                    ₹{suggestion.price}
-                  </div>
-                )}
               </button>
             ))}
           </div>
