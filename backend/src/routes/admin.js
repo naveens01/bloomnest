@@ -276,6 +276,24 @@ router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
     delete productData['inventory.stock'];
   }
   
+  // Parse ratings data
+  if (productData['ratings.average'] || productData['ratings.count']) {
+    productData.ratings = productData.ratings || {};
+    if (productData['ratings.average']) {
+      productData.ratings.average = parseFloat(productData['ratings.average']);
+      delete productData['ratings.average'];
+    }
+    if (productData['ratings.count']) {
+      productData.ratings.count = parseInt(productData['ratings.count']);
+      delete productData['ratings.count'];
+    }
+  }
+  
+  // Parse unitsSold
+  if (productData.unitsSold) {
+    productData.unitsSold = parseInt(productData.unitsSold);
+  }
+  
   // Handle arrays (features, tags)
   if (productData.features && !Array.isArray(productData.features)) {
     productData.features = [productData.features];
@@ -349,6 +367,24 @@ router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) =
       isInStock: parseInt(productData['inventory.stock']) > 0
     };
     delete productData['inventory.stock'];
+  }
+  
+  // Parse ratings data
+  if (productData['ratings.average'] || productData['ratings.count']) {
+    productData.ratings = existingProduct.ratings || {};
+    if (productData['ratings.average']) {
+      productData.ratings.average = parseFloat(productData['ratings.average']);
+      delete productData['ratings.average'];
+    }
+    if (productData['ratings.count']) {
+      productData.ratings.count = parseInt(productData['ratings.count']);
+      delete productData['ratings.count'];
+    }
+  }
+  
+  // Parse unitsSold
+  if (productData.unitsSold) {
+    productData.unitsSold = parseInt(productData.unitsSold);
   }
   
   // Handle arrays (features, tags)

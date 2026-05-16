@@ -916,6 +916,9 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
     displayOrder: 0,
     features: '',
     tags: '',
+    rating: '',
+    reviewsCount: '',
+    unitsSold: '',
   });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -936,6 +939,9 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
         displayOrder: (editingProduct as any).displayOrder || 0,
         features: editingProduct.features?.join(', ') || '',
         tags: editingProduct.tags?.join(', ') || '',
+        rating: editingProduct.ratings?.average?.toString() || '',
+        reviewsCount: editingProduct.ratings?.count?.toString() || '',
+        unitsSold: (editingProduct as any).unitsSold?.toString() || '',
       });
       setImagePreviews(editingProduct.images?.map(img => img.url) || []);
     } else {
@@ -958,6 +964,9 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
       displayOrder: 0,
       features: '',
       tags: '',
+      rating: '',
+      reviewsCount: '',
+      unitsSold: '',
     });
     setImageFiles([]);
     setImagePreviews([]);
@@ -1000,6 +1009,17 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
       formDataToSend.append('status', formData.status);
       formDataToSend.append('isFeatured', formData.isFeatured.toString());
       formDataToSend.append('displayOrder', formData.displayOrder.toString());
+      
+      // Add rating and reviews metadata
+      if (formData.rating) {
+        formDataToSend.append('ratings.average', formData.rating);
+      }
+      if (formData.reviewsCount) {
+        formDataToSend.append('ratings.count', formData.reviewsCount);
+      }
+      if (formData.unitsSold) {
+        formDataToSend.append('unitsSold', formData.unitsSold);
+      }
       
       if (formData.features) {
         formData.features.split(',').forEach(feature => {
@@ -1259,6 +1279,44 @@ const ProductForm: React.FC<{
               required
               value={formData.stock}
               onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+              className="w-full px-4 py-2 border border-eco-200 rounded-lg focus:ring-2 focus:ring-eco-400 focus:border-eco-400"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-eco-700 mb-2">Rating (0-5)</label>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              max="5"
+              value={formData.rating}
+              onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
+              placeholder="4.5"
+              className="w-full px-4 py-2 border border-eco-200 rounded-lg focus:ring-2 focus:ring-eco-400 focus:border-eco-400"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-eco-700 mb-2">Reviews Count</label>
+            <input
+              type="number"
+              min="0"
+              value={formData.reviewsCount}
+              onChange={(e) => setFormData({ ...formData, reviewsCount: e.target.value })}
+              placeholder="150"
+              className="w-full px-4 py-2 border border-eco-200 rounded-lg focus:ring-2 focus:ring-eco-400 focus:border-eco-400"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-eco-700 mb-2">Units Sold</label>
+            <input
+              type="number"
+              min="0"
+              value={formData.unitsSold}
+              onChange={(e) => setFormData({ ...formData, unitsSold: e.target.value })}
+              placeholder="500"
               className="w-full px-4 py-2 border border-eco-200 rounded-lg focus:ring-2 focus:ring-eco-400 focus:border-eco-400"
             />
           </div>

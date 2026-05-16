@@ -224,6 +224,11 @@ const productSchema = new mongoose.Schema({
       default: false
     }
   },
+  unitsSold: {
+    type: Number,
+    default: 0,
+    min: [0, 'Units sold cannot be negative']
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
