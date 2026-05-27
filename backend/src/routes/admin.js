@@ -937,7 +937,6 @@ router.get('/reviews', asyncHandler(async (req, res) => {
   
   const [reviews, total] = await Promise.all([
     Review.find(query)
-      .populate('createdBy', 'name email')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit)),
