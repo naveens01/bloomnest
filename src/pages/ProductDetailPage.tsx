@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Star, Heart, ShoppingCart, Leaf, Shield, ArrowLeft, Check, Truck, Package, Award, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Product } from '../types';
+import { Product, Review, ReviewStats } from '../types';
 import { useHybridProducts } from '../hooks/useHybridData';
+import { reviewApi } from '../services/api';
+import ReviewSection from '../components/ReviewSection';
 
 interface ProductDetailPageProps {
   onAddToCart: (product: Product) => void;
@@ -18,6 +20,17 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  
+  // Reviews state
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewStats, setReviewStats] = useState<ReviewStats>({
+    averageRating: 0,
+    totalReviews: 0,
+    ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+  });
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewPage, setReviewPage] = useState(1);
+  const [reviewPagination, setReviewPagination] = useState<any>(null);
 
   useEffect(() => {
     const foundProduct = products.find(p => p.id === productId || (p as any).slug === productId);
@@ -26,6 +39,39 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
       setSelectedImage(0);
     }
   }, [productId, products]);
+
+  // Load reviews when product changes
+  useEffect(() => {
+    if (product && (product as any).slug) {
+      loadReviews((product as any).slug, reviewPage);
+    }
+  }, [product, reviewPage]);
+
+  const loadReviews = async (slug: string, page: number) => {
+    setReviewsLoading(true);
+    try {
+      const response = await reviewApi.getProductReviews(slug, page, 10);
+      if (response.data) {
+        setReviews(response.data.reviews || []);
+        setReviewStats(response.data.stats || {
+          averageRating: 0,
+          totalReviews: 0,
+          ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        });
+        setReviewPagination(response.data.pagination || null);
+      }
+    } catch (error) {
+      console.error('Failed to load reviews:', error);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const handleReviewPageChange = (page: number) => {
+    setReviewPage(page);
+    // Scroll to reviews section
+    document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   if (loading) {
     return (
@@ -317,6 +363,17 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div id="reviews-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <ReviewSection
+            reviews={reviews}
+            stats={reviewStats}
+            pagination={reviewPagination}
+            onPageChange={handleReviewPageChange}
+            loading={reviewsLoading}
+          />
         </div>
       </div>
     </main>

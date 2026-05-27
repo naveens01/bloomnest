@@ -6,6 +6,7 @@ const Product = require('../models/Product');
 const Brand = require('../models/Brand');
 const Category = require('../models/Category');
 const Order = require('../models/Order');
+const Review = require('../models/Review');
 const { protect, adminOnly } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { 
@@ -918,6 +919,191 @@ router.put('/orders/:id/tracking', asyncHandler(async (req, res) => {
     status: 'success',
     message: 'Tracking information added successfully',
     data: { order }
+  });
+}));
+
+// ==================== REVIEWS ====================
+// @desc    Get all reviews
+// @route   GET /api/admin/reviews
+// @access  Admin only
+router.get('/reviews', asyncHandler(async (req, res) => {
+  const { reviewType, targetId, page = 1, limit = 20 } = req.query;
+  
+  const query = {};
+  if (reviewType) query.reviewType = reviewType;
+  if (targetId) query.targetId = targetId;
+  
+  const skip = (page - 1) * limit;
+  
+  const [reviews, total] = await Promise.all([
+    Review.find(query)
+      .populate('createdBy', 'name email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit)),
+    Review.countDocuments(query)
+  ]);
+  
+  res.status(200).json({
+    status: 'success',
+    data: {
+      reviews,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalReviews: total,
+        hasNext: skip + reviews.length < total,
+        hasPrev: page > 1
+      }
+    }
+  });
+}));
+
+// @desc    Create a new review
+// @route   POST /api/admin/reviews
+// @access  Admin only
+router.post('/reviews', asyncHandler(async (req, res) => {
+  const { reviewType, targetId, userName, userEmail, rating, comment, isVerified, isApproved } = req.body;
+  
+  // Validate required fields
+  if (!reviewType || !targetId || !userName || !rating || !comment) {
+    res.status(400);
+    throw new Error('Please provide all required fields');
+  }
+  
+  // Validate rating
+  if (rating < 1 || rating > 5) {
+    res.status(400);
+    throw new Error('Rating must be between 1 and 5');
+  }
+  
+  // Determine target model based on review type
+  let targetModel;
+  switch (reviewType) {
+    case 'product':
+      targetModel = 'Product';
+      // Verify product exists
+      const product = await Product.findById(targetId);
+      if (!product) {
+        res.status(404);
+        throw new Error('Product not found');
+      }
+      break;
+    case 'category':
+      targetModel = 'Category';
+      // Verify category exists
+      const category = await Category.findById(targetId);
+      if (!category) {
+        res.status(404);
+        throw new Error('Category not found');
+      }
+      break;
+    case 'brand':
+      targetModel = 'Brand';
+      // Verify brand exists
+      const brand = await Brand.findById(targetId);
+      if (!brand) {
+        res.status(404);
+        throw new Error('Brand not found');
+      }
+      break;
+    default:
+      res.status(400);
+      throw new Error('Invalid review type');
+  }
+  
+  // Create review
+  const review = await Review.create({
+    reviewType,
+    targetId,
+    targetModel,
+    userName,
+    userEmail,
+    rating,
+    comment,
+    isVerified: isVerified || false,
+    isApproved: isApproved !== undefined ? isApproved : true,
+    createdBy: req.user._id
+  });
+  
+  res.status(201).json({
+    status: 'success',
+    data: { review }
+  });
+}));
+
+// @desc    Update a review
+// @route   PUT /api/admin/reviews/:id
+// @access  Admin only
+router.put('/reviews/:id', asyncHandler(async (req, res) => {
+  const { userName, userEmail, rating, comment, isVerified, isApproved } = req.body;
+  
+  const review = await Review.findById(req.params.id);
+  
+  if (!review) {
+    res.status(404);
+    throw new Error('Review not found');
+  }
+  
+  // Update fields
+  if (userName) review.userName = userName;
+  if (userEmail !== undefined) review.userEmail = userEmail;
+  if (rating) {
+    if (rating < 1 || rating > 5) {
+      res.status(400);
+      throw new Error('Rating must be between 1 and 5');
+    }
+    review.rating = rating;
+  }
+  if (comment) review.comment = comment;
+  if (isVerified !== undefined) review.isVerified = isVerified;
+  if (isApproved !== undefined) review.isApproved = isApproved;
+  
+  await review.save();
+  
+  res.status(200).json({
+    status: 'success',
+    data: { review }
+  });
+}));
+
+// @desc    Delete a review
+// @route   DELETE /api/admin/reviews/:id
+// @access  Admin only
+router.delete('/reviews/:id', asyncHandler(async (req, res) => {
+  const review = await Review.findById(req.params.id);
+  
+  if (!review) {
+    res.status(404);
+    throw new Error('Review not found');
+  }
+  
+  await review.deleteOne();
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Review deleted successfully'
+  });
+}));
+
+// @desc    Get review statistics for a target
+// @route   GET /api/admin/reviews/stats/:reviewType/:targetId
+// @access  Admin only
+router.get('/reviews/stats/:reviewType/:targetId', asyncHandler(async (req, res) => {
+  const { reviewType, targetId } = req.params;
+  
+  const [averageData, distribution] = await Promise.all([
+    Review.getAverageRating(reviewType, targetId),
+    Review.getRatingDistribution(reviewType, targetId)
+  ]);
+  
+  res.status(200).json({
+    status: 'success',
+    data: {
+      averageRating: averageData.averageRating,
+      totalReviews: averageData.totalReviews,
+      distribution
+    }
   });
 }));
 

@@ -582,5 +582,68 @@ export const adminApi = {
       });
     },
   },
+
+  // Reviews CRUD
+  reviews: {
+    getAll: async (): Promise<ApiResponse<{ reviews: any[] }>> => {
+      return apiCall('/admin/reviews', {
+        method: 'GET',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+    create: async (data: {
+      reviewType: 'product' | 'category' | 'brand';
+      targetId: string;
+      userName: string;
+      rating: number;
+      comment: string;
+      isVerified?: boolean;
+      isApproved?: boolean;
+    }): Promise<ApiResponse<{ review: any }>> => {
+      return apiCall('/admin/reviews', {
+        method: 'POST',
+        headers: adminApi.getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+    },
+    update: async (id: string, data: {
+      userName?: string;
+      rating?: number;
+      comment?: string;
+      isVerified?: boolean;
+      isApproved?: boolean;
+    }): Promise<ApiResponse<{ review: any }>> => {
+      return apiCall(`/admin/reviews/${id}`, {
+        method: 'PUT',
+        headers: adminApi.getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+    },
+    delete: async (id: string): Promise<ApiResponse<void>> => {
+      return apiCall(`/admin/reviews/${id}`, {
+        method: 'DELETE',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+    getStats: async (reviewType: string, targetId: string): Promise<ApiResponse<any>> => {
+      return apiCall(`/admin/reviews/stats/${reviewType}/${targetId}`, {
+        method: 'GET',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+  },
+};
+
+// Public Review API calls
+export const reviewApi = {
+  getProductReviews: async (slug: string, page = 1, limit = 10, sort = '-createdAt'): Promise<any> => {
+    return apiCall(`/products/${slug}/reviews?page=${page}&limit=${limit}&sort=${sort}`);
+  },
+  getCategoryReviews: async (slug: string, page = 1, limit = 10, sort = '-createdAt'): Promise<any> => {
+    return apiCall(`/categories/${slug}/reviews?page=${page}&limit=${limit}&sort=${sort}`);
+  },
+  getBrandReviews: async (slug: string, page = 1, limit = 10, sort = '-createdAt'): Promise<any> => {
+    return apiCall(`/brands/${slug}/reviews?page=${page}&limit=${limit}&sort=${sort}`);
+  },
 };
 

@@ -36,3 +36,39 @@ export interface Brand {
   established: string;
   specialty: string;
 }
+
+export interface Review {
+  _id: string;
+  reviewType: 'product' | 'category' | 'brand';
+  targetId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  isVerified: boolean;
+  isApproved: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReviewStats {
+  averageRating: number;
+  totalReviews: number;
+  ratingDistribution: {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+  };
+}
+
+export interface ReviewsResponse {
+  reviews: Review[];
+  stats: ReviewStats;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}

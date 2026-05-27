@@ -5,7 +5,7 @@ import { adminApi, brandApi, categoryApi, productApi, transformBackendCategory, 
 import { BackendCategory, BackendBrand, BackendProduct } from '../services/api';
 import { Plus, Edit, Trash2, X, Save, Upload, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, LogIn } from 'lucide-react';
 
-type TabType = 'categories' | 'brands' | 'products';
+type TabType = 'categories' | 'brands' | 'products' | 'reviews';
 
 const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('categories');
@@ -28,6 +28,11 @@ const AdminPage: React.FC = () => {
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<BackendProduct | null>(null);
 
+  // Reviews state
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [editingReview, setEditingReview] = useState<any | null>(null);
+
   // Load data
   useEffect(() => {
     loadData();
@@ -46,6 +51,9 @@ const AdminPage: React.FC = () => {
       } else if (activeTab === 'products') {
         const response = await adminApi.products.getAll({ limit: 50 });
         setProducts(response.data.products);
+      } else if (activeTab === 'reviews') {
+        const response = await adminApi.reviews.getAll();
+        setReviews(response.data.reviews);
       }
     } catch (err: any) {
       console.error('Load data error:', err);
@@ -123,7 +131,7 @@ const AdminPage: React.FC = () => {
 
         {/* Tabs */}
         <div className="mb-6 flex flex-wrap gap-2 border-b border-eco-200">
-          {(['categories', 'brands', 'products'] as TabType[]).map((tab) => (
+          {(['categories', 'brands', 'products', 'reviews'] as TabType[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -176,6 +184,20 @@ const AdminPage: React.FC = () => {
                 setShowForm={setShowProductForm}
                 editingProduct={editingProduct}
                 setEditingProduct={setEditingProduct}
+              />
+            )}
+            {activeTab === 'reviews' && (
+              <ReviewsTab
+                reviews={reviews}
+                products={products}
+                categories={categories}
+                brands={brands}
+                onRefresh={loadData}
+                onMessage={showMessage}
+                showForm={showReviewForm}
+                setShowForm={setShowReviewForm}
+                editingReview={editingReview}
+                setEditingReview={setEditingReview}
               />
             )}
           </>
@@ -1480,6 +1502,360 @@ const ProductCard: React.FC<{
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Reviews Tab Component
+interface ReviewsTabProps {
+  reviews: any[];
+  products: BackendProduct[];
+  categories: BackendCategory[];
+  brands: BackendBrand[];
+  onRefresh: () => void;
+  onMessage: (message: string, isSuccess?: boolean) => void;
+  showForm: boolean;
+  setShowForm: (show: boolean) => void;
+  editingReview: any | null;
+  setEditingReview: (review: any | null) => void;
+}
+
+const ReviewsTab: React.FC<ReviewsTabProps> = ({
+  reviews,
+  products,
+  categories,
+  brands,
+  onRefresh,
+  onMessage,
+  showForm,
+  setShowForm,
+  editingReview,
+  setEditingReview,
+}) => {
+  const [formData, setFormData] = useState({
+    reviewType: 'product' as 'product' | 'category' | 'brand',
+    targetId: '',
+    userName: '',
+    rating: 5,
+    comment: '',
+    isVerified: true,
+    isApproved: true,
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (editingReview) {
+      setFormData({
+        reviewType: editingReview.reviewType,
+        targetId: editingReview.targetId,
+        userName: editingReview.userName,
+        rating: editingReview.rating,
+        comment: editingReview.comment,
+        isVerified: editingReview.isVerified,
+        isApproved: editingReview.isApproved,
+      });
+      setShowForm(true);
+    }
+  }, [editingReview]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      if (editingReview) {
+        await adminApi.reviews.update(editingReview._id, formData);
+        onMessage('Review updated successfully!');
+      } else {
+        await adminApi.reviews.create(formData);
+        onMessage('Review created successfully!');
+      }
+      
+      setShowForm(false);
+      setEditingReview(null);
+      setFormData({
+        reviewType: 'product',
+        targetId: '',
+        userName: '',
+        rating: 5,
+        comment: '',
+        isVerified: true,
+        isApproved: true,
+      });
+      onRefresh();
+    } catch (err: any) {
+      onMessage(err.message || 'Failed to save review', false);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this review?')) return;
+
+    try {
+      await adminApi.reviews.delete(id);
+      onMessage('Review deleted successfully!');
+      onRefresh();
+    } catch (err: any) {
+      onMessage(err.message || 'Failed to delete review', false);
+    }
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingReview(null);
+    setFormData({
+      reviewType: 'product',
+      targetId: '',
+      userName: '',
+      rating: 5,
+      comment: '',
+      isVerified: true,
+      isApproved: true,
+    });
+  };
+
+  // Get target options based on review type
+  const getTargetOptions = () => {
+    if (formData.reviewType === 'product') {
+      return products.map(p => ({ id: p._id, name: p.name }));
+    } else if (formData.reviewType === 'category') {
+      return categories.map(c => ({ id: c._id, name: c.name }));
+    } else {
+      return brands.map(b => ({ id: b._id, name: b.name }));
+    }
+  };
+
+  // Get target name for display
+  const getTargetName = (review: any) => {
+    if (review.reviewType === 'product') {
+      const product = products.find(p => p._id === review.targetId);
+      return product?.name || 'Unknown Product';
+    } else if (review.reviewType === 'category') {
+      const category = categories.find(c => c._id === review.targetId);
+      return category?.name || 'Unknown Category';
+    } else {
+      const brand = brands.find(b => b._id === review.targetId);
+      return brand?.name || 'Unknown Brand';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Add Review Button */}
+      {!showForm && (
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex items-center space-x-2 px-6 py-3 bg-eco-500 text-white rounded-xl hover:bg-eco-600 transition-all duration-300 shadow-lg hover:shadow-xl"
+        >
+          <Plus className="h-5 w-5" />
+          <span>Add Review</span>
+        </button>
+      )}
+
+      {/* Review Form */}
+      {showForm && (
+        <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-eco-200">
+          <h3 className="text-xl font-bold text-eco-800 mb-4">
+            {editingReview ? 'Edit Review' : 'Add New Review'}
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Review Type */}
+            <div>
+              <label className="block text-sm font-semibold text-eco-700 mb-2">
+                Review Type *
+              </label>
+              <select
+                value={formData.reviewType}
+                onChange={(e) => setFormData({ ...formData, reviewType: e.target.value as any, targetId: '' })}
+                className="w-full px-4 py-2 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-500 focus:border-transparent"
+                required
+              >
+                <option value="product">Product</option>
+                <option value="category">Category</option>
+                <option value="brand">Brand</option>
+              </select>
+            </div>
+
+            {/* Target Selection */}
+            <div>
+              <label className="block text-sm font-semibold text-eco-700 mb-2">
+                Select {formData.reviewType.charAt(0).toUpperCase() + formData.reviewType.slice(1)} *
+              </label>
+              <select
+                value={formData.targetId}
+                onChange={(e) => setFormData({ ...formData, targetId: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-500 focus:border-transparent"
+                required
+              >
+                <option value="">Select...</option>
+                {getTargetOptions().map(option => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* User Name */}
+            <div>
+              <label className="block text-sm font-semibold text-eco-700 mb-2">
+                User Name *
+              </label>
+              <input
+                type="text"
+                value={formData.userName}
+                onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-500 focus:border-transparent"
+                required
+                placeholder="Enter reviewer name"
+              />
+            </div>
+
+            {/* Rating */}
+            <div>
+              <label className="block text-sm font-semibold text-eco-700 mb-2">
+                Rating * ({formData.rating}/5)
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                value={formData.rating}
+                onChange={(e) => setFormData({ ...formData, rating: parseInt(e.target.value) })}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-eco-600 mt-1">
+                <span>1 Star</span>
+                <span>5 Stars</span>
+              </div>
+            </div>
+
+            {/* Comment */}
+            <div>
+              <label className="block text-sm font-semibold text-eco-700 mb-2">
+                Review Comment *
+              </label>
+              <textarea
+                value={formData.comment}
+                onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-500 focus:border-transparent"
+                rows={4}
+                required
+                placeholder="Write the review..."
+              />
+            </div>
+
+            {/* Checkboxes */}
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.isVerified}
+                  onChange={(e) => setFormData({ ...formData, isVerified: e.target.checked })}
+                  className="w-4 h-4 text-eco-600 border-eco-300 rounded focus:ring-eco-500"
+                />
+                <span className="text-sm text-eco-700">Verified Purchase</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.isApproved}
+                  onChange={(e) => setFormData({ ...formData, isApproved: e.target.checked })}
+                  className="w-4 h-4 text-eco-600 border-eco-300 rounded focus:ring-eco-500"
+                />
+                <span className="text-sm text-eco-700">Approved</span>
+              </label>
+            </div>
+
+            {/* Form Actions */}
+            <div className="flex flex-wrap gap-3 pt-4">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex items-center space-x-2 px-6 py-2 bg-eco-500 text-white rounded-xl hover:bg-eco-600 transition-colors disabled:opacity-50"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>{editingReview ? 'Update' : 'Create'}</span>
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="flex items-center space-x-2 px-6 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors"
+              >
+                <X className="h-4 w-4" />
+                <span>Cancel</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Reviews List */}
+      <div className="grid gap-4">
+        {reviews.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+            <p className="text-eco-600">No reviews yet. Add your first review!</p>
+          </div>
+        ) : (
+          reviews.map((review) => (
+            <div
+              key={review._id}
+              className="bg-white rounded-2xl shadow-lg p-6 border-2 border-eco-100 hover:border-eco-300 transition-all"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-3 py-1 bg-eco-100 text-eco-700 rounded-full text-xs font-semibold">
+                      {review.reviewType.toUpperCase()}
+                    </span>
+                    <span className="text-sm font-semibold text-eco-800">
+                      {getTargetName(review)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-eco-700">{review.userName}</span>
+                    <span className="text-yellow-500">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                  </div>
+                  <p className="text-gray-700">{review.comment}</p>
+                  <div className="flex gap-2 text-xs">
+                    {review.isVerified && (
+                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded">Verified</span>
+                    )}
+                    {review.isApproved && (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">Approved</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setEditingReview(review)}
+                    className="p-2 text-eco-600 hover:bg-eco-50 rounded-lg transition-colors"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(review._id)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
