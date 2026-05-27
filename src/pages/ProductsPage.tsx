@@ -116,27 +116,29 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
     <div className="min-h-screen pt-28 sm:pt-32 pb-12 bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Enhanced Header Section with animations */}
-        <div className="text-center mb-8 sm:mb-12 relative">
-          {/* Floating background elements */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-32 h-32 bg-eco-200 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob"></div>
-            <div className="absolute top-0 right-1/4 w-32 h-32 bg-nature-200 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob animation-delay-2000"></div>
+        {/* Grand Header Section with Rich Background */}
+        <div className="relative mb-8 sm:mb-12 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 overflow-hidden">
+          {/* Animated Grand Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-eco-100 via-nature-100 to-ocean-100">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-eco-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-nature-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
+            <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-ocean-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000"></div>
           </div>
           
-          <div className="relative z-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-eco-500 to-nature-500 rounded-3xl mb-4 sm:mb-6 shadow-eco-glow animate-pulse-slow">
+          {/* Content */}
+          <div className="relative z-10 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-eco-500 via-nature-500 to-ocean-500 rounded-3xl mb-4 sm:mb-6 shadow-2xl animate-pulse-slow">
               <Package className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gradient-eco mb-4 sm:mb-6 px-2 animate-fade-in">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gradient-eco mb-4 sm:mb-6 px-2 drop-shadow-lg">
               All Products
             </h1>
-            <p className="text-lg sm:text-xl text-eco-700 max-w-3xl mx-auto px-4 leading-relaxed">
+            <p className="text-lg sm:text-xl text-eco-800 max-w-3xl mx-auto px-4 leading-relaxed font-medium">
               Discover our complete collection of eco-friendly products for sustainable living
             </p>
-            <div className="mt-4 sm:mt-6 inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full border-2 border-eco-200 shadow-lg">
-              <Sparkles className="h-5 w-5 text-eco-600" />
-              <span className="text-sm font-semibold text-eco-700">
+            <div className="mt-6 sm:mt-8 inline-flex items-center space-x-2 bg-white/90 backdrop-blur-md px-6 py-3 rounded-full border-2 border-eco-300 shadow-xl">
+              <Sparkles className="h-5 w-5 text-eco-600 animate-pulse" />
+              <span className="text-sm font-bold text-eco-700">
                 Showing {filteredProducts.length} of {products.length} products
               </span>
             </div>
