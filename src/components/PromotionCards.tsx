@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Gift, Truck, Leaf, Percent, Sparkles, Star } from 'lucide-react';
 
 const PromotionCards: React.FC = () => {
+  const navigate = useNavigate();
   return (
     <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-nature-pattern">
       <div className="max-w-7xl mx-auto">
@@ -42,7 +44,10 @@ const PromotionCards: React.FC = () => {
                 Get free shipping on all orders above $50. No minimum quantity required!
               </p>
               
-              <button className="btn-eco px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold flex items-center space-x-2 group-hover:scale-105 hover:shadow-eco-glow-lg">
+              <button
+                onClick={() => navigate('/categories')}
+                className="btn-eco px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold flex items-center space-x-2 group-hover:scale-105 hover:shadow-eco-glow-lg"
+              >
                 <span>Shop Now</span>
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
               </button>
@@ -71,7 +76,10 @@ const PromotionCards: React.FC = () => {
                 Save big on selected eco-friendly products. Limited time offer, don't miss out!
               </p>
               
-              <button className="btn-nature px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold flex items-center space-x-2 group-hover:scale-105 hover:shadow-nature-glow-lg">
+              <button
+                onClick={() => navigate('/categories')}
+                className="btn-nature px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold flex items-center space-x-2 group-hover:scale-105 hover:shadow-nature-glow-lg"
+              >
                 <span>View Deals</span>
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
               </button>
@@ -100,7 +108,10 @@ const PromotionCards: React.FC = () => {
                 Mix and match personal care products. Perfect for gifting or personal use!
               </p>
               
-              <button className="btn-eco px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold flex items-center space-x-2 group-hover:scale-105 hover:shadow-eco-glow-lg">
+              <button
+                onClick={() => navigate('/category/personal-care')}
+                className="btn-eco px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-semibold flex items-center space-x-2 group-hover:scale-105 hover:shadow-eco-glow-lg"
+              >
                 <span>Shop Bundles</span>
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
               </button>
