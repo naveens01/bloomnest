@@ -321,6 +321,11 @@ export const transformBackendProduct = (backendProduct: BackendProduct) => {
   const categoryId = typeof backendProduct.category === 'object' ? backendProduct.category._id : backendProduct.category;
   const categoryName = typeof backendProduct.category === 'object' ? backendProduct.category.name : backendProduct.category;
   
+  // Transform all images to normalized URLs
+  const allImages = backendProduct.images
+    .map(img => normalizeImageUrl(img.url))
+    .filter(url => url !== ''); // Remove empty URLs
+  
   return {
   id: backendProduct._id,
   name: backendProduct.name,
@@ -329,6 +334,7 @@ export const transformBackendProduct = (backendProduct: BackendProduct) => {
   price: backendProduct.price?.current || 0,
   originalPrice: backendProduct.price?.original,
     image: normalizeImageUrl(primaryImage),
+    images: allImages.length > 0 ? allImages : undefined, // Array of all product images
   category: categoryName.toLowerCase().replace(/\s+/g, '-'),
   categoryId: categoryId, // Store category ID for filtering
   description: backendProduct.description || '',
