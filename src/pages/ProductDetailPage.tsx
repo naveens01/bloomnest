@@ -56,6 +56,10 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
     ? product.images
     : [product.image];
   
+  // Debug: Log images to console
+  console.log('Product images:', images);
+  console.log('Product object:', product);
+  
   const discountPercentage = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
@@ -142,29 +146,28 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
               </div>
             </div>
 
-            {/* Thumbnail Images - Only show if there are multiple images */}
-            {images.length > 1 && (
-              <div className={`grid gap-2 sm:gap-4 ${
-                images.length === 2 ? 'grid-cols-2' :
-                images.length === 3 ? 'grid-cols-3' :
-                images.length === 4 ? 'grid-cols-4' :
-                'grid-cols-5'
-              }`}>
-                {images.map((img, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-xl sm:rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
-                      selectedImage === index
-                        ? 'border-eco-500 shadow-eco-glow scale-105'
-                        : 'border-eco-200 hover:border-eco-400'
-                    }`}
-                  >
-                    <img src={img} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Thumbnail Images - Always show, visible on all devices */}
+            <div className={`grid gap-2 sm:gap-4 ${
+              images.length === 1 ? 'grid-cols-1' :
+              images.length === 2 ? 'grid-cols-2' :
+              images.length === 3 ? 'grid-cols-3' :
+              images.length === 4 ? 'grid-cols-4' :
+              'grid-cols-5'
+            }`}>
+              {images.map((img: string, index: number) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(index)}
+                  className={`aspect-square rounded-xl sm:rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
+                    selectedImage === index
+                      ? 'border-eco-500 shadow-eco-glow scale-105'
+                      : 'border-eco-200 hover:border-eco-400'
+                  }`}
+                >
+                  <img src={img} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Product Info */}
