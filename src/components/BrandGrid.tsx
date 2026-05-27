@@ -69,13 +69,13 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
           </p>
         </div>
 
-        {/* Enhanced Brand Cards Grid */}
+        {/* Amazon-Style Brand Cards Grid */}
         {loading ? (
           <div className="flex justify-center items-center py-16">
             <LoadingSpinner size="lg" text="Loading brands..." />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             {brands.map((brand, index) => (
             <div
               key={brand.id}
