@@ -49,54 +49,53 @@ const CategoriesPage: React.FC = () => {
 
   return (
     <main className="min-h-screen bg-eco-pattern pt-32 sm:pt-24 md:pt-28">
-      {/* Enhanced Hero Section */}
-      <section className="relative bg-eco-gradient py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Compact Hero Section */}
+      <section className="relative bg-eco-gradient py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 sm:-top-40 -right-20 sm:-right-40 w-48 sm:w-96 h-48 sm:h-96 bg-eco-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob"></div>
           <div className="absolute -bottom-20 sm:-bottom-40 -left-20 sm:-left-40 w-48 sm:w-96 h-48 sm:h-96 bg-ocean-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-2000"></div>
           <div className="absolute top-20 sm:top-40 left-20 sm:left-40 w-48 sm:w-96 h-48 sm:h-96 bg-forest-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-4000"></div>
           
-          {/* Floating eco elements */}
-          <div className="absolute top-10 sm:top-20 right-10 sm:right-20 animate-nature-float">
+          {/* Floating eco elements - hidden on mobile */}
+          <div className="hidden sm:block absolute top-10 sm:top-20 right-10 sm:right-20 animate-nature-float">
             <div className="w-12 sm:w-16 h-12 sm:h-16 bg-eco-100 rounded-full flex items-center justify-center opacity-80">
               <Leaf className="h-6 w-6 sm:h-8 sm:w-8 text-eco-600" />
             </div>
           </div>
-          <div className="absolute bottom-10 sm:bottom-20 left-10 sm:left-20 animate-nature-float animation-delay-2000">
+          <div className="hidden sm:block absolute bottom-10 sm:bottom-20 left-10 sm:left-20 animate-nature-float animation-delay-2000">
             <div className="w-10 sm:w-12 h-10 sm:h-12 bg-ocean-100 rounded-full flex items-center justify-center opacity-80">
               <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-ocean-600" />
             </div>
           </div>
         </div>
         
-        <div className="max-w-none mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
-            <div className="inline-flex items-center space-x-2 bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-eco-200 mb-6 sm:mb-8">
-              <Award className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
+            <div className="inline-flex items-center space-x-2 bg-glass-eco px-3 sm:px-6 py-1.5 sm:py-3 rounded-full border border-eco-200 mb-3 sm:mb-6">
+              <Award className="h-3 w-3 sm:h-5 sm:w-5 text-eco-600" />
               <span className="text-xs sm:text-sm font-semibold text-eco-700">Product Categories</span>
             </div>
             
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gradient-eco mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-gradient-eco mb-3 sm:mb-6">
               Shop by Category
-          </h1>
+            </h1>
             
-            <p className="text-base sm:text-lg lg:text-xl xl:text-2xl text-eco-700 max-w-4xl mx-auto leading-relaxed px-4 mb-8 sm:mb-12">
-              Explore our carefully curated categories of sustainable products, each designed to make your 
-              eco-friendly lifestyle easier and more beautiful. Find exactly what you need for every aspect of sustainable living.
+            <p className="text-sm sm:text-lg lg:text-xl text-eco-700 max-w-3xl mx-auto leading-relaxed px-4 mb-4 sm:mb-8">
+              Explore our carefully curated categories of sustainable products
             </p>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-6xl xl:max-w-7xl mx-auto">
-              <div className="bg-glass-eco p-4 sm:p-6 rounded-2xl border border-eco-200">
-                <div className="text-2xl sm:text-3xl font-bold text-eco-600 mb-1">{categories.length}</div>
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl sm:max-w-4xl mx-auto">
+              <div className="bg-glass-eco p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-eco-200">
+                <div className="text-xl sm:text-3xl font-bold text-eco-600 mb-0.5 sm:mb-1">{categories.length}</div>
                 <div className="text-xs sm:text-sm text-eco-700">Categories</div>
               </div>
-              <div className="bg-glass-eco p-4 sm:p-6 rounded-2xl border border-eco-200">
-                <div className="text-2xl sm:text-3xl font-bold text-eco-600 mb-1">500+</div>
+              <div className="bg-glass-eco p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-eco-200">
+                <div className="text-xl sm:text-3xl font-bold text-eco-600 mb-0.5 sm:mb-1">500+</div>
                 <div className="text-xs sm:text-sm text-eco-700">Products</div>
               </div>
-              <div className="bg-glass-eco p-4 sm:p-6 rounded-2xl border border-eco-200">
-                <div className="text-2xl sm:text-3xl font-bold text-eco-600 mb-1">100%</div>
+              <div className="bg-glass-eco p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-eco-200">
+                <div className="text-xl sm:text-3xl font-bold text-eco-600 mb-0.5 sm:mb-1">100%</div>
                 <div className="text-xs sm:text-sm text-eco-700">Eco-Friendly</div>
               </div>
             </div>
@@ -105,35 +104,35 @@ const CategoriesPage: React.FC = () => {
       </section>
 
       {/* Enhanced Search and Filter Section */}
-      <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-white/50 backdrop-blur-sm">
-        <div className="max-w-none mx-auto">
-          <div className="bg-glass-eco rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-eco-200 shadow-eco-glow">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-center">
+      <section className="py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8 bg-white/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-glass-eco rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-eco-200 shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-center">
               {/* Search Bar */}
-              <div className="lg:col-span-2">
+              <div className="md:col-span-2">
                 <div className="relative group">
-                  <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-eco-400 group-hover:text-eco-600 transition-colors" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-eco-400 group-hover:text-eco-600 transition-colors" />
                   <input
                     type="text"
-                    placeholder="Search product categories..."
+                    placeholder="Search categories..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 border-2 border-eco-200 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-sm sm:text-lg"
+                    className="w-full pl-9 sm:pl-11 pr-4 py-2.5 sm:py-3 border-2 border-eco-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-sm sm:text-base"
                   />
                 </div>
               </div>
               
               {/* Sort Dropdown */}
               <div>
-                <select 
+                <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-eco-200 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-sm sm:text-base"
+                  className="w-full px-3 py-2.5 sm:py-3 border-2 border-eco-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-sm"
                 >
-                  <option value="featured">Sort by: Featured</option>
-                  <option value="name">Name: A to Z</option>
-                  <option value="products">Product Count</option>
-                  <option value="newest">Newest First</option>
+                  <option value="featured">Featured</option>
+                  <option value="name">A to Z</option>
+                  <option value="products">Most Products</option>
+                  <option value="newest">Newest</option>
                 </select>
               </div>
             </div>

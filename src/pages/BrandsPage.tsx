@@ -54,98 +54,97 @@ const BrandsPage: React.FC = () => {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-32 sm:pt-24 md:pt-28">
-      {/* Grand Hero Section */}
-      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Magnificent Animated Background Elements */}
+      {/* Compact Hero Section */}
+      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* Grand Floating Orbs */}
+          {/* Floating Orbs */}
           <div className="absolute -top-32 sm:-top-48 -right-32 sm:-right-48 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-eco-300 to-nature-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob"></div>
           <div className="absolute -bottom-32 sm:-bottom-48 -left-32 sm:-left-48 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-nature-300 to-ocean-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob animation-delay-2000"></div>
           <div className="absolute top-32 sm:top-48 left-32 sm:left-48 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-ocean-300 to-eco-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob animation-delay-4000"></div>
           
-          {/* Grand Floating Elements */}
-          <div className="absolute top-16 sm:top-24 right-16 sm:right-24 animate-nature-float">
-            <div className="w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-br from-eco-200 to-nature-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
-              <Crown className="h-8 w-8 sm:h-10 sm:w-10 text-eco-600" />
+          {/* Floating Elements - hidden on mobile */}
+          <div className="hidden sm:block absolute top-16 sm:top-24 right-16 sm:right-24 animate-nature-float">
+            <div className="w-12 sm:w-20 h-12 sm:h-20 bg-gradient-to-br from-eco-200 to-nature-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
+              <Crown className="h-6 w-6 sm:h-10 sm:w-10 text-eco-600" />
             </div>
           </div>
-          <div className="absolute bottom-16 sm:bottom-24 left-16 sm:left-24 animate-nature-float animation-delay-2000">
-            <div className="w-14 sm:w-16 h-14 sm:h-16 bg-gradient-to-br from-nature-200 to-ocean-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
-              <Target className="h-7 w-7 sm:h-8 sm:w-8 text-nature-600" />
+          <div className="hidden sm:block absolute bottom-16 sm:bottom-24 left-16 sm:left-24 animate-nature-float animation-delay-2000">
+            <div className="w-10 sm:w-16 h-10 sm:h-16 bg-gradient-to-br from-nature-200 to-ocean-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
+              <Target className="h-5 w-5 sm:h-8 sm:w-8 text-nature-600" />
             </div>
           </div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-nature-float animation-delay-4000">
-            <div className="w-12 sm:w-14 h-12 sm:h-14 bg-gradient-to-br from-ocean-200 to-eco-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
-              <Lightbulb className="h-6 w-6 sm:h-7 sm:w-7 text-ocean-600" />
+          <div className="hidden sm:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-nature-float animation-delay-4000">
+            <div className="w-10 sm:w-14 h-10 sm:h-14 bg-gradient-to-br from-ocean-200 to-eco-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
+              <Lightbulb className="h-5 w-5 sm:h-7 sm:w-7 text-ocean-600" />
             </div>
           </div>
         </div>
         
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
-            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-6 sm:px-8 py-3 sm:py-4 rounded-full border border-white/30 mb-8 sm:mb-12 animate-fade-in-up">
-              <Award className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              <span className="text-sm sm:text-base font-bold text-white">Premium Trusted Brands</span>
+            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-3 sm:px-8 py-1.5 sm:py-4 rounded-full border border-white/30 mb-3 sm:mb-8 animate-fade-in-up">
+              <Award className="h-3 w-3 sm:h-6 sm:w-6 text-white" />
+              <span className="text-xs sm:text-base font-bold text-white">Premium Trusted Brands</span>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-8 sm:mb-12 animate-fade-in-up animation-delay-200">
+            <h1 className="text-2xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-8 animate-fade-in-up animation-delay-200">
               Discover Sustainable Brands
             </h1>
             
-            <p className="text-lg sm:text-xl lg:text-2xl xl:text-3xl text-white/90 max-w-5xl mx-auto leading-relaxed px-4 mb-12 sm:mb-16 animate-fade-in-up animation-delay-400">
-              Explore our curated collection of eco-conscious brands that are committed to sustainability, 
-              quality, and positive environmental impact. Each brand shares our vision for a greener future.
+            <p className="text-sm sm:text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed px-4 mb-4 sm:mb-10 animate-fade-in-up animation-delay-400">
+              Explore our curated collection of eco-conscious brands committed to sustainability
             </p>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto animate-fade-in-up animation-delay-600">
-              <div className="bg-white/20 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-white/30 shadow-2xl">
-                <div className="text-3xl sm:text-4xl font-bold text-white mb-2">{brands.length}</div>
-                <div className="text-sm sm:text-base text-white/90">Trusted Brands</div>
+            <div className="grid grid-cols-3 gap-3 sm:gap-8 max-w-2xl sm:max-w-4xl mx-auto animate-fade-in-up animation-delay-600">
+              <div className="bg-white/20 backdrop-blur-md p-3 sm:p-8 rounded-xl sm:rounded-3xl border border-white/30 shadow-2xl">
+                <div className="text-xl sm:text-4xl font-bold text-white mb-0.5 sm:mb-2">{brands.length}</div>
+                <div className="text-xs sm:text-base text-white/90">Trusted Brands</div>
               </div>
-              <div className="bg-white/20 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-white/30 shadow-2xl">
-                <div className="text-3xl sm:text-4xl font-bold text-white mb-2">100%</div>
-                <div className="text-sm sm:text-base text-white/90">Eco-Certified</div>
+              <div className="bg-white/20 backdrop-blur-md p-3 sm:p-8 rounded-xl sm:rounded-3xl border border-white/30 shadow-2xl">
+                <div className="text-xl sm:text-4xl font-bold text-white mb-0.5 sm:mb-2">100%</div>
+                <div className="text-xs sm:text-base text-white/90">Eco-Certified</div>
               </div>
-              <div className="bg-white/20 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-white/30 shadow-2xl">
-                <div className="text-3xl sm:text-4xl font-bold text-white mb-2">24/7</div>
-                <div className="text-sm sm:text-base text-white/90">Support</div>
+              <div className="bg-white/20 backdrop-blur-md p-3 sm:p-8 rounded-xl sm:rounded-3xl border border-white/30 shadow-2xl">
+                <div className="text-xl sm:text-4xl font-bold text-white mb-0.5 sm:mb-2">24/7</div>
+                <div className="text-xs sm:text-base text-white/90">Support</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Grand Search and Filter Section */}
-      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
+      {/* Search and Filter Section */}
+      <section className="py-6 sm:py-10 md:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-gradient-to-r from-eco-100 via-nature-100 to-ocean-100 rounded-3xl p-8 sm:p-12 shadow-eco-glow-lg border border-eco-200">
+          <div className="bg-gradient-to-r from-eco-100 via-nature-100 to-ocean-100 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-lg border border-eco-200">
             {/* Search Bar */}
-            <div className="mb-8 sm:mb-12">
+            <div className="mb-6 sm:mb-8">
               <div className="relative max-w-2xl mx-auto">
-                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 h-6 w-6 text-eco-600" />
+                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
                 <input
                   type="text"
-                  placeholder="Search for sustainable brands..."
+                  placeholder="Search brands..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-16 pr-6 py-4 text-lg border-2 border-eco-200 rounded-2xl focus:ring-4 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white hover:border-eco-300 shadow-lg"
+                  className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base border-2 border-eco-200 rounded-lg sm:rounded-xl md:rounded-2xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white hover:border-eco-300 shadow-md"
                 />
-                <div className="absolute right-6 top-1/2 transform -translate-y-1/2">
-                  <Sparkles className="h-5 w-5 text-eco-400" />
+                <div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-eco-400" />
                 </div>
               </div>
             </div>
 
             {/* Filter Buttons - Mobile optimized */}
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-4 lg:gap-6 mb-8 sm:mb-12">
+            <div className="flex flex-wrap justify-center gap-2 mb-6 sm:mb-8">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-3 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl font-semibold text-xs sm:text-sm lg:text-base transition-all duration-300 transform hover:scale-105 whitespace-nowrap ${
+                  className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 ${
                     selectedCategory === category
-                      ? 'bg-gradient-to-r from-eco-500 to-nature-500 text-white shadow-eco-glow-lg'
-                      : 'bg-white/80 text-eco-700 hover:bg-white hover:shadow-lg border-2 border-eco-200'
+                      ? 'bg-gradient-to-r from-eco-500 to-nature-500 text-white shadow-lg'
+                      : 'bg-white/80 text-eco-700 hover:bg-white hover:shadow-md border border-eco-200'
                   }`}
                 >
                   {category === 'all' ? 'All' : category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
@@ -154,7 +153,7 @@ const BrandsPage: React.FC = () => {
             </div>
 
             {/* Sort Options - Mobile optimized */}
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-4 lg:gap-6">
+            <div className="flex flex-wrap justify-center gap-2">
               {[
                 { value: 'featured', label: 'Featured', icon: Star },
                 { value: 'name', label: 'Name', icon: TrendingUp },
@@ -166,13 +165,13 @@ const BrandsPage: React.FC = () => {
                   <button
                     key={option.value}
                     onClick={() => setSortBy(option.value)}
-                    className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4 rounded-xl sm:rounded-2xl font-semibold text-xs sm:text-sm lg:text-base transition-all duration-300 transform hover:scale-105 whitespace-nowrap ${
+                    className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 ${
                       sortBy === option.value
-                        ? 'bg-gradient-to-r from-nature-500 to-ocean-500 text-white shadow-nature-glow-lg'
-                        : 'bg-white/80 text-nature-700 hover:bg-white hover:shadow-lg border-2 border-nature-200'
+                        ? 'bg-gradient-to-r from-nature-500 to-ocean-500 text-white shadow-lg'
+                        : 'bg-white/80 text-nature-700 hover:bg-white hover:shadow-md border border-nature-200'
                     }`}
                   >
-                    <IconComponent className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
+                    <IconComponent className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{option.label}</span>
                   </button>
                 );
