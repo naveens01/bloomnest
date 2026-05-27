@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import ProductQuickView from '../components/ProductQuickView';
 import Breadcrumb from '../components/Breadcrumb';
@@ -25,6 +25,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   isInWatchlist
 }) => {
   const { categoryId } = useParams<{ categoryId: string }>();
+  const navigate = useNavigate();
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(1);
@@ -469,12 +470,18 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="btn-eco px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 group hover:shadow-eco-glow-lg bg-white text-eco-600 hover:bg-eco-50">
+              <button
+                onClick={() => navigate('/categories')}
+                className="btn-eco px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 group hover:shadow-eco-glow-lg bg-white text-eco-600 hover:bg-eco-50"
+              >
                 <span>Shop All Categories</span>
                 <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-2 transition-transform duration-300" />
               </button>
               
-              <button className="btn-eco px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 group hover:shadow-eco-glow-lg border-2 border-white text-white hover:bg-white hover:text-eco-600">
+              <button
+                onClick={() => navigate('/about')}
+                className="btn-eco px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 group hover:shadow-eco-glow-lg border-2 border-white text-white hover:bg-white hover:text-eco-600"
+              >
                 <span>Learn About Sustainability</span>
                 <Leaf className="h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform duration-300" />
               </button>
