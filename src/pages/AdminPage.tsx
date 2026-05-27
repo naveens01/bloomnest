@@ -1556,13 +1556,13 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({
   useEffect(() => {
     if (editingReview) {
       setFormData({
-        reviewType: editingReview.reviewType,
-        targetId: editingReview.targetId,
-        userName: editingReview.userName,
-        rating: editingReview.rating,
-        comment: editingReview.comment,
-        isVerified: editingReview.isVerified,
-        isApproved: editingReview.isApproved,
+        reviewType: editingReview.reviewType || 'product',
+        targetId: editingReview.targetId || '',
+        userName: editingReview.userName || '',
+        rating: editingReview.rating || 5,
+        comment: editingReview.comment || '',
+        isVerified: editingReview.isVerified !== undefined ? editingReview.isVerified : true,
+        isApproved: editingReview.isApproved !== undefined ? editingReview.isApproved : true,
       });
       setShowForm(true);
     }
