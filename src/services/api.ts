@@ -299,20 +299,30 @@ export const generateSlug = (name: string): string => {
 // Helper function to normalize image URLs
 const normalizeImageUrl = (url: string | undefined): string => {
   if (!url || url.trim() === '') return '';
+  
+  // Check if it's a placeholder text (like "preview1", "preview2")
+  if (!url.includes('/') && !url.startsWith('http')) {
+    // Return a placeholder image URL
+    return 'https://via.placeholder.com/400x400/10b981/ffffff?text=Product+Image';
+  }
+  
   // If already a full URL, return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
+  
   // Get backend URL from environment or use localhost
   // Remove /api suffix if present since images are served from root
   let backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   if (backendUrl.endsWith('/api')) {
     backendUrl = backendUrl.slice(0, -4);
   }
+  
   // If starts with /uploads, prepend backend URL
   if (url.startsWith('/uploads')) {
     return `${backendUrl}${url}`;
   }
+  
   // Otherwise, assume it's a relative path from uploads
   return `${backendUrl}/uploads/${url}`;
 };
