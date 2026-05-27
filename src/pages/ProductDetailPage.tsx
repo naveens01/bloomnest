@@ -146,13 +146,13 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
               </div>
             </div>
 
-            {/* Thumbnail Images - Always show, visible on all devices */}
-            <div className={`grid gap-2 sm:gap-4 ${
-              images.length === 1 ? 'grid-cols-1' :
-              images.length === 2 ? 'grid-cols-2' :
-              images.length === 3 ? 'grid-cols-3' :
-              images.length === 4 ? 'grid-cols-4' :
-              'grid-cols-5'
+            {/* Thumbnail Images - Always show, visible on all devices with smaller size */}
+            <div className={`grid gap-2 sm:gap-3 ${
+              images.length === 1 ? 'grid-cols-1 max-w-[100px]' :
+              images.length === 2 ? 'grid-cols-2 max-w-[220px]' :
+              images.length === 3 ? 'grid-cols-3 max-w-[330px]' :
+              images.length === 4 ? 'grid-cols-4 max-w-[440px]' :
+              'grid-cols-5 max-w-[550px]'
             }`}>
               {images.map((img: string, index: number) => (
                 <button
