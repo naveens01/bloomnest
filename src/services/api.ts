@@ -304,7 +304,11 @@ const normalizeImageUrl = (url: string | undefined): string => {
     return url;
   }
   // Get backend URL from environment or use localhost
-  const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  // Remove /api suffix if present since images are served from root
+  let backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  if (backendUrl.endsWith('/api')) {
+    backendUrl = backendUrl.slice(0, -4);
+  }
   // If starts with /uploads, prepend backend URL
   if (url.startsWith('/uploads')) {
     return `${backendUrl}${url}`;

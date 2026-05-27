@@ -52,8 +52,17 @@ const AdminPage: React.FC = () => {
         const response = await adminApi.products.getAll({ limit: 50 });
         setProducts(response.data.products);
       } else if (activeTab === 'reviews') {
-        const response = await adminApi.reviews.getAll();
-        setReviews(response.data.reviews);
+        // Load all data needed for reviews tab
+        const [reviewsRes, productsRes, categoriesRes, brandsRes] = await Promise.all([
+          adminApi.reviews.getAll(),
+          adminApi.products.getAll({ limit: 100 }),
+          adminApi.categories.getAll(),
+          adminApi.brands.getAll()
+        ]);
+        setReviews(reviewsRes.data.reviews || []);
+        setProducts(productsRes.data.products || []);
+        setCategories(categoriesRes.data.categories || []);
+        setBrands(brandsRes.data.brands || []);
       }
     } catch (err: any) {
       console.error('Load data error:', err);
@@ -1682,7 +1691,7 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({
             {/* Target Selection */}
             <div>
               <label className="block text-sm font-semibold text-eco-700 mb-2">
-                Select {formData.reviewType.charAt(0).toUpperCase() + formData.reviewType.slice(1)} *
+                Select {formData.reviewType ? (formData.reviewType.charAt(0).toUpperCase() + formData.reviewType.slice(1)) : 'Target'} *
               </label>
               <select
                 value={formData.targetId}
