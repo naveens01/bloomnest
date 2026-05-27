@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Award, Sparkles, ArrowRight, Star, TrendingUp, ShoppingBag, Crown, Target, Lightbulb, Loader2 } from 'lucide-react';
+import { Search, Award, Sparkles, ArrowRight, Star, TrendingUp, ShoppingBag, Crown, Target, Lightbulb, Loader2, Grid } from 'lucide-react';
 import { useHybridBrands } from '../hooks/useHybridData';
 
 const BrandsPage: React.FC = () => {
@@ -114,74 +114,96 @@ const BrandsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Modern Search and Filter Section */}
-      <section className="py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-7xl mx-auto">
-          {/* Modern Search Bar */}
-          <div className="mb-6 sm:mb-8">
-            <div className="relative max-w-3xl mx-auto">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search sustainable brands..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-12 py-3.5 sm:py-4 text-sm sm:text-base bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-eco-500 focus:border-transparent shadow-sm hover:shadow-md transition-all duration-200 placeholder-gray-400"
-              />
-              <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
-                <Sparkles className="h-5 w-5 text-eco-500" />
-              </div>
-            </div>
-          </div>
+      {/* Premium Search and Filter Section */}
+      <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-eco-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-nature-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        </div>
 
-          {/* Modern Filter Pills */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-medium text-gray-600">Category:</span>
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Premium Glass Card */}
+          <div className="bg-white/70 backdrop-blur-xl rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl border border-white/50">
+            {/* Premium Search Bar */}
+            <div className="mb-8">
+              <div className="relative max-w-3xl mx-auto group">
+                <div className="absolute inset-0 bg-gradient-to-r from-eco-400 to-nature-400 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                <div className="relative flex items-center">
+                  <Search className="absolute left-5 h-5 w-5 text-eco-600" />
+                  <input
+                    type="text"
+                    placeholder="Search for sustainable brands..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-14 pr-14 py-4 text-base bg-white/90 backdrop-blur-sm border-2 border-eco-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-eco-500 focus:border-transparent shadow-lg hover:shadow-xl transition-all duration-300 placeholder-gray-400"
+                  />
+                  <Sparkles className="absolute right-5 h-5 w-5 text-eco-500 animate-pulse" />
+                </div>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                    selectedCategory === category
-                      ? 'bg-eco-500 text-white shadow-md hover:bg-eco-600'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-eco-300 hover:bg-eco-50'
-                  }`}
-                >
-                  {category === 'all' ? '✨ All Brands' : category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Modern Sort Chips */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-medium text-gray-600">Sort by:</span>
+            {/* Premium Filter Buttons */}
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                <Grid className="h-4 w-4" />
+                Categories
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`group relative px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
+                      selectedCategory === category
+                        ? 'bg-gradient-to-r from-eco-500 via-nature-500 to-ocean-500 text-white shadow-lg shadow-eco-500/50'
+                        : 'bg-white/80 text-gray-700 border-2 border-gray-200 hover:border-eco-400 hover:bg-eco-50 shadow-md'
+                    }`}
+                  >
+                    <span className="relative z-10">
+                      {category === 'all' ? '✨ All Brands' : category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    </span>
+                    {selectedCategory === category && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-eco-400 to-nature-400 rounded-xl blur opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { value: 'featured', label: '⭐ Featured', icon: Star },
-                { value: 'name', label: 'A-Z', icon: TrendingUp },
-                { value: 'products', label: '📦 Products', icon: ShoppingBag },
-                { value: 'newest', label: '🆕 Newest', icon: Sparkles }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setSortBy(option.value)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                    sortBy === option.value
-                      ? 'bg-gradient-to-r from-nature-500 to-ocean-500 text-white shadow-md'
-                      : 'bg-white text-gray-700 border border-gray-200 hover:border-nature-300 hover:bg-nature-50'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+
+            {/* Premium Sort Buttons */}
+            <div>
+              <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Sort By
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { value: 'featured', label: 'Featured', icon: Star },
+                  { value: 'name', label: 'A to Z', icon: TrendingUp },
+                  { value: 'products', label: 'Products', icon: ShoppingBag },
+                  { value: 'newest', label: 'Newest', icon: Sparkles }
+                ].map((option) => {
+                  const IconComponent = option.icon;
+                  return (
+                    <button
+                      key={option.value}
+                      onClick={() => setSortBy(option.value)}
+                      className={`group relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
+                        sortBy === option.value
+                          ? 'bg-gradient-to-r from-nature-500 via-ocean-500 to-eco-500 text-white shadow-lg shadow-nature-500/50'
+                          : 'bg-white/80 text-gray-700 border-2 border-gray-200 hover:border-nature-400 hover:bg-nature-50 shadow-md'
+                      }`}
+                    >
+                      <IconComponent className="h-4 w-4" />
+                      <span className="relative z-10">{option.label}</span>
+                      {sortBy === option.value && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-nature-400 to-ocean-400 rounded-xl blur opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
