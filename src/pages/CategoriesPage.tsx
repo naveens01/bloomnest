@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Leaf, Sparkles, ArrowRight, Award, Clock, Search, Grid, ShoppingBag, Shield, Loader2, TrendingUp, Star } from 'lucide-react';
 import { useHybridCategories } from '../hooks/useHybridData';
-import CategoryCard from '../components/CategoryCard';
 
 const CategoriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -250,9 +249,128 @@ const CategoriesPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-                {filteredCategories.map((category) => (
-                  <CategoryCard key={category.id} category={category} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+                {filteredCategories.map((category, index) => (
+                  <Link
+                    key={category.id}
+                    to={`/category/${category.slug || category.id}`}
+                    className="group relative cursor-pointer animate-fade-in-up"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Main Card Container - Improved spacing */}
+                    <div className="h-full bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-2xl sm:rounded-3xl shadow-eco hover:shadow-eco-glow-xl transition-all duration-700 overflow-hidden hover:-translate-y-2 border border-eco-200 flex flex-col">
+                      {/* Enhanced Image Section - Better proportions */}
+                      <div className="relative h-56 sm:h-64 overflow-hidden flex-shrink-0">
+                        <img
+                          src={category.image}
+                          alt={category.name}
+                          className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-1000 ease-out"
+                        />
+                        
+                        {/* Enhanced Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-eco-900/90 via-eco-800/50 to-transparent group-hover:from-eco-800/95 transition-all duration-700" />
+                        
+                        {/* Category Badge - Mobile optimized */}
+                        <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
+                          <div className="bg-white/90 backdrop-blur-md p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-eco-glow border border-white/30">
+                            <Leaf className="w-4 h-4 sm:w-6 sm:h-6 text-eco-600" />
+                          </div>
+                        </div>
+                        
+                        {/* Eco Badge on hover - Mobile optimized */}
+                        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
+                          <div className="bg-gradient-to-r from-eco-500 to-nature-500 p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-eco-glow">
+                            <div className="flex items-center space-x-1 sm:space-x-2">
+                              <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                              <span className="text-[10px] sm:text-xs font-bold text-white">ECO</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Category Name Overlay - Better spacing */}
+                        <div className="absolute bottom-4 left-4 right-4 text-white">
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-xl sm:text-2xl font-bold line-clamp-1 group-hover:scale-105 transition-transform duration-500">
+                              {category.name}
+                            </h3>
+                            <ArrowRight className="h-6 w-6 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 flex-shrink-0" />
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30">
+                              <span className="text-sm font-semibold">{category.count} Products</span>
+                            </div>
+                            <div className="bg-white/20 backdrop-blur-sm px-3 py-2 rounded-full border border-white/30">
+                              <Award className="h-4 w-4 text-eco-300" />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Animated Background Elements */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                          <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-eco-300 rounded-full animate-ping"></div>
+                          <div className="absolute top-3/4 right-1/4 w-1 h-1 bg-nature-200 rounded-full animate-ping animation-delay-1000"></div>
+                          <div className="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 bg-ocean-400 rounded-full animate-ping animation-delay-2000"></div>
+                        </div>
+                      </div>
+                      
+                      {/* Content Section - Better spacing and readability */}
+                      <div className="p-6 flex flex-col flex-grow">
+                        <p className="text-eco-700 text-sm leading-relaxed mb-4 line-clamp-2">
+                          Discover amazing {category.name.toLowerCase()} products that are sustainable and eco-friendly
+                        </p>
+                        
+                        {/* Feature Tags - Better spacing */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <div className="bg-gradient-to-r from-eco-100 to-nature-100 px-3 py-1.5 rounded-full border border-eco-200 shadow-sm">
+                            <span className="text-xs font-medium text-eco-700">Sustainable</span>
+                          </div>
+                          <div className="bg-gradient-to-r from-nature-100 to-ocean-100 px-3 py-1.5 rounded-full border border-nature-200 shadow-sm">
+                            <span className="text-xs font-medium text-nature-700">Natural</span>
+                          </div>
+                          <div className="bg-gradient-to-r from-ocean-100 to-eco-100 px-3 py-1.5 rounded-full border border-ocean-200 shadow-sm">
+                            <span className="text-xs font-medium text-ocean-700">Quality</span>
+                          </div>
+                        </div>
+                        
+                        {/* Stats Row - Better spacing */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full animate-pulse"></div>
+                            <span className="text-sm font-semibold text-eco-700">{category.count} Items</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Clock className="h-3 w-3 text-eco-500" />
+                            <span className="text-xs text-eco-600">Updated</span>
+                          </div>
+                        </div>
+                        
+                        {/* Action Section - Better spacing, pushed to bottom */}
+                        <div className="flex items-center justify-between pt-4 border-t border-eco-200 mt-auto">
+                          <div className="flex items-center space-x-3">
+                            <div className="bg-gradient-to-r from-eco-200 to-nature-200 p-2.5 rounded-xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                              <Sparkles className="h-5 w-5 text-eco-600" />
+                            </div>
+                            <span className="text-sm font-medium text-eco-700">Premium</span>
+                          </div>
+                          
+                          {/* CTA Button - Better sizing */}
+                          <button className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-eco-glow-xl">
+                            <span className="flex items-center space-x-2">
+                              <span>Explore</span>
+                              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Enhanced Hover Effects */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-eco-400/10 via-nature-400/10 to-ocean-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                    </div>
+                    
+                    {/* Floating Decorative Elements */}
+                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-eco-400 to-nature-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-3000"></div>
+                    <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-gradient-to-r from-nature-400 to-ocean-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
+                  </Link>
                 ))}
               </div>
             </>

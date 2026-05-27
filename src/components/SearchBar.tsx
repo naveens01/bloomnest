@@ -177,38 +177,34 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <div ref={searchRef} className={`relative ${isMobile ? 'w-full' : ''}`}>
-      <div className="relative group flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className={`absolute left-3 ${isMobile ? 'sm:left-4' : 'left-4'} top-1/2 transform -translate-y-1/2 h-4 w-4 ${isMobile ? 'sm:h-5 sm:w-5' : 'h-5 w-5'} text-eco-400 group-hover:text-eco-600 transition-colors duration-300`} />
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Search eco-friendly products..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onKeyDown={handleKeyDown}
-            className={`w-full ${isMobile ? 'pl-10 pr-10 py-2.5 text-sm' : 'pl-12 pr-12 py-3 text-base'} border-2 border-eco-200 ${isMobile ? 'rounded-xl' : 'rounded-2xl'} focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 ${isMobile ? 'bg-white/80' : 'bg-white/90'} backdrop-blur-sm hover:bg-white hover:border-eco-300`}
-          />
-          {searchQuery && (
-            <button
-              onClick={clearSearch}
-              className={`absolute right-3 ${isMobile ? 'sm:right-4' : 'right-4'} top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors`}
-            >
-              <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-            </button>
-          )}
-        </div>
-        
-        {/* Modern Search Button */}
-        <button
-          onClick={() => handleSearch(searchQuery)}
-          disabled={!searchQuery.trim()}
-          className={`${isMobile ? 'px-4 py-2.5' : 'px-6 py-3'} bg-gradient-to-r from-eco-500 to-nature-500 text-white font-semibold ${isMobile ? 'rounded-xl' : 'rounded-2xl'} hover:from-eco-600 hover:to-nature-600 focus:ring-2 focus:ring-eco-400 focus:ring-offset-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl flex items-center gap-2 whitespace-nowrap`}
-        >
-          <Search className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
-          {!isMobile && <span>Search</span>}
-        </button>
+      <div className="relative group">
+        <Search className={`absolute left-3 ${isMobile ? 'sm:left-4' : 'left-4'} top-1/2 transform -translate-y-1/2 h-4 w-4 ${isMobile ? 'sm:h-5 sm:w-5' : 'h-5 w-5'} text-eco-400 group-hover:text-eco-600 transition-colors duration-300 ${!isMobile && 'animate-pulse-slow'}`} />
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Search eco-friendly products..."
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onKeyDown={handleKeyDown}
+          className={`w-full ${isMobile ? 'pl-10 pr-10 py-2.5 text-sm' : 'pl-12 pr-12 py-3 text-base'} border-2 border-eco-200 ${isMobile ? 'rounded-xl' : 'rounded-2xl'} focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 ${isMobile ? 'bg-white/80' : 'bg-white/90'} backdrop-blur-sm hover:bg-white hover:border-eco-300 ${!isMobile && 'group-hover:shadow-eco-glow'}`}
+        />
+        {searchQuery && (
+          <button
+            onClick={clearSearch}
+            className={`absolute right-3 ${isMobile ? 'sm:right-4' : 'right-4'} top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors`}
+          >
+            <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+          </button>
+        )}
+        {!searchQuery && !isMobile && (
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+            <Sparkles className="h-4 w-4 text-eco-400" />
+          </div>
+        )}
+        {!isMobile && (
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-eco-400/20 to-nature-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-xl"></div>
+        )}
       </div>
 
       {/* Autocomplete Dropdown */}
