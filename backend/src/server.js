@@ -116,7 +116,7 @@ app.use(errorHandler);
 // Database connection
 const DB_TARGET = process.env.DB_TARGET || 'local';
 const mongodbUri = DB_TARGET === 'atlas'
-  ? (process.env.MONGODB_URI_ATLAS || process.env.MONGODB_URI_PROD)
+  ? (process.env.MONGODB_URI_ATLAS || process.env.MONGODB_URI_PROD || process.env.MONGODB_URI)
   : process.env.MONGODB_URI;
 
 mongoose.connect(mongodbUri)
