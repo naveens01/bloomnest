@@ -64,8 +64,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
       className="group bg-white rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 cursor-pointer flex flex-col h-full"
     >
       
-      {/* Image Container - Responsive height */}
-      <div className="relative h-40 sm:h-48 md:h-56 lg:h-64 w-full overflow-hidden flex-shrink-0">
+      {/* Image Container - Large and Attractive (Amazon-style) */}
+      <div className="relative h-48 sm:h-56 md:h-64 lg:h-72 w-full overflow-hidden flex-shrink-0">
         <LazyImage
           src={product.image}
           alt={product.name}
@@ -123,77 +123,65 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
       </div>
       
-      {/* Content Container - Flex grow to fill space */}
-      <div className="p-2.5 sm:p-3 md:p-4 flex flex-col flex-grow">
+      {/* Content Container - Minimal Amazon-style */}
+      <div className="p-2 sm:p-3 flex flex-col flex-grow">
         
-        {/* Brand */}
-        <div className="flex items-center space-x-1.5 mb-1.5 sm:mb-2">
-          <div className="bg-green-100 p-0.5 sm:p-1 rounded">
-            <Shield className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600" />
-          </div>
-          <span className="text-[10px] sm:text-xs text-gray-600 font-medium truncate">{product.brand}</span>
-        </div>
-        
-        {/* Product Name */}
-        <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2 line-clamp-2 leading-tight min-h-[2.5rem] sm:min-h-[2.8rem]">
+        {/* Product Name - 2 lines max */}
+        <h3 className="text-xs sm:text-sm font-medium text-gray-900 mb-1.5 line-clamp-2 leading-snug">
           {product.name}
         </h3>
         
-        {/* Rating */}
-        <div className="flex items-center space-x-0.5 sm:space-x-1 mb-2 sm:mb-3">
-          {[...Array(5)].map((_, i) => (
-            <Star
-              key={i}
-              className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${
-                i < Math.floor(product.rating)
-                  ? 'text-yellow-400 fill-current'
-                  : 'text-gray-300'
-              }`}
-            />
-          ))}
-          <span className="text-[10px] sm:text-xs text-gray-500 ml-0.5 sm:ml-1">
+        {/* Rating - Compact */}
+        <div className="flex items-center space-x-1 mb-2">
+          <div className="flex items-center">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`h-3 w-3 ${
+                  i < Math.floor(product.rating)
+                    ? 'text-yellow-400 fill-current'
+                    : 'text-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+          <span className="text-xs text-gray-500">
             ({product.reviews})
           </span>
         </div>
         
-        {/* Features - Hidden on smallest mobile, shown on sm+ */}
-        <div className="hidden sm:flex flex-wrap gap-1 mb-2 md:mb-3">
-          {product.features.slice(0, 2).map((feature, index) => (
-            <span
-              key={index}
-              className="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded-full truncate max-w-[80px]"
-            >
-              {feature}
-            </span>
-          ))}
-        </div>
-        
-        {/* Spacer to push price/button to bottom */}
+        {/* Spacer */}
         <div className="flex-grow"></div>
         
-        {/* Price and Action */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-auto pt-2 border-t border-gray-100">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1.5">
-            <span className="text-base sm:text-lg font-bold text-green-600">₹{product.price}</span>
+        {/* Price - Bold and prominent */}
+        <div className="mb-2">
+          <div className="flex items-baseline space-x-2">
+            <span className="text-lg sm:text-xl font-bold text-gray-900">₹{product.price}</span>
             {product.originalPrice && (
-              <span className="text-xs sm:text-sm text-gray-400 line-through">
+              <span className="text-xs text-gray-500 line-through">
                 ₹{product.originalPrice}
               </span>
             )}
           </div>
-          
-          <button
-            onClick={handleAddToCart}
-            disabled={!product.inStock}
-            className={`w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${
-              product.inStock
-                ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 active:scale-95 shadow-md hover:shadow-lg'
-                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            {product.inStock ? 'Add to Cart' : 'Unavailable'}
-          </button>
+          {discountPercentage > 0 && (
+            <span className="text-xs text-green-600 font-medium">
+              Save {discountPercentage}%
+            </span>
+          )}
         </div>
+        
+        {/* Add to Cart Button - Full width, prominent */}
+        <button
+          onClick={handleAddToCart}
+          disabled={!product.inStock}
+          className={`w-full py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
+            product.inStock
+              ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 active:scale-95 shadow-md hover:shadow-lg'
+              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+          }`}
+        >
+          {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+        </button>
       </div>
       
       {/* Add to Cart Notification */}
