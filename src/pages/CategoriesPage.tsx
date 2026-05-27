@@ -132,38 +132,28 @@ const CategoriesPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Premium Sort Buttons */}
-            <div>
-              <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Sort By
-              </h3>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  { value: 'featured', label: 'Featured', icon: Star },
-                  { value: 'name', label: 'A to Z', icon: TrendingUp },
-                  { value: 'products', label: 'Most Products', icon: ShoppingBag },
-                  { value: 'newest', label: 'Newest', icon: Sparkles }
-                ].map((option) => {
-                  const IconComponent = option.icon;
-                  return (
-                    <button
-                      key={option.value}
-                      onClick={() => setSortBy(option.value)}
-                      className={`group relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
-                        sortBy === option.value
-                          ? 'bg-gradient-to-r from-eco-500 via-nature-500 to-ocean-500 text-white shadow-lg shadow-eco-500/50'
-                          : 'bg-white/80 text-gray-700 border-2 border-gray-200 hover:border-eco-400 hover:bg-eco-50 shadow-md'
-                      }`}
-                    >
-                      <IconComponent className="h-4 w-4" />
-                      <span className="relative z-10">{option.label}</span>
-                      {sortBy === option.value && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-eco-400 to-nature-400 rounded-xl blur opacity-50 group-hover:opacity-70 transition-opacity"></div>
-                      )}
-                    </button>
-                  );
-                })}
+            {/* Premium Sort Dropdown - Centered */}
+            <div className="flex justify-center">
+              <div className="relative group w-full sm:w-auto sm:min-w-[320px]">
+                <label className="block text-sm font-bold text-gray-700 mb-3 text-center flex items-center justify-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Sort By
+                </label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full appearance-none px-6 py-4 pr-12 rounded-2xl border-2 border-eco-200 focus:border-eco-400 focus:ring-4 focus:ring-eco-100 transition-all duration-300 text-base font-semibold text-eco-700 bg-gradient-to-r from-eco-50 to-nature-50 hover:from-eco-100 hover:to-nature-100 shadow-lg group-hover:shadow-xl cursor-pointer"
+                >
+                  <option value="featured">⭐ Featured</option>
+                  <option value="name">🔤 A to Z</option>
+                  <option value="products">📦 Most Products</option>
+                  <option value="newest">✨ Newest</option>
+                </select>
+                <div className="absolute right-4 top-[52px] pointer-events-none">
+                  <svg className="h-5 w-5 text-eco-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
