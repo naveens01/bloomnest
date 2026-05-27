@@ -153,52 +153,62 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
                   </div>
                 </div>
                 
-                {/* Enhanced Content Section - Reduced padding */}
-                <div className="p-4 bg-gradient-to-br from-white via-eco-50 to-nature-50">
-                  <div className="mb-3">
-                    <p className="text-eco-700 leading-relaxed text-xs sm:text-sm mb-3 line-clamp-2">
+                {/* Enhanced Content Section - Mobile Optimized */}
+                <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-eco-50 via-white to-eco-50">
+                  <div className="mb-4 sm:mb-6">
+                    <p className="text-eco-700 leading-relaxed text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
                       {brand.description}
                     </p>
                     
-                    {/* Enhanced Feature Tags - Smaller */}
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      <div className="bg-gradient-to-r from-eco-100 to-nature-100 px-2 py-0.5 rounded-full border border-eco-200">
+                    {/* Enhanced Feature Tags - Mobile Optimized */}
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                      <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
                         <span className="text-xs font-medium text-eco-700">{brand.specialty}</span>
                       </div>
-                      <div className="bg-gradient-to-r from-nature-100 to-ocean-100 px-2 py-0.5 rounded-full border border-nature-200">
-                        <span className="text-xs font-medium text-nature-700">Est. {brand.established}</span>
+                      <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
+                        <span className="text-xs font-medium text-eco-700">Est. {brand.established}</span>
                       </div>
                     </div>
                     
-                    {/* Enhanced Stats Row - Smaller */}
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-1.5 h-1.5 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full animate-pulse"></div>
-                        <span className="font-semibold text-eco-700">{brand.productCount} Items</span>
+                    {/* Enhanced Stats Row - Mobile Optimized */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-eco-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs sm:text-sm font-semibold text-eco-700">{brand.productCount} Items</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Shield className="h-3 w-3 text-eco-500" />
-                        <span className="text-eco-600">Verified</span>
+                        <span className="text-xs text-eco-600 hidden sm:inline">Verified</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Enhanced CTA Button - Smaller */}
-                  <button className="w-full bg-gradient-to-r from-eco-500 to-nature-500 text-white px-4 py-2 rounded-xl font-semibold text-sm hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105">
-                    <span className="flex items-center space-x-2">
-                      <span>View Products</span>
-                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-                    </span>
-                  </button>
+                  {/* Enhanced Action Section - Mobile Optimized */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                      <div className="bg-eco-200 p-2 sm:p-3 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform duration-300">
+                        <Award className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
+                      </div>
+                      <span className="text-xs sm:text-sm font-medium text-eco-700 hidden sm:inline">Premium Brand</span>
+                    </div>
+                    
+                    {/* Enhanced CTA Button - Mobile Optimized */}
+                    <button className="bg-eco-gradient text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-semibold text-xs sm:text-sm hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-eco-glow-xl">
+                      <span className="flex items-center space-x-1 sm:space-x-2">
+                        <span>Explore</span>
+                        <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      </span>
+                    </button>
+                  </div>
                 </div>
                 
-                {/* Enhanced Hover Effects with Grand Gradients */}
-                <div className="absolute inset-0 bg-gradient-to-r from-eco-400/10 via-nature-400/10 to-ocean-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                {/* Enhanced Hover Effects */}
+                <div className="absolute inset-0 bg-gradient-to-r from-eco-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
               </div>
               
-              {/* Floating Decorative Elements with Enhanced Colors */}
-              <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-eco-400 to-nature-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-3000"></div>
-              <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-gradient-to-r from-nature-400 to-ocean-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
+              {/* Floating Decorative Elements - Hidden on mobile for performance */}
+              <div className="hidden sm:block absolute -top-2 -right-2 w-4 h-4 bg-eco-300 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-3000"></div>
+              <div className="hidden sm:block absolute -bottom-2 -left-2 w-3 h-3 bg-eco-200 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
             </div>
           ))}
           </div>
