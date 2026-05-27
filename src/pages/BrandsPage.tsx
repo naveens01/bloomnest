@@ -114,68 +114,74 @@ const BrandsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Search and Filter Section */}
-      <section className="py-6 sm:py-10 md:py-16 px-4 sm:px-6 lg:px-8">
+      {/* Modern Search and Filter Section */}
+      <section className="py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-gradient-to-r from-eco-100 via-nature-100 to-ocean-100 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-lg border border-eco-200">
-            {/* Search Bar */}
-            <div className="mb-6 sm:mb-8">
-              <div className="relative max-w-2xl mx-auto">
-                <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
-                <input
-                  type="text"
-                  placeholder="Search brands..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base border-2 border-eco-200 rounded-lg sm:rounded-xl md:rounded-2xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white hover:border-eco-300 shadow-md"
-                />
-                <div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2">
-                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-eco-400" />
-                </div>
+          {/* Modern Search Bar */}
+          <div className="mb-6 sm:mb-8">
+            <div className="relative max-w-3xl mx-auto">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search sustainable brands..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-12 py-3.5 sm:py-4 text-sm sm:text-base bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-eco-500 focus:border-transparent shadow-sm hover:shadow-md transition-all duration-200 placeholder-gray-400"
+              />
+              <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+                <Sparkles className="h-5 w-5 text-eco-500" />
               </div>
             </div>
+          </div>
 
-            {/* Filter Buttons - Mobile optimized */}
-            <div className="flex flex-wrap justify-center gap-2 mb-6 sm:mb-8">
+          {/* Modern Filter Pills */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm font-medium text-gray-600">Category:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                     selectedCategory === category
-                      ? 'bg-gradient-to-r from-eco-500 to-nature-500 text-white shadow-lg'
-                      : 'bg-white/80 text-eco-700 hover:bg-white hover:shadow-md border border-eco-200'
+                      ? 'bg-eco-500 text-white shadow-md hover:bg-eco-600'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-eco-300 hover:bg-eco-50'
                   }`}
                 >
-                  {category === 'all' ? 'All' : category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  {category === 'all' ? '✨ All Brands' : category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                 </button>
               ))}
             </div>
+          </div>
 
-            {/* Sort Options - Mobile optimized */}
-            <div className="flex flex-wrap justify-center gap-2">
+          {/* Modern Sort Chips */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm font-medium text-gray-600">Sort by:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
               {[
-                { value: 'featured', label: 'Featured', icon: Star },
-                { value: 'name', label: 'Name', icon: TrendingUp },
-                { value: 'products', label: 'Products', icon: ShoppingBag },
-                { value: 'newest', label: 'Newest', icon: Sparkles }
-              ].map((option) => {
-                const IconComponent = option.icon;
-                return (
-                  <button
-                    key={option.value}
-                    onClick={() => setSortBy(option.value)}
-                    className={`flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all duration-300 ${
-                      sortBy === option.value
-                        ? 'bg-gradient-to-r from-nature-500 to-ocean-500 text-white shadow-lg'
-                        : 'bg-white/80 text-nature-700 hover:bg-white hover:shadow-md border border-nature-200'
-                    }`}
-                  >
-                    <IconComponent className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>{option.label}</span>
-                  </button>
-                );
-              })}
+                { value: 'featured', label: '⭐ Featured', icon: Star },
+                { value: 'name', label: 'A-Z', icon: TrendingUp },
+                { value: 'products', label: '📦 Products', icon: ShoppingBag },
+                { value: 'newest', label: '🆕 Newest', icon: Sparkles }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setSortBy(option.value)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                    sortBy === option.value
+                      ? 'bg-gradient-to-r from-nature-500 to-ocean-500 text-white shadow-md'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-nature-300 hover:bg-nature-50'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>

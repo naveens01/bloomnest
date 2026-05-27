@@ -103,38 +103,49 @@ const CategoriesPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Enhanced Search and Filter Section */}
-      <section className="py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8 bg-white/50 backdrop-blur-sm">
+      {/* Modern Search and Filter Section */}
+      <section className="py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-glass-eco rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-eco-200 shadow-lg">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-center">
-              {/* Search Bar */}
-              <div className="md:col-span-2">
-                <div className="relative group">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-eco-400 group-hover:text-eco-600 transition-colors" />
-                  <input
-                    type="text"
-                    placeholder="Search categories..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 sm:pl-11 pr-4 py-2.5 sm:py-3 border-2 border-eco-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-sm sm:text-base"
-                  />
-                </div>
+          {/* Modern Search Bar */}
+          <div className="mb-6">
+            <div className="relative max-w-3xl mx-auto">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
               </div>
-              
-              {/* Sort Dropdown */}
-              <div>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-3 py-2.5 sm:py-3 border-2 border-eco-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-sm"
+              <input
+                type="text"
+                placeholder="Search eco-friendly categories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3.5 sm:py-4 text-sm sm:text-base bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-eco-500 focus:border-transparent shadow-sm hover:shadow-md transition-all duration-200 placeholder-gray-400"
+              />
+            </div>
+          </div>
+
+          {/* Modern Sort Pills */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm font-medium text-gray-600">Sort by:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: 'featured', label: '⭐ Featured' },
+                { value: 'name', label: 'A-Z' },
+                { value: 'products', label: '📦 Most Products' },
+                { value: 'newest', label: '🆕 Newest' }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setSortBy(option.value)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                    sortBy === option.value
+                      ? 'bg-eco-500 text-white shadow-md hover:bg-eco-600'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-eco-300 hover:bg-eco-50'
+                  }`}
                 >
-                  <option value="featured">Featured</option>
-                  <option value="name">A to Z</option>
-                  <option value="products">Most Products</option>
-                  <option value="newest">Newest</option>
-                </select>
-              </div>
+                  {option.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
