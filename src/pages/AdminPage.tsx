@@ -53,12 +53,16 @@ const AdminPage: React.FC = () => {
         setProducts(response.data.products);
       } else if (activeTab === 'reviews') {
         // Load all data needed for reviews tab
+        console.log('Loading data for reviews tab...');
         const [reviewsRes, productsRes, categoriesRes, brandsRes] = await Promise.all([
           adminApi.reviews.getAll(),
           adminApi.products.getAll({ limit: 100 }),
           adminApi.categories.getAll(),
           adminApi.brands.getAll()
         ]);
+        console.log('Products loaded:', productsRes.data.products?.length || 0);
+        console.log('Categories loaded:', categoriesRes.data.categories?.length || 0);
+        console.log('Brands loaded:', brandsRes.data.brands?.length || 0);
         setReviews(reviewsRes.data.reviews || []);
         setProducts(productsRes.data.products || []);
         setCategories(categoriesRes.data.categories || []);
