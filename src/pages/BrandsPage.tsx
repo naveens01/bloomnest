@@ -6,7 +6,7 @@ import { useHybridBrands } from '../hooks/useHybridData';
 const BrandsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('featured');
+  const [sortBy, setSortBy] = useState('name'); // Default to A-Z sorting
 
   // Use hybrid data hook to get brands from both static and backend
   // The hook automatically refreshes when page becomes visible or window gains focus
@@ -143,18 +143,18 @@ const BrandsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Premium Category Filter Buttons - Centered and Larger */}
+            {/* Premium Category Filter Buttons - Centered with Better Size */}
             <div className="mb-8">
               <h3 className="text-sm font-bold text-gray-700 mb-4 text-center flex items-center justify-center gap-2">
                 <Grid className="h-4 w-4" />
                 Categories
               </h3>
-              <div className="flex flex-wrap gap-3 justify-center">
+              <div className="flex flex-wrap gap-2.5 justify-center">
                 {categories.map((category) => (
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`group relative px-6 py-3 rounded-xl font-semibold text-base transition-all duration-300 transform hover:scale-105 ${
+                    className={`group relative px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
                       selectedCategory === category
                         ? 'bg-gradient-to-r from-eco-500 via-nature-500 to-ocean-500 text-white shadow-lg shadow-eco-500/50'
                         : 'bg-white/80 text-gray-700 border-2 border-gray-200 hover:border-eco-400 hover:bg-eco-50 shadow-md'
