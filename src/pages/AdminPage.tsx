@@ -1700,12 +1700,21 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({
                 required
               >
                 <option value="">Select...</option>
-                {getTargetOptions().map(option => (
-                  <option key={option.id} value={option.id}>
-                    {option.name}
-                  </option>
-                ))}
+                {getTargetOptions().length === 0 ? (
+                  <option value="" disabled>Loading {formData.reviewType}s...</option>
+                ) : (
+                  getTargetOptions().map(option => (
+                    <option key={option.id} value={option.id}>
+                      {option.name}
+                    </option>
+                  ))
+                )}
               </select>
+              {getTargetOptions().length === 0 && (
+                <p className="text-xs text-red-600 mt-1">
+                  No {formData.reviewType}s found. Please add some {formData.reviewType}s first or refresh the page.
+                </p>
+              )}
             </div>
 
             {/* User Name */}
@@ -1827,17 +1836,17 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="px-3 py-1 bg-eco-100 text-eco-700 rounded-full text-xs font-semibold">
-                      {review.reviewType.toUpperCase()}
+                      {review.reviewType ? review.reviewType.toUpperCase() : 'REVIEW'}
                     </span>
                     <span className="text-sm font-semibold text-eco-800">
                       {getTargetName(review)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-eco-700">{review.userName}</span>
-                    <span className="text-yellow-500">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                    <span className="font-semibold text-eco-700">{review.userName || 'Anonymous'}</span>
+                    <span className="text-yellow-500">{'★'.repeat(review.rating || 0)}{'☆'.repeat(5 - (review.rating || 0))}</span>
                   </div>
-                  <p className="text-gray-700">{review.comment}</p>
+                  <p className="text-gray-700">{review.comment || 'No comment'}</p>
                   <div className="flex gap-2 text-xs">
                     {review.isVerified && (
                       <span className="px-2 py-1 bg-green-100 text-green-700 rounded">Verified</span>
