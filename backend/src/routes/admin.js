@@ -250,10 +250,10 @@ router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
   const isFeaturedRequested = parseBoolean(productData.isFeatured);
   if (isFeaturedRequested) {
     const featuredCount = await Product.countDocuments({ isFeatured: true, isActive: true, status: 'published' });
-    if (featuredCount >= 6) {
+    if (featuredCount >= 10) {
       return res.status(400).json({
         status: 'error',
-        message: 'Only 6 featured products are allowed on home. Unfeature one product before adding another featured product.'
+        message: 'Only 10 featured products are allowed on home. Unfeature one product before adding another featured product.'
       });
     }
   }
@@ -343,10 +343,10 @@ router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) =
   const isFeaturedRequested = parseBoolean(productData.isFeatured);
   if (isFeaturedRequested && !existingProduct.isFeatured) {
     const featuredCount = await Product.countDocuments({ isFeatured: true, isActive: true, status: 'published' });
-    if (featuredCount >= 6) {
+    if (featuredCount >= 10) {
       return res.status(400).json({
         status: 'error',
-        message: 'Only 6 featured products are allowed on home. Unfeature one product before adding another featured product.'
+        message: 'Only 10 featured products are allowed on home. Unfeature one product before adding another featured product.'
       });
     }
   }

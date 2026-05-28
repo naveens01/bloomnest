@@ -343,15 +343,15 @@ export function useHybridFeaturedProducts(options: UseHybridDataOptions = {}) {
       }
 
       try {
-        const response = await productApi.getFeatured(6);
+        const response = await productApi.getFeatured(10);
         const backendFeaturedProducts = response.data.products.map(transformBackendProduct);
         
         // Admin has full control: show ONLY backend-featured products (max 6)
         // If backend has featured products, use them exclusively
         // Otherwise fall back to static products
         const finalProducts = backendFeaturedProducts.length > 0
-          ? backendFeaturedProducts.slice(0, 6)
-          : products.slice(0, 6);
+          ? backendFeaturedProducts.slice(0, 10)
+          : products.slice(0, 10);
 
         setState({
           data: finalProducts,
