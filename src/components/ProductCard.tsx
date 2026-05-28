@@ -76,17 +76,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         
-        {/* Top badges row - Left side only */}
-        <div className="absolute top-3 left-3 flex items-center space-x-2 z-10">
-          {/* ECO Badge - Modern glassmorphism */}
-          <div className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg backdrop-blur-sm flex items-center space-x-1 animate-fade-in-up">
-            <Sparkles className="h-3 w-3" />
+        {/* Top badges row - Stacked vertically on mobile for better visibility */}
+        <div className="absolute top-2 left-2 flex flex-col space-y-1.5 z-10">
+          {/* ECO Badge - Smaller on mobile */}
+          <div className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-bold shadow-lg backdrop-blur-sm flex items-center space-x-0.5 sm:space-x-1 animate-fade-in-up">
+            <Sparkles className="h-2 w-2 sm:h-3 sm:w-3" />
             <span>ECO</span>
           </div>
           
-          {/* Discount Badge */}
+          {/* Discount Badge - Below ECO badge */}
           {discountPercentage > 0 && (
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg backdrop-blur-sm animate-fade-in-up animation-delay-200">
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-bold shadow-lg backdrop-blur-sm animate-fade-in-up animation-delay-200">
               -{discountPercentage}%
             </div>
           )}

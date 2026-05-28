@@ -304,20 +304,34 @@ router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
   }
   
   // Process uploaded images
+  console.log('📸 Processing images - req.files:', req.files ? req.files.length : 0);
+  console.log('📸 Processing images - req.file:', req.file ? 'exists' : 'none');
+  
   const uploadedFiles = processUploadedFiles(req, 'products');
+  console.log('📸 Uploaded files processed:', uploadedFiles.length);
+  
   if (uploadedFiles.length > 0) {
     productData.images = uploadedFiles.map((file, index) => ({
       url: file.url,
-      alt: file.originalName,
+      alt: file.originalName || file.filename,
       isPrimary: index === 0,
       order: index
     }));
+    console.log('📸 Images to save:', JSON.stringify(productData.images, null, 2));
+  } else {
+    console.log('⚠️ No images uploaded or processed');
   }
 
   // Add creator info
   productData.createdBy = req.user._id;
 
+  console.log('💾 Creating product with data:', {
+    name: productData.name,
+    imagesCount: productData.images ? productData.images.length : 0
+  });
+
   const product = await Product.create(productData);
+  console.log('✅ Product created with images:', product.images ? product.images.length : 0);
   await product.populate(['brand', 'category']);
 
   res.status(201).json({
