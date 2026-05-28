@@ -53,10 +53,16 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
       const response = await reviewApi.getProductReviews(slug, page, 10);
       if (response.data) {
         setReviews(response.data.reviews || []);
-        setReviewStats(response.data.stats || {
+        // Map backend 'distribution' to frontend 'ratingDistribution'
+        const stats = response.data.stats || {
           averageRating: 0,
           totalReviews: 0,
-          ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+          distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        };
+        setReviewStats({
+          averageRating: stats.averageRating,
+          totalReviews: stats.totalReviews,
+          ratingDistribution: stats.distribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
         });
         setReviewPagination(response.data.pagination || null);
       }
