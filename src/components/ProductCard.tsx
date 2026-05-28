@@ -76,8 +76,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         
-        {/* Top badges row */}
-        <div className="absolute top-3 left-3 right-3 flex items-start justify-between z-10">
+        {/* Top badges row - Left side only */}
+        <div className="absolute top-3 left-3 flex items-center space-x-2 z-10">
           {/* ECO Badge - Modern glassmorphism */}
           <div className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-lg backdrop-blur-sm flex items-center space-x-1 animate-fade-in-up">
             <Sparkles className="h-3 w-3" />
@@ -92,7 +92,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </div>
         
-        {/* Heart Button - Modern floating style */}
+        {/* Heart Button - Moved to top-right corner, separate from badges */}
         <button
           onClick={handleLike}
           className={`absolute top-3 right-3 p-2.5 rounded-xl transition-all duration-300 backdrop-blur-md shadow-lg transform hover:scale-110 z-10 ${
