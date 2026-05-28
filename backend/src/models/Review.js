@@ -72,6 +72,12 @@ const reviewSchema = new mongoose.Schema({
     required: true
   },
   
+  // Custom date for admin to control when review appears to be posted
+  customDate: {
+    type: Date,
+    default: null
+  },
+  
   // Helpful votes (for future feature)
   helpfulCount: {
     type: Number,

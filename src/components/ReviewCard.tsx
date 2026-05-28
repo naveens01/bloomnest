@@ -34,7 +34,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, className = '' }) => {
             )}
           </div>
           <p className="text-xs text-gray-500">
-            {formatDate(review.createdAt)}
+            {formatDate((review as any).customDate || review.createdAt)}
           </p>
         </div>
         

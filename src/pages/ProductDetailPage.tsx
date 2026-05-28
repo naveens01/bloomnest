@@ -50,7 +50,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
   const loadReviews = async (slug: string, page: number) => {
     setReviewsLoading(true);
     try {
-      const response = await reviewApi.getProductReviews(slug, page, 10);
+      const response = await reviewApi.getProductReviews(slug, page, 5);
       if (response.data) {
         setReviews(response.data.reviews || []);
         // Map backend 'distribution' to frontend 'ratingDistribution'

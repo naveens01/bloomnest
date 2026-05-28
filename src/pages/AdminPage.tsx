@@ -1554,6 +1554,7 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({
     comment: '',
     isVerified: true,
     isApproved: true,
+    customDate: '',
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -1567,6 +1568,7 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({
         comment: editingReview.comment || '',
         isVerified: editingReview.isVerified !== undefined ? editingReview.isVerified : true,
         isApproved: editingReview.isApproved !== undefined ? editingReview.isApproved : true,
+        customDate: editingReview.customDate ? new Date(editingReview.customDate).toISOString().split('T')[0] : '',
       });
       setShowForm(true);
     }
@@ -1595,6 +1597,7 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({
         comment: '',
         isVerified: true,
         isApproved: true,
+        customDate: '',
       });
       onRefresh();
     } catch (err: any) {
@@ -1627,6 +1630,7 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({
       comment: '',
       isVerified: true,
       isApproved: true,
+      customDate: '',
     });
   };
 
@@ -1734,6 +1738,23 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({
                 required
                 placeholder="Enter reviewer name"
               />
+            </div>
+
+            {/* Custom Date */}
+            <div>
+              <label className="block text-sm font-semibold text-eco-700 mb-2">
+                Review Date (Optional)
+              </label>
+              <input
+                type="date"
+                value={formData.customDate}
+                onChange={(e) => setFormData({ ...formData, customDate: e.target.value })}
+                className="w-full px-4 py-2 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-500 focus:border-transparent"
+                placeholder="Leave empty for current date"
+              />
+              <p className="text-xs text-eco-600 mt-1">
+                Leave empty to use current date/time. Set a custom date to backdate the review.
+              </p>
             </div>
 
             {/* Rating */}
