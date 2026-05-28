@@ -100,7 +100,7 @@ reviewSchema.statics.getAverageRating = async function(reviewType, targetId) {
     {
       $match: {
         reviewType,
-        targetId: mongoose.Types.ObjectId(targetId),
+        targetId: new mongoose.Types.ObjectId(targetId),
         isApproved: true
       }
     },
@@ -122,7 +122,7 @@ reviewSchema.statics.getRatingDistribution = async function(reviewType, targetId
     {
       $match: {
         reviewType,
-        targetId: mongoose.Types.ObjectId(targetId),
+        targetId: new mongoose.Types.ObjectId(targetId),
         isApproved: true
       }
     },
