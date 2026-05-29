@@ -83,10 +83,10 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
               className="group relative cursor-pointer animate-fade-in-up"
               style={{ animationDelay: `${index * 200}ms` }}
             >
-              {/* Main Card Container */}
-              <div className="bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-2xl shadow-eco hover:shadow-eco-glow-xl transition-all duration-500 cursor-pointer overflow-hidden hover:-translate-y-2 border border-eco-200 relative">
+              {/* Main Card Container with Fixed Height */}
+              <div className="bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-2xl shadow-eco hover:shadow-eco-glow-xl transition-all duration-500 cursor-pointer overflow-hidden hover:-translate-y-2 border border-eco-200 relative flex flex-col h-full">
                 {/* Enhanced Image Section */}
-                <div className="relative h-48 sm:h-56 overflow-hidden">
+                <div className="relative h-48 sm:h-56 overflow-hidden flex-shrink-0">
                   <img
                     src={brand.image}
                     alt={brand.name}
@@ -153,20 +153,20 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
                   </div>
                 </div>
                 
-                {/* Enhanced Content Section - Mobile Optimized */}
-                <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-eco-50 via-white to-eco-50 flex flex-col">
-                  <div className="mb-4 sm:mb-6 flex-grow">
-                    <p className="text-eco-700 leading-relaxed text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 h-12">
+                {/* Enhanced Content Section - Mobile Optimized with Fixed Structure */}
+                <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-eco-50 via-white to-eco-50 flex flex-col flex-grow">
+                  <div className="mb-4 sm:mb-6 flex-grow flex flex-col">
+                    <p className="text-eco-700 leading-relaxed text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 min-h-[3rem]">
                       {brand.description}
                     </p>
                     
                     {/* Enhanced Feature Tags - Mobile Optimized */}
-                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4 min-h-[2rem]">
                       <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
-                        <span className="text-xs font-medium text-eco-700">{brand.specialty}</span>
+                        <span className="text-xs font-medium text-eco-700 whitespace-nowrap">{brand.specialty}</span>
                       </div>
                       <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
-                        <span className="text-xs font-medium text-eco-700">Est. {brand.established}</span>
+                        <span className="text-xs font-medium text-eco-700 whitespace-nowrap">{brand.established}</span>
                       </div>
                     </div>
                     
@@ -183,8 +183,8 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
                     </div>
                   </div>
 
-                  {/* Enhanced Action Section - Mobile Optimized */}
-                  <div className="flex items-center justify-between">
+                  {/* Enhanced Action Section - Mobile Optimized - Fixed at Bottom */}
+                  <div className="flex items-center justify-between mt-auto">
                     <div className="flex items-center space-x-2 sm:space-x-3">
                       <div className="bg-eco-200 p-2 sm:p-3 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform duration-300">
                         <Award className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />

@@ -110,51 +110,8 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
     
     return null;
   }, [categories.length, categoryId]);
-  
-  // Loading state
-  if (categoriesLoading || (!hasWaitedForCategories && (!categories || categories.length === 0))) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
-      </div>
-    );
-  }
-  
-  // Only redirect if we've waited for categories to load AND category is still not found
-  // Don't redirect if we haven't waited yet (categories might still be loading from backend)
-  if (!category && hasWaitedForCategories && !categoriesLoading && categories && categories.length > 0) {
-    console.log('Category not found after waiting, redirecting to home. categoryId:', categoryId);
-    console.log('Available categories:', categories.map(c => ({
-      id: c.id,
-      name: c.name,
-      slug: (c as any).slug || 'none'
-    })));
-    return <Navigate to="/" replace />;
-  }
-  
-  // If category still not found but we haven't waited yet, show loading
-  if (!category && !hasWaitedForCategories) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
-      </div>
-    );
-  }
-  
-  // If still no category after waiting and categories loaded, redirect
-  if (!category && hasWaitedForCategories) {
-    return <Navigate to="/" replace />;
-  }
-  
-  // Category not found but we're still waiting - show loading
-  if (!category) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
-      </div>
-    );
-  }
 
+  // IMPORTANT: filteredProducts useMemo must be called BEFORE any early returns to follow Rules of Hooks
   const filteredProducts = useMemo(() => {
     let filtered = [...apiProducts];
 
@@ -187,6 +144,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
     return filtered;
   }, [searchQuery, apiProducts, filters.priceRange[0], filters.priceRange[1], filters.minRating, filters.inStockOnly]);
 
+  // Load category products effect
   useEffect(() => {
     if (!category) return;
 
@@ -218,6 +176,36 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   useEffect(() => {
     setPage(1);
   }, [categoryId, sortBy]);
+
+  // Early returns AFTER all hooks to follow Rules of Hooks
+  // Loading state
+  if (categoriesLoading || (!hasWaitedForCategories && (!categories || categories.length === 0))) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+      </div>
+    );
+  }
+  
+  // Only redirect if we've waited for categories to load AND category is still not found
+  if (!category && hasWaitedForCategories && !categoriesLoading && categories && categories.length > 0) {
+    console.log('Category not found after waiting, redirecting to home. categoryId:', categoryId);
+    return <Navigate to="/" replace />;
+  }
+  
+  // If category still not found but we haven't waited yet, show loading
+  if (!category && !hasWaitedForCategories) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+      </div>
+    );
+  }
+  
+  // If still no category after waiting, redirect
+  if (!category) {
+    return <Navigate to="/" replace />;
+  }
 
   const breadcrumbItems = [
     { label: 'Categories', path: '/categories' },
