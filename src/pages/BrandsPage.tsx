@@ -201,7 +201,7 @@ const BrandsPage: React.FC = () => {
 
       {/* Grand Brands Grid */}
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-none mx-auto">
+        <div className="max-w-7xl mx-auto">
           {brandsLoading ? (
             <div className="flex justify-center items-center py-20">
               <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
@@ -220,7 +220,7 @@ const BrandsPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredBrands.map((brand, index) => {
                   // Generate the brand URL - use slug if available, otherwise generate from name
                   const brandSlug = (brand as any).slug;

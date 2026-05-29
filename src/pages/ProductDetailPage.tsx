@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Star, Heart, ShoppingCart, Leaf, Shield, ArrowLeft, Check, Truck, Package, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product, Review, ReviewStats } from '../types';
 import { useHybridProducts } from '../hooks/useHybridData';
-import { reviewApi } from '../services/api';
+import { reviewApi, productApi, transformBackendProduct } from '../services/api';
 import ReviewSection from '../components/ReviewSection';
 
 interface ProductDetailPageProps {
@@ -33,11 +33,31 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
   const [reviewPagination, setReviewPagination] = useState<any>(null);
 
   useEffect(() => {
-    const foundProduct = products.find(p => p.id === productId || (p as any).slug === productId);
-    setProduct(foundProduct || null);
-    if (foundProduct) {
-      setSelectedImage(0);
-    }
+    const loadProduct = async () => {
+      if (!productId) return;
+      
+      // Try to fetch from API first to get populated category data
+      try {
+        const response = await productApi.getBySlug(productId);
+        if (response.data && response.data.product) {
+          const transformedProduct = transformBackendProduct(response.data.product);
+          setProduct(transformedProduct);
+          setSelectedImage(0);
+          return;
+        }
+      } catch (error) {
+        console.log('Product not found in API, trying local data');
+      }
+      
+      // Fallback to local products
+      const foundProduct = products.find(p => p.id === productId || (p as any).slug === productId);
+      setProduct(foundProduct || null);
+      if (foundProduct) {
+        setSelectedImage(0);
+      }
+    };
+    
+    loadProduct();
   }, [productId, products]);
 
   // Load reviews when product changes

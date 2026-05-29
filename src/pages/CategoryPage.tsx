@@ -165,7 +165,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
         product.name.toLowerCase().includes(query) ||
         product.brand.toLowerCase().includes(query) ||
         product.description.toLowerCase().includes(query) ||
-        product.features.some(feature => feature.toLowerCase().includes(query))
+        (product.features && Array.isArray(product.features) && product.features.some(feature => feature.toLowerCase().includes(query)))
       );
     }
 
@@ -185,7 +185,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
     }
 
     return filtered;
-  }, [searchQuery, apiProducts, filters]);
+  }, [searchQuery, apiProducts, filters.priceRange[0], filters.priceRange[1], filters.minRating, filters.inStockOnly]);
 
   useEffect(() => {
     if (!category) return;
