@@ -288,9 +288,9 @@ const BrandsPage: React.FC = () => {
                         </div>
                         
                         {/* Enhanced Content Section - Mobile Optimized */}
-                        <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-eco-50 via-white to-eco-50">
-                          <div className="mb-4 sm:mb-6">
-                            <p className="text-eco-700 leading-relaxed text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
+                        <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-eco-50 via-white to-eco-50 flex flex-col">
+                          <div className="mb-4 sm:mb-6 flex-grow">
+                            <p className="text-eco-700 leading-relaxed text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 h-12">
                               {brand.description}
                             </p>
                             

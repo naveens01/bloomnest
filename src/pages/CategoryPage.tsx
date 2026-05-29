@@ -109,7 +109,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
     })));
     
     return null;
-  }, [categories, categoryId]);
+  }, [categories.length, categoryId]);
   
   // Loading state
   if (categoriesLoading || (!hasWaitedForCategories && (!categories || categories.length === 0))) {
