@@ -307,7 +307,7 @@ router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
   console.log('📸 Processing images - req.files:', req.files ? req.files.length : 0);
   console.log('📸 Processing images - req.file:', req.file ? 'exists' : 'none');
   
-  const uploadedFiles = processUploadedFiles(req, 'products');
+  const uploadedFiles = await processUploadedFiles(req, 'products');
   console.log('📸 Uploaded files processed:', uploadedFiles.length);
   
   if (uploadedFiles.length > 0) {
@@ -315,7 +315,8 @@ router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
       url: file.url,
       alt: file.originalName || file.filename,
       isPrimary: index === 0,
-      order: index
+      order: index,
+      cloudinaryPublicId: file.cloudinaryPublicId || null
     }));
     console.log('📸 Images to save:', JSON.stringify(productData.images, null, 2));
   } else {
@@ -411,7 +412,7 @@ router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) =
   }
   
   // Process uploaded images if any
-  const uploadedFiles = processUploadedFiles(req, 'products');
+  const uploadedFiles = await processUploadedFiles(req, 'products');
   if (uploadedFiles.length > 0) {
     if (existingProduct && existingProduct.images.length > 0) {
       // Merge existing and new images
@@ -421,7 +422,8 @@ router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) =
           url: file.url,
           alt: file.originalName,
           isPrimary: false,
-          order: existingProduct.images.length + index
+          order: existingProduct.images.length + index,
+          cloudinaryPublicId: file.cloudinaryPublicId || null
         }))
       ];
     } else {
@@ -429,7 +431,8 @@ router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) =
         url: file.url,
         alt: file.originalName,
         isPrimary: index === 0,
-        order: index
+        order: index,
+        cloudinaryPublicId: file.cloudinaryPublicId || null
       }));
     }
   }
