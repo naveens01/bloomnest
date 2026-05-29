@@ -55,7 +55,7 @@ const PaymentPage = () => {
       }
 
       // Create Razorpay order
-      const response = await fetch('API_ENDPOINTS.createOrder', {
+      const response = await fetch(API_ENDPOINTS.createOrder, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ const PaymentPage = () => {
         handler: async function (response: any) {
           try {
             // Verify payment
-            const verifyResponse = await fetch('API_ENDPOINTS.verifyPayment', {
+            const verifyResponse = await fetch(API_ENDPOINTS.verifyPayment, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -205,7 +205,7 @@ const PaymentPage = () => {
       }
 
       // Update order to COD
-      const response = await fetch(`API_ENDPOINTS.orders/${orderData.orderId}`, {
+      const response = await fetch(`${API_ENDPOINTS.orders}/${orderData.orderId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -302,20 +302,29 @@ const PaymentPage = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <CreditCard className="w-5 h-5 text-gray-700" />
-                        <h3 className="font-semibold text-gray-900">Credit/Debit Card, UPI, Net Banking</h3>
+                        <h3 className="font-semibold text-gray-900">UPI, Cards, Net Banking & More</h3>
                       </div>
                       <p className="text-sm text-gray-600 mb-3">
-                        Pay securely using Razorpay - supports all major payment methods
+                        Pay securely using Razorpay - supports all major payment methods including Google Pay
                       </p>
                       <div className="flex flex-wrap gap-2">
+                        <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded text-xs font-medium">
+                          Google Pay
+                        </span>
+                        <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded text-xs font-medium">
+                          PhonePe
+                        </span>
+                        <span className="px-3 py-1 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded text-xs font-medium">
+                          Paytm
+                        </span>
+                        <span className="px-3 py-1 bg-white border border-gray-200 rounded text-xs font-medium text-gray-700">
+                          UPI ID
+                        </span>
                         <span className="px-3 py-1 bg-white border border-gray-200 rounded text-xs font-medium text-gray-700">
                           Visa
                         </span>
                         <span className="px-3 py-1 bg-white border border-gray-200 rounded text-xs font-medium text-gray-700">
                           Mastercard
-                        </span>
-                        <span className="px-3 py-1 bg-white border border-gray-200 rounded text-xs font-medium text-gray-700">
-                          UPI
                         </span>
                         <span className="px-3 py-1 bg-white border border-gray-200 rounded text-xs font-medium text-gray-700">
                           Net Banking
