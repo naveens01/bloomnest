@@ -220,93 +220,130 @@ const BrandsPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 sm:gap-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredBrands.map((brand, index) => {
                   // Generate the brand URL - use slug if available, otherwise generate from name
                   const brandSlug = (brand as any).slug;
-                  const brandUrl = brandSlug 
+                  const brandUrl = brandSlug
                     ? `/brand/${brandSlug.toLowerCase()}`
                     : `/brand/${brand.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || brand.id}`;
                   
                   return (
-              <div
-                key={brand.id}
-                className="group bg-gradient-to-br from-white to-eco-50 rounded-3xl p-8 sm:p-10 shadow-eco-glow hover:shadow-eco-glow-xl transition-all duration-500 transform hover:scale-105 border border-eco-200 animate-fade-in-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                {/* Brand Header */}
-                <div className="text-center mb-6 sm:mb-8">
-                  {/* Brand Image */}
-                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 sm:mb-6">
-                    <img
-                      src={brand.image}
-                      alt={brand.name}
-                      className="w-full h-full object-cover rounded-3xl shadow-eco-glow group-hover:shadow-eco-glow-lg transition-all duration-300 group-hover:scale-105"
-                    />
-                    {/* Brand Logo Overlay */}
-                    <div className="absolute -bottom-2 -right-2 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-eco-400 to-nature-400 rounded-2xl flex items-center justify-center shadow-lg">
-                      {brand.logo ? (
-                        <img
-                          src={brand.logo}
-                          alt={`${brand.name} logo`}
-                          className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                          onError={(e) => {
-                            // Fallback if image fails to load
-                            console.error('Failed to load brand logo:', brand.logo, 'for brand:', brand.name);
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                          onLoad={() => {
-                            console.log('Successfully loaded brand logo:', brand.logo, 'for brand:', brand.name);
-                          }}
-                        />
-                      ) : (
-                        <Award className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-                      )}
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-xl sm:text-2xl font-bold text-eco-800 mb-2">{brand.name}</h3>
-                  <p className="text-sm sm:text-base text-eco-600 mb-3">{brand.specialty}</p>
-                  <div className="flex items-center justify-center space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                          i < 4 ? 'text-yellow-400 fill-current' : 'text-eco-200'
-                        }`}
-                      />
-                    ))}
-                    <span className="ml-2 text-sm text-eco-600">(4.5)</span>
-                  </div>
-                </div>
+                    <Link
+                      key={brand.id}
+                      to={brandUrl}
+                      className="group relative cursor-pointer animate-fade-in-up"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      {/* Main Card Container */}
+                      <div className="bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-2xl shadow-eco hover:shadow-eco-glow-xl transition-all duration-500 cursor-pointer overflow-hidden hover:-translate-y-2 border border-eco-200 relative">
+                        {/* Enhanced Image Section */}
+                        <div className="relative h-48 sm:h-56 overflow-hidden">
+                          <img
+                            src={brand.image}
+                            alt={brand.name}
+                            className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-1000 ease-out"
+                          />
+                          
+                          {/* Enhanced Overlay with Grand Gradient */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-eco-900/90 via-nature-800/60 to-transparent group-hover:from-eco-800/95 transition-all duration-700" />
+                          
+                          {/* Floating Brand Logo with Enhanced Design */}
+                          <div className="absolute top-4 left-4">
+                            <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl border border-white/30 shadow-2xl group-hover:scale-110 transition-all duration-500 flex items-center justify-center">
+                              {brand.logo ? (
+                                <img
+                                  src={brand.logo}
+                                  alt={`${brand.name} logo`}
+                                  className="w-16 h-16 object-contain rounded-xl"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <Award className="w-16 h-16 text-eco-600" />
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Enhanced Brand Info Overlay */}
+                          <div className="absolute bottom-3 left-3 right-3 text-white">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="text-lg sm:text-xl font-bold group-hover:scale-105 transition-transform duration-500 drop-shadow-lg line-clamp-1">
+                                {brand.name}
+                              </h3>
+                              <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 flex-shrink-0" />
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full border border-white/30">
+                                <span className="text-xs font-semibold">{brand.productCount} Products</span>
+                              </div>
+                              <div className="bg-white/20 backdrop-blur-md px-2 py-1 rounded-full border border-white/30">
+                                <Star className="h-3 w-3 text-yellow-300" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Enhanced Content Section - Mobile Optimized */}
+                        <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-eco-50 via-white to-eco-50">
+                          <div className="mb-4 sm:mb-6">
+                            <p className="text-eco-700 leading-relaxed text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">
+                              {brand.description}
+                            </p>
+                            
+                            {/* Enhanced Feature Tags - Mobile Optimized */}
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                              <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
+                                <span className="text-xs font-medium text-eco-700">{brand.specialty}</span>
+                              </div>
+                              <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
+                                <span className="text-xs font-medium text-eco-700">Est. {brand.established}</span>
+                              </div>
+                            </div>
+                            
+                            {/* Enhanced Stats Row - Mobile Optimized */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2 sm:space-x-3">
+                                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-eco-500 rounded-full animate-pulse"></div>
+                                <span className="text-xs sm:text-sm font-semibold text-eco-700">{brand.productCount} Items</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <ShoppingBag className="h-3 w-3 text-eco-500" />
+                                <span className="text-xs text-eco-600 hidden sm:inline">Shop Now</span>
+                              </div>
+                            </div>
+                          </div>
 
-                {/* Brand Description */}
-                <p className="text-eco-700 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8 text-center">
-                  {brand.description}
-                </p>
-
-                {/* Brand Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-6 sm:mb-8">
-                  <div className="text-center p-3 bg-eco-100 rounded-2xl">
-                    <div className="text-lg sm:text-xl font-bold text-eco-700">{brand.productCount}</div>
-                    <div className="text-xs sm:text-sm text-eco-600">Products</div>
-                  </div>
-                  <div className="text-center p-3 bg-nature-100 rounded-2xl">
-                    <div className="text-lg sm:text-xl font-bold text-nature-700">Est. {brand.established}</div>
-                    <div className="text-xs sm:text-sm text-nature-600">Established</div>
-                  </div>
-                </div>
-
-                {/* CTA Button */}
-                <Link
-                  to={brandUrl}
-                  className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-eco-500 to-nature-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105"
-                >
-                  <span>Explore Brand</span>
-                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                </Link>
-              </div>
+                          {/* Enhanced Action Section - Mobile Optimized */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 sm:space-x-3">
+                              <div className="bg-eco-200 p-2 sm:p-3 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <Award className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
+                              </div>
+                              <span className="text-xs sm:text-sm font-medium text-eco-700 hidden sm:inline">Premium Brand</span>
+                            </div>
+                            
+                            {/* Enhanced CTA Button - Mobile Optimized */}
+                            <div className="bg-eco-gradient text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-semibold text-xs sm:text-sm hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-eco-glow-xl">
+                              <span className="flex items-center space-x-1 sm:space-x-2">
+                                <span>Explore</span>
+                                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Enhanced Hover Effects */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-eco-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                      </div>
+                      
+                      {/* Floating Decorative Elements - Hidden on mobile for performance */}
+                      <div className="hidden sm:block absolute -top-2 -right-2 w-4 h-4 bg-eco-300 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-3000"></div>
+                      <div className="hidden sm:block absolute -bottom-2 -left-2 w-3 h-3 bg-eco-200 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
+                    </Link>
                   );
                 })}
               </div>

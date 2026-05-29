@@ -141,6 +141,17 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
           <span>/</span>
           <Link to="/categories" className="hover:text-eco-800 transition-colors">Categories</Link>
           <span>/</span>
+          {(product as any).category?.name && (
+            <>
+              <Link
+                to={`/category/${(product as any).category.slug || (product as any).category._id}`}
+                className="hover:text-eco-800 transition-colors truncate max-w-[120px] sm:max-w-none"
+              >
+                {(product as any).category.name}
+              </Link>
+              <span>/</span>
+            </>
+          )}
           <span className="text-eco-800 font-medium truncate max-w-[150px] sm:max-w-none">{product.name}</span>
         </div>
       </div>
