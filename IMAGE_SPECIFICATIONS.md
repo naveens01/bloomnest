@@ -65,23 +65,36 @@ This guide provides detailed specifications for all images used in the BloomNest
 | Specification | Value |
 |--------------|-------|
 | **Aspect Ratio** | 16:9 (Landscape) |
-| **Recommended Size** | 1200x675 pixels |
-| **Minimum Size** | 800x450 pixels |
+| **Recommended Size** | 1280x720 pixels |
+| **Minimum Size** | 960x540 pixels |
 | **Maximum Size** | 1920x1080 pixels |
 | **Format** | JPG, WebP |
 | **File Size** | < 300 KB |
 
 **Display Locations:**
-- Home page category cards: 400x225px (desktop), 320x180px (mobile)
-- Categories page grid: 480x270px (desktop), 360x203px (mobile)
-- Category page header: 1200x400px (desktop), 800x267px (mobile)
+- Home page category cards:
+  - Desktop: 384x216px (16:9 ratio maintained)
+  - Tablet: 320x180px (16:9 ratio maintained)
+  - Mobile: 288x162px (16:9 ratio maintained)
+- Categories page grid:
+  - Desktop: 480x270px (16:9 ratio maintained)
+  - Tablet: 400x225px (16:9 ratio maintained)
+  - Mobile: 360x203px (16:9 ratio maintained)
+- Category page header banner: 1200x400px (3:1 ratio for wide banner)
+
+**IMPORTANT - Image Composition Guidelines:**
+- **Safe Zone:** Keep important content in the center 80% of the image
+- **Text Overlay Area:** Bottom 30% will have gradient overlay for text
+- **Focal Point:** Center your main subject in the middle of the frame
+- **Avoid:** Important details in corners or edges (may be cropped on mobile)
 
 **Content Guidelines:**
 - Show representative products from the category
 - Use lifestyle/contextual imagery
-- Ensure good contrast for text overlay
+- Ensure good contrast for text overlay (bottom area should be darker or have neutral tones)
 - Avoid busy/cluttered compositions
 - Use natural, eco-friendly aesthetics
+- **Composition:** Place main subject in center, leave bottom 30% relatively clear for text overlay
 
 ### Category Icon (Optional)
 **Used in:** Category badges, navigation menus
