@@ -63,11 +63,11 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
   // Load reviews when product changes
   useEffect(() => {
     if (product && (product as any).slug) {
-      loadReviews((product as any).slug, reviewPage);
+      loadReviews(product, (product as any).slug, reviewPage);
     }
   }, [product, reviewPage]);
 
-  const loadReviews = async (slug: string, page: number) => {
+  const loadReviews = async (productData: Product, slug: string, page: number) => {
     setReviewsLoading(true);
     try {
       const response = await reviewApi.getProductReviews(slug, page, 5);
@@ -82,20 +82,42 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
         };
         
         // Get initial ratings from product (admin-added)
-        const productRatings = (product as any).ratings || {
+        // Check both the ratings object AND the simple rating/reviews fields
+        const productRatings = (productData as any).ratings || {
           average: 0,
           count: 0,
           distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
         };
         
+        // If ratings object is empty but product has rating/reviews fields, use those
+        const adminRating = productRatings.average || productData.rating || 0;
+        const adminReviewCount = productRatings.count || productData.reviews || 0;
+        
+        console.log('Product data:', { rating: productData.rating, reviews: productData.reviews });
+        console.log('Product ratings object:', productRatings);
+        console.log('Using admin data:', { adminRating, adminReviewCount });
+        console.log('Review collection stats:', reviewCollectionStats);
+        
+        // If we have admin rating/review count, create a distribution
+        let adminDistribution = productRatings.distribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        
+        // If distribution is empty but we have rating/reviews, estimate distribution
+        const hasDistribution = Object.values(adminDistribution).some((v: any) => v > 0);
+        if (!hasDistribution && adminReviewCount > 0 && adminRating > 0) {
+          // Estimate: put all reviews at the rating level (rounded)
+          const ratingLevel = Math.round(adminRating) as 1 | 2 | 3 | 4 | 5;
+          adminDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+          adminDistribution[ratingLevel] = adminReviewCount;
+        }
+        
         // Combine both sources
-        const totalReviews = reviewCollectionStats.totalReviews + (productRatings.count || 0);
+        const totalReviews = reviewCollectionStats.totalReviews + adminReviewCount;
         const combinedDistribution = {
-          1: (reviewCollectionStats.distribution[1] || 0) + (productRatings.distribution?.[1] || 0),
-          2: (reviewCollectionStats.distribution[2] || 0) + (productRatings.distribution?.[2] || 0),
-          3: (reviewCollectionStats.distribution[3] || 0) + (productRatings.distribution?.[3] || 0),
-          4: (reviewCollectionStats.distribution[4] || 0) + (productRatings.distribution?.[4] || 0),
-          5: (reviewCollectionStats.distribution[5] || 0) + (productRatings.distribution?.[5] || 0)
+          1: (reviewCollectionStats.distribution[1] || 0) + (adminDistribution[1] || 0),
+          2: (reviewCollectionStats.distribution[2] || 0) + (adminDistribution[2] || 0),
+          3: (reviewCollectionStats.distribution[3] || 0) + (adminDistribution[3] || 0),
+          4: (reviewCollectionStats.distribution[4] || 0) + (adminDistribution[4] || 0),
+          5: (reviewCollectionStats.distribution[5] || 0) + (adminDistribution[5] || 0)
         };
         
         // Calculate combined average rating
@@ -109,6 +131,8 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
             (combinedDistribution[5] * 5);
           combinedAverage = totalRatingPoints / totalReviews;
         }
+        
+        console.log('Combined stats:', { totalReviews, combinedAverage, combinedDistribution });
         
         setReviewStats({
           averageRating: combinedAverage,
