@@ -180,7 +180,7 @@ const Footer: React.FC = () => {
           
           <div className="text-center mt-6">
             <p className="text-eco-400 text-sm">
-              © 2024 BloomNest. All rights reserved. Building a greener tomorrow, one product at a time.
+              © 2026 BloomNest. All rights reserved. Building a greener tomorrow, one product at a time.
             </p>
           </div>
         </div>

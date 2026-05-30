@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Gift, Truck, Percent, Star, Clock, Zap, Leaf, Recycle, Heart, Sparkles, ArrowRight } from 'lucide-react';
 
 const PromotionBanner: React.FC = () => {
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const promotions = [
@@ -148,13 +150,19 @@ const PromotionBanner: React.FC = () => {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
-                          <button className="bg-white text-nature-900 px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-4 rounded-lg sm:rounded-xl md:rounded-2xl font-bold text-xs sm:text-sm md:text-base lg:text-lg hover:bg-eco-50 transition-all transform hover:scale-105 shadow-eco-glow hover:shadow-eco-glow-lg group">
+                          <button
+                            onClick={() => navigate('/products')}
+                            className="bg-white text-nature-900 px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-4 rounded-lg sm:rounded-xl md:rounded-2xl font-bold text-xs sm:text-sm md:text-base lg:text-lg hover:bg-eco-50 transition-all transform hover:scale-105 shadow-eco-glow hover:shadow-eco-glow-lg group"
+                          >
                             <span className="flex items-center justify-center space-x-2">
                               <span>{promo.cta}</span>
                               <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-transform" />
                             </span>
                           </button>
-                          <button className="border-2 border-white text-white px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-4 rounded-lg sm:rounded-xl md:rounded-2xl font-semibold text-xs sm:text-sm md:text-base lg:text-lg hover:bg-white hover:text-nature-900 transition-all duration-300 hover:shadow-eco-glow">
+                          <button
+                            onClick={() => navigate('/about')}
+                            className="border-2 border-white text-white px-4 sm:px-6 md:px-8 lg:px-10 py-2 sm:py-2.5 md:py-3 lg:py-4 rounded-lg sm:rounded-xl md:rounded-2xl font-semibold text-xs sm:text-sm md:text-base lg:text-lg hover:bg-white hover:text-nature-900 transition-all duration-300 hover:shadow-eco-glow"
+                          >
                             Learn More
                           </button>
                         </div>
@@ -235,7 +243,10 @@ const PromotionBanner: React.FC = () => {
 
         {/* Enhanced Quick Action Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mt-6 sm:mt-8 md:mt-12">
-          <div className="card-eco text-center hover:shadow-eco-glow transition-all duration-300 cursor-pointer group">
+          <div
+            onClick={() => navigate('/products')}
+            className="card-eco text-center hover:shadow-eco-glow transition-all duration-300 cursor-pointer group"
+          >
             <div className="bg-eco-gradient w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
               <Truck className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
             </div>
@@ -243,7 +254,10 @@ const PromotionBanner: React.FC = () => {
             <p className="text-xs sm:text-sm text-eco-600">Orders $50+</p>
           </div>
           
-          <div className="card-nature text-center hover:shadow-nature-glow transition-all duration-300 cursor-pointer group">
+          <div
+            onClick={() => navigate('/categories')}
+            className="card-nature text-center hover:shadow-nature-glow transition-all duration-300 cursor-pointer group"
+          >
             <div className="bg-nature-gradient w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
               <Gift className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
             </div>
@@ -251,7 +265,10 @@ const PromotionBanner: React.FC = () => {
             <p className="text-xs sm:text-sm text-nature-600">Save More</p>
           </div>
           
-          <div className="card-eco text-center hover:shadow-eco-glow transition-all duration-300 cursor-pointer group">
+          <div
+            onClick={() => navigate('/products')}
+            className="card-eco text-center hover:shadow-eco-glow transition-all duration-300 cursor-pointer group"
+          >
             <div className="bg-eco-gradient w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
               <Star className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
             </div>
@@ -259,7 +276,10 @@ const PromotionBanner: React.FC = () => {
             <p className="text-xs sm:text-sm text-eco-600">Best Products</p>
           </div>
           
-          <div className="card-nature text-center hover:shadow-nature-glow transition-all duration-300 cursor-pointer group">
+          <div
+            onClick={() => navigate('/products')}
+            className="card-nature text-center hover:shadow-nature-glow transition-all duration-300 cursor-pointer group"
+          >
             <div className="bg-nature-gradient w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
               <Clock className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
             </div>
