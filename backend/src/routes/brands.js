@@ -9,14 +9,18 @@ const router = express.Router();
 // @route   GET /api/brands
 // @access  Public
 router.get('/', asyncHandler(async (req, res) => {
-  const brands = await Brand.find({ isActive: true }).sort({ name: 1 });
+  const brands = await Brand.find({ isActive: true })
+    .populate('activeProductCount')
+    .sort({ name: 1 });
   
-  // Transform logo base64 data to data URI for frontend
+  // Transform logo base64 data to data URI for frontend and add product count
   const brandsWithDataUri = brands.map(brand => {
     const brandObj = brand.toObject();
     if (brandObj.logo && brandObj.logo.data) {
       brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
     }
+    // Add product count from virtual field
+    brandObj.productCount = brandObj.activeProductCount || 0;
     return brandObj;
   });
 
@@ -32,12 +36,17 @@ router.get('/', asyncHandler(async (req, res) => {
 router.get('/featured', asyncHandler(async (req, res) => {
   const brands = await Brand.findFeatured();
   
-  // Transform logo base64 data to data URI for frontend
+  // Populate product count for each brand
+  await Brand.populate(brands, { path: 'activeProductCount' });
+  
+  // Transform logo base64 data to data URI for frontend and add product count
   const brandsWithDataUri = brands.map(brand => {
     const brandObj = brand.toObject();
     if (brandObj.logo && brandObj.logo.data) {
       brandObj.logo.url = `data:${brandObj.logo.contentType || 'image/jpeg'};base64,${brandObj.logo.data}`;
     }
+    // Add product count from virtual field
+    brandObj.productCount = brandObj.activeProductCount || 0;
     return brandObj;
   });
 
