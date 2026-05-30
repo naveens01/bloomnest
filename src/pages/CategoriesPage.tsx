@@ -49,21 +49,21 @@ const CategoriesPage: React.FC = () => {
 
   return (
     <main className="min-h-screen bg-eco-pattern pt-32 sm:pt-24 md:pt-28">
-      {/* Compact Hero Section */}
-      <section className="relative bg-eco-gradient py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
+      {/* Compact Hero Section - Mobile Optimized */}
+      <section className="relative bg-eco-gradient py-4 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Animated Background Elements - Hidden on mobile */}
+        <div className="absolute inset-0 overflow-hidden hidden sm:block">
           <div className="absolute -top-20 sm:-top-40 -right-20 sm:-right-40 w-48 sm:w-96 h-48 sm:h-96 bg-eco-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob"></div>
           <div className="absolute -bottom-20 sm:-bottom-40 -left-20 sm:-left-40 w-48 sm:w-96 h-48 sm:h-96 bg-ocean-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-2000"></div>
           <div className="absolute top-20 sm:top-40 left-20 sm:left-40 w-48 sm:w-96 h-48 sm:h-96 bg-forest-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-4000"></div>
           
-          {/* Floating eco elements - hidden on mobile */}
-          <div className="hidden sm:block absolute top-10 sm:top-20 right-10 sm:right-20 animate-nature-float">
+          {/* Floating eco elements */}
+          <div className="absolute top-10 sm:top-20 right-10 sm:right-20 animate-nature-float">
             <div className="w-12 sm:w-16 h-12 sm:h-16 bg-eco-100 rounded-full flex items-center justify-center opacity-80">
               <Leaf className="h-6 w-6 sm:h-8 sm:w-8 text-eco-600" />
             </div>
           </div>
-          <div className="hidden sm:block absolute bottom-10 sm:bottom-20 left-10 sm:left-20 animate-nature-float animation-delay-2000">
+          <div className="absolute bottom-10 sm:bottom-20 left-10 sm:left-20 animate-nature-float animation-delay-2000">
             <div className="w-10 sm:w-12 h-10 sm:h-12 bg-ocean-100 rounded-full flex items-center justify-center opacity-80">
               <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-ocean-600" />
             </div>
@@ -72,20 +72,21 @@ const CategoriesPage: React.FC = () => {
         
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
-            <div className="inline-flex items-center space-x-2 bg-glass-eco px-3 sm:px-6 py-1.5 sm:py-3 rounded-full border border-eco-200 mb-3 sm:mb-6">
+            <div className="inline-flex items-center space-x-2 bg-glass-eco px-3 sm:px-6 py-1 sm:py-3 rounded-full border border-eco-200 mb-2 sm:mb-6">
               <Award className="h-3 w-3 sm:h-5 sm:w-5 text-eco-600" />
               <span className="text-xs sm:text-sm font-semibold text-eco-700">Product Categories</span>
             </div>
             
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-gradient-eco mb-3 sm:mb-6">
+            <h1 className="text-xl sm:text-4xl lg:text-5xl font-bold text-gradient-eco mb-2 sm:mb-6">
               Shop by Category
             </h1>
             
-            <p className="text-sm sm:text-lg lg:text-xl text-eco-700 max-w-3xl mx-auto leading-relaxed px-4 mb-4 sm:mb-8">
+            <p className="text-xs sm:text-lg lg:text-xl text-eco-700 max-w-3xl mx-auto leading-relaxed px-4 mb-0 sm:mb-8 hidden sm:block">
               Explore our carefully curated categories of sustainable products
             </p>
             
-            <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl sm:max-w-4xl mx-auto">
+            {/* Stats - Hidden on mobile, shown on tablet+ */}
+            <div className="hidden sm:grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl sm:max-w-4xl mx-auto">
               <div className="bg-glass-eco p-3 sm:p-6 rounded-xl sm:rounded-2xl border border-eco-200">
                 <div className="text-xl sm:text-3xl font-bold text-eco-600 mb-0.5 sm:mb-1">{categories.length}</div>
                 <div className="text-xs sm:text-sm text-eco-700">Categories</div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/api';
-import { Package, Search, Filter, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { Package, Search, SlidersHorizontal, Sparkles } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Product } from '../types';
@@ -24,12 +24,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>('displayOrder');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
     fetchProducts();
-    fetchCategories();
   }, [sortBy]);
 
   const fetchProducts = async () => {
@@ -48,28 +45,13 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
     }
   };
 
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/categories`);
-      if (!response.ok) throw new Error('Failed to fetch categories');
-      const data = await response.json();
-      setCategories(data.data?.categories || data.categories || []);
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-    }
-  };
-
-  // Filter products based on search query and category
+  // Filter products based on search query only
   const filteredProducts = products.filter(product => {
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesCategory = filterCategory === 'all' || 
-      product.category?._id === filterCategory ||
-      product.category?.slug === filterCategory;
-    
-    return matchesSearch && matchesCategory;
+    return matchesSearch;
   });
 
   // Transform backend product to frontend Product type
@@ -143,29 +125,9 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
           </div>
         </div>
 
-        {/* Enhanced Filters Section with gradient background */}
-        <div className="mb-8 sm:mb-10 bg-gradient-to-r from-white via-eco-50 to-white rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-8 border-2 border-eco-200 backdrop-blur-sm">
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-            
-            {/* Category Filter with icon */}
-            <div className="flex items-center gap-3 flex-1 group">
-              <div className="p-2 bg-eco-100 rounded-xl group-hover:bg-eco-200 transition-colors">
-                <Filter className="h-5 w-5 text-eco-600" />
-              </div>
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="flex-1 px-4 py-3 text-base border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-500 focus:border-eco-500 transition-all bg-white text-eco-700 font-medium shadow-sm hover:shadow-md cursor-pointer"
-              >
-                <option value="all">🌿 All Categories</option>
-                {categories.map((category) => (
-                  <option key={category._id} value={category._id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
+        {/* Enhanced Sort Section with gradient background */}
+        <div className="mb-8 sm:mb-10 bg-gradient-to-r from-white via-nature-50 to-white rounded-2xl sm:rounded-3xl shadow-xl p-5 sm:p-8 border-2 border-eco-200 backdrop-blur-sm">
+          <div className="flex items-center gap-4">
             {/* Sort Options with icon */}
             <div className="flex items-center gap-3 flex-1 group">
               <div className="p-2 bg-nature-100 rounded-xl group-hover:bg-nature-200 transition-colors">
@@ -197,10 +159,10 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
               {searchQuery ? 'Try adjusting your search terms' : 'No products available in this category'}
             </p>
             <button
-              onClick={() => setFilterCategory('all')}
+              onClick={() => window.location.reload()}
               className="px-6 py-3 bg-gradient-to-r from-eco-500 to-nature-500 text-white rounded-xl font-semibold hover:shadow-eco-glow transition-all"
             >
-              Clear Filters
+              Refresh Products
             </button>
           </div>
         ) : (
