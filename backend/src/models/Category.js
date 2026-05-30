@@ -40,7 +40,8 @@ const categorySchema = new mongoose.Schema({
   },
   image: {
     url: String,
-    alt: String
+    alt: String,
+    cloudinaryPublicId: String
   },
   icon: {
     type: String,

@@ -24,6 +24,9 @@ const PaymentPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay');
+  const [codEnabled, setCodEnabled] = useState(true);
+  const [codAvailable, setCodAvailable] = useState(true);
+  const [codMessage, setCodMessage] = useState('');
 
   useEffect(() => {
     // Redirect if no order data
@@ -37,10 +40,31 @@ const PaymentPage = () => {
     script.async = true;
     document.body.appendChild(script);
 
+    // Check if COD is enabled
+    checkCodAvailability();
+
     return () => {
       document.body.removeChild(script);
     };
   }, [orderData, navigate]);
+
+  const checkCodAvailability = async () => {
+    try {
+      const response = await fetch(`${API_ENDPOINTS.settings}/cod-available/${orderData.amount}`);
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setCodAvailable(data.data.available);
+        setCodEnabled(data.data.available);
+        setCodMessage(data.data.reason || '');
+      }
+    } catch (err) {
+      console.error('Failed to check COD availability:', err);
+      // Default to enabled if check fails
+      setCodEnabled(true);
+      setCodAvailable(true);
+    }
+  };
 
   const handleRazorpayPayment = async () => {
     try {

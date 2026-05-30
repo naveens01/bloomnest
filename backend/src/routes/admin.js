@@ -7,11 +7,12 @@ const Brand = require('../models/Brand');
 const Category = require('../models/Category');
 const Order = require('../models/Order');
 const Review = require('../models/Review');
+const Settings = require('../models/Settings');
 const { protect, adminOnly } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { 
-  productImagesUpload, 
-  brandLogoUpload, 
+const {
+  productImagesUpload,
+  brandLogoUpload,
   categoryImageUpload,
   processUploadedFiles,
   cleanupFiles,
@@ -739,12 +740,13 @@ router.post('/categories', categoryImageUpload, asyncHandler(async (req, res) =>
     }
   }
   
-  // Process uploaded image if any
-  if (req.file) {
-    const filename = path.basename(req.file.path);
+  // Process uploaded image with Cloudinary support
+  const uploadedFiles = await processUploadedFiles(req, 'categories');
+  if (uploadedFiles.length > 0) {
     categoryData.image = {
-      url: generateFileUrl(req, filename, 'categories'),
-      alt: req.file.originalname
+      url: uploadedFiles[0].url,
+      alt: uploadedFiles[0].originalName,
+      cloudinaryPublicId: uploadedFiles[0].cloudinaryPublicId || null
     };
   }
 
@@ -784,12 +786,13 @@ router.put('/categories/:id', categoryImageUpload, asyncHandler(async (req, res)
     }
   }
   
-  // Process uploaded image if any
-  if (req.file) {
-    const filename = path.basename(req.file.path);
+  // Process uploaded image with Cloudinary support
+  const uploadedFiles = await processUploadedFiles(req, 'categories');
+  if (uploadedFiles.length > 0) {
     categoryData.image = {
-      url: generateFileUrl(req, filename, 'categories'),
-      alt: req.file.originalname
+      url: uploadedFiles[0].url,
+      alt: uploadedFiles[0].originalName,
+      cloudinaryPublicId: uploadedFiles[0].cloudinaryPublicId || null
     };
   }
 
@@ -1124,3 +1127,67 @@ router.get('/reviews/stats/:reviewType/:targetId', asyncHandler(async (req, res)
 }));
 
 module.exports = router;
+
+// ==================== SETTINGS MANAGEMENT ====================
+// @desc    Get all settings
+// @route   GET /api/admin/settings
+// @access  Admin only
+router.get('/settings', asyncHandler(async (req, res) => {
+  const { category } = req.query;
+  
+  const query = {};
+  if (category) query.category = category;
+  
+  const settings = await Settings.find(query).sort({ category: 1, key: 1 });
+  
+  res.status(200).json({
+    status: 'success',
+    data: { settings }
+  });
+}));
+
+// @desc    Get single setting
+// @route   GET /api/admin/settings/:key
+// @access  Admin only
+router.get('/settings/:key', asyncHandler(async (req, res) => {
+  const setting = await Settings.findOne({ key: req.params.key });
+  
+  if (!setting) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Setting not found'
+    });
+  }
+  
+  res.status(200).json({
+    status: 'success',
+    data: { setting }
+  });
+}));
+
+// @desc    Update setting
+// @route   PUT /api/admin/settings/:key
+// @access  Admin only
+router.put('/settings/:key', asyncHandler(async (req, res) => {
+  const { value } = req.body;
+  
+  const setting = await Settings.setValue(req.params.key, value, req.user._id);
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Setting updated successfully',
+    data: { setting }
+  });
+}));
+
+// @desc    Initialize default settings
+// @route   POST /api/admin/settings/initialize
+// @access  Admin only
+router.post('/settings/initialize', asyncHandler(async (req, res) => {
+  await Settings.initializeDefaults();
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Default settings initialized successfully'
+  });
+}));

@@ -24,6 +24,9 @@ export const API_ENDPOINTS = {
   // Payment
   createOrder: `${API_BASE_URL}/api/payment/create-order`,
   verifyPayment: `${API_BASE_URL}/api/payment/verify`,
+  
+  // Settings
+  settings: `${API_BASE_URL}/api/settings`,
 };
 
 // Helper function to get full upload URL

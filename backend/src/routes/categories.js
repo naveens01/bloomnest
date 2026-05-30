@@ -9,11 +9,20 @@ const router = express.Router();
 // @route   GET /api/categories
 // @access  Public
 router.get('/', asyncHandler(async (req, res) => {
-  const categories = await Category.find({ isActive: true }).sort({ sortOrder: 1, name: 1 });
+  const categories = await Category.find({ isActive: true })
+    .populate('activeProductCount')
+    .sort({ sortOrder: 1, name: 1 });
+
+  // Transform categories to include productCount
+  const categoriesWithCount = categories.map(cat => {
+    const catObj = cat.toObject();
+    catObj.productCount = catObj.activeProductCount || 0;
+    return catObj;
+  });
 
   res.status(200).json({
     status: 'success',
-    data: { categories }
+    data: { categories: categoriesWithCount }
   });
 }));
 
@@ -46,10 +55,20 @@ router.get('/roots', asyncHandler(async (req, res) => {
 // @access  Public
 router.get('/featured', asyncHandler(async (req, res) => {
   const featuredCategories = await Category.findFeatured();
+  
+  // Populate product counts
+  const categoriesWithCount = await Promise.all(
+    featuredCategories.map(async (cat) => {
+      await cat.populate('activeProductCount');
+      const catObj = cat.toObject();
+      catObj.productCount = catObj.activeProductCount || 0;
+      return catObj;
+    })
+  );
 
   res.status(200).json({
     status: 'success',
-    data: { categories: featuredCategories }
+    data: { categories: categoriesWithCount }
   });
 }));
 
