@@ -40,34 +40,15 @@ export function useHybridProducts(options: UseHybridDataOptions = {}) {
         if (!isMounted) return;
         const backendProducts = response.data.products.map(transformBackendProduct);
 
-        // Prioritize backend data, then append unique static fallback products
-        const combinedProducts: Product[] = [...backendProducts];
-        const existingIds = new Set(backendProducts.map(p => p.id));
-        const existingSlugs = new Set(backendProducts.map(p => p.slug || '').filter(Boolean));
-        const existingNameBrand = new Set(
-          backendProducts.map(p => `${p.name.toLowerCase()}::${p.brand.toLowerCase()}`)
-        );
-
-        products.forEach(staticProduct => {
-          const staticNameBrand = `${staticProduct.name.toLowerCase()}::${staticProduct.brand.toLowerCase()}`;
-          if (
-            !existingIds.has(staticProduct.id) &&
-            !existingSlugs.has(staticProduct.slug || '') &&
-            !existingNameBrand.has(staticNameBrand)
-          ) {
-            combinedProducts.push(staticProduct);
-            existingIds.add(staticProduct.id);
-            if (staticProduct.slug) existingSlugs.add(staticProduct.slug);
-            existingNameBrand.add(staticNameBrand);
-          }
-        });
+        // Show ONLY backend data when connected, ONLY static when not
+        const finalProducts = backendProducts.length > 0 ? backendProducts : products;
 
         if (isMounted) {
           setState({
-            data: combinedProducts,
+            data: finalProducts,
             loading: false,
             error: null,
-            hasBackendData: true,
+            hasBackendData: backendProducts.length > 0,
           });
         }
       } catch (error) {
@@ -145,29 +126,15 @@ export function useHybridBrands(options: UseHybridDataOptions = {}) {
 
         const backendBrands = response.data.brands.map(transformBackendBrand);
         
-        // Prioritize backend brands, then append unique static fallback brands
-        const combinedBrands: Brand[] = [...backendBrands];
-        const existingIds = new Set(backendBrands.map(b => b.id));
-        const existingSlugs = new Set(backendBrands.map(b => (b as any).slug || '').filter(Boolean));
-        const existingNames = new Set(backendBrands.map(b => b.name.toLowerCase()));
-        
-        brands.forEach(staticBrand => {
-          const brandSlug = (staticBrand as any).slug || '';
-          const lowerName = staticBrand.name.toLowerCase();
-          if (!existingIds.has(staticBrand.id) && !existingSlugs.has(brandSlug) && !existingNames.has(lowerName)) {
-            combinedBrands.push(staticBrand);
-            existingIds.add(staticBrand.id);
-            if (brandSlug) existingSlugs.add(brandSlug);
-            existingNames.add(lowerName);
-          }
-        });
+        // Show ONLY backend data when connected, ONLY static when not
+        const finalBrands = backendBrands.length > 0 ? backendBrands : brands;
 
         if (isMounted) {
           setState({
-            data: combinedBrands,
+            data: finalBrands,
             loading: false,
             error: null,
-            hasBackendData: true,
+            hasBackendData: backendBrands.length > 0,
           });
         }
       } catch (error) {
@@ -248,29 +215,15 @@ export function useHybridCategories(options: UseHybridDataOptions = {}) {
 
         const backendCategories = response.data.categories.map(transformBackendCategory);
         
-        // Prioritize backend categories, then append unique static fallback categories
-        const combinedCategories: Category[] = [...backendCategories];
-        const existingIds = new Set(backendCategories.map(c => c.id));
-        const existingSlugs = new Set(backendCategories.map(c => (c as any).slug || '').filter(Boolean));
-        const existingNames = new Set(backendCategories.map(c => c.name.toLowerCase()));
-        
-        categories.forEach(staticCategory => {
-          const categorySlug = (staticCategory as any).slug || '';
-          const lowerName = staticCategory.name.toLowerCase();
-          if (!existingIds.has(staticCategory.id) && !existingSlugs.has(categorySlug) && !existingNames.has(lowerName)) {
-            combinedCategories.push(staticCategory);
-            existingIds.add(staticCategory.id);
-            if (categorySlug) existingSlugs.add(categorySlug);
-            existingNames.add(lowerName);
-          }
-        });
+        // Show ONLY backend data when connected, ONLY static when not
+        const finalCategories = backendCategories.length > 0 ? backendCategories : categories;
 
         if (isMounted) {
           setState({
-            data: combinedCategories,
+            data: finalCategories,
             loading: false,
             error: null,
-            hasBackendData: true,
+            hasBackendData: backendCategories.length > 0,
           });
         }
       } catch (error) {

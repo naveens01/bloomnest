@@ -165,9 +165,6 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
                       <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
                         <span className="text-xs font-medium text-eco-700 whitespace-nowrap">{brand.specialty}</span>
                       </div>
-                      <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
-                        <span className="text-xs font-medium text-eco-700 whitespace-nowrap">{brand.established}</span>
-                      </div>
                     </div>
                     
                     {/* Enhanced Stats Row - Mobile Optimized */}
