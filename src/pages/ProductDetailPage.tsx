@@ -73,16 +73,47 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
       const response = await reviewApi.getProductReviews(slug, page, 5);
       if (response.data) {
         setReviews(response.data.reviews || []);
-        // Map backend 'distribution' to frontend 'ratingDistribution'
-        const stats = response.data.stats || {
+        
+        // Get stats from Review collection
+        const reviewCollectionStats = response.data.stats || {
           averageRating: 0,
           totalReviews: 0,
           distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
         };
+        
+        // Get initial ratings from product (admin-added)
+        const productRatings = (product as any).ratings || {
+          average: 0,
+          count: 0,
+          distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+        };
+        
+        // Combine both sources
+        const totalReviews = reviewCollectionStats.totalReviews + (productRatings.count || 0);
+        const combinedDistribution = {
+          1: (reviewCollectionStats.distribution[1] || 0) + (productRatings.distribution?.[1] || 0),
+          2: (reviewCollectionStats.distribution[2] || 0) + (productRatings.distribution?.[2] || 0),
+          3: (reviewCollectionStats.distribution[3] || 0) + (productRatings.distribution?.[3] || 0),
+          4: (reviewCollectionStats.distribution[4] || 0) + (productRatings.distribution?.[4] || 0),
+          5: (reviewCollectionStats.distribution[5] || 0) + (productRatings.distribution?.[5] || 0)
+        };
+        
+        // Calculate combined average rating
+        let combinedAverage = 0;
+        if (totalReviews > 0) {
+          const totalRatingPoints =
+            (combinedDistribution[1] * 1) +
+            (combinedDistribution[2] * 2) +
+            (combinedDistribution[3] * 3) +
+            (combinedDistribution[4] * 4) +
+            (combinedDistribution[5] * 5);
+          combinedAverage = totalRatingPoints / totalReviews;
+        }
+        
         setReviewStats({
-          averageRating: stats.averageRating,
-          totalReviews: stats.totalReviews,
-          ratingDistribution: stats.distribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+          averageRating: combinedAverage,
+          totalReviews: totalReviews,
+          ratingDistribution: combinedDistribution
         });
         setReviewPagination(response.data.pagination || null);
       }
