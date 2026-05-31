@@ -105,8 +105,11 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
       id: c.id,
       name: c.name,
       slug: (c as any).slug || 'none',
-      generatedSlug: c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').trim()
+      generatedSlug: c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').trim(),
+      hasBackendSlug: !!(c as any).slug
     })));
+    console.log('Categories source - hasBackendData:', categories.length > 0 ? 'yes' : 'no');
+    console.log('First category full object:', categories[0]);
     
     return null;
   }, [categories, categoryId]);
