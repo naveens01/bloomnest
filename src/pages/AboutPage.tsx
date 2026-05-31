@@ -175,50 +175,115 @@ const AboutPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
+      {/* Achievements & Tree Planting Initiative Section */}
+      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10 sm:mb-12 lg:mb-16">
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-eco-400 to-nature-400 px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-eco-200 mb-4 sm:mb-6 shadow-eco-glow">
+              <Award className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              <span className="text-xs sm:text-sm font-semibold text-white">Our Achievements</span>
+            </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gradient-eco mb-4 sm:mb-6">
-              Meet Our Team
+              Making a Real Impact
             </h2>
             <p className="text-sm sm:text-base lg:text-lg xl:text-xl text-eco-600 max-w-3xl mx-auto px-4">
-              Passionate individuals dedicated to making sustainable living accessible to everyone
+              Recognized for excellence and committed to environmental sustainability
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            <div className="bg-glass-eco p-5 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl lg:rounded-3xl border border-eco-200 text-center">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-eco-gradient rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 lg:mb-6">
-                <Users className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-12">
+            {/* Recognition Card */}
+            <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-2xl sm:rounded-3xl border-2 border-eco-200 shadow-eco-glow hover:shadow-eco-glow-xl transition-all duration-300">
+              <div className="flex items-start space-x-4 mb-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-eco-500 to-nature-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <Award className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-eco-800 mb-2">
+                    Eco Smart Achiever
+                  </h3>
+                  <p className="text-sm sm:text-base text-eco-600 font-semibold">
+                    Recognized by MSME
+                  </p>
+                </div>
               </div>
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-eco-800 mb-1 sm:mb-2">Sarah Johnson</h3>
-              <p className="text-eco-600 text-xs sm:text-sm mb-2 sm:mb-3">Founder & CEO</p>
-              <p className="text-eco-600 text-xs sm:text-sm">
-                Environmental scientist with 15+ years experience in sustainable business
+              <p className="text-sm sm:text-base lg:text-lg text-eco-700 leading-relaxed">
+                Honored as an <span className="font-bold text-eco-800">Eco Smart Achiever by MSME</span> for our commitment to sustainable business practices and environmental innovation.
               </p>
             </div>
-            
-            <div className="bg-glass-eco p-5 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl lg:rounded-3xl border border-eco-200 text-center">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-nature-gradient rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 lg:mb-6">
-                <Zap className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white" />
+
+            {/* Top Seller Card */}
+            <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-2xl sm:rounded-3xl border-2 border-nature-200 shadow-eco-glow hover:shadow-eco-glow-xl transition-all duration-300">
+              <div className="flex items-start space-x-4 mb-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-nature-500 to-ocean-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <Star className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-eco-800 mb-2">
+                    Top Eco Seller
+                  </h3>
+                  <p className="text-sm sm:text-base text-eco-600 font-semibold">
+                    South India Leader
+                  </p>
+                </div>
               </div>
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-eco-800 mb-1 sm:mb-2">Michael Chen</h3>
-              <p className="text-eco-600 text-xs sm:text-sm mb-2 sm:mb-3">Head of Product</p>
-              <p className="text-eco-600 text-xs sm:text-sm">
-                Former product manager at leading sustainable brands
+              <p className="text-sm sm:text-base lg:text-lg text-eco-700 leading-relaxed">
+                Proud to be the <span className="font-bold text-eco-800">top eco-product seller in South India</span>, trusted by thousands of conscious consumers.
               </p>
             </div>
+          </div>
+
+          {/* Tree Planting Initiative */}
+          <div className="bg-gradient-to-br from-eco-800 to-eco-900 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-eco-glow-lg relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-32 translate-x-32"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-24 -translate-x-24"></div>
+            </div>
             
-            <div className="bg-glass-eco p-5 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl lg:rounded-3xl border border-eco-200 text-center sm:col-span-2 lg:col-span-1">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-ocean-gradient rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 lg:mb-6">
-                <Recycle className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-white" />
+            <div className="relative z-10">
+              <div className="flex items-center justify-center mb-6 sm:mb-8">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-4 border-white/30">
+                  <TreePine className="h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14 text-white" />
+                </div>
               </div>
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-eco-800 mb-1 sm:mb-2">Emma Rodriguez</h3>
-              <p className="text-eco-600 text-xs sm:text-sm mb-2 sm:mb-3">Sustainability Director</p>
-              <p className="text-eco-600 text-xs sm:text-sm">
-                Expert in circular economy and sustainable supply chains
-              </p>
+              
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white text-center mb-4 sm:mb-6">
+                One Purchase, One Tree 🌱
+              </h3>
+              
+              <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+                <p className="text-base sm:text-lg lg:text-xl text-white text-center leading-relaxed">
+                  <span className="font-bold">Every product you purchase plants one tree!</span> We compile all tree plantings monthly and plant them in your name.
+                </p>
+                
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-white/20">
+                  <h4 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 text-center">
+                    🎉 Exclusive Benefits
+                  </h4>
+                  <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white">
+                    <li className="flex items-start">
+                      <span className="text-eco-300 mr-2 flex-shrink-0">✓</span>
+                      <span>Trees planted in <span className="font-semibold">your name</span> every month</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-eco-300 mr-2 flex-shrink-0">✓</span>
+                      <span>Invitation to our <span className="font-semibold">bi-annual eco-green events</span></span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-eco-300 mr-2 flex-shrink-0">✓</span>
+                      <span>Meet and network with <span className="font-semibold">celebrities and VIPs</span></span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-eco-300 mr-2 flex-shrink-0">✓</span>
+                      <span>Be part of a <span className="font-semibold">community making real environmental impact</span></span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <p className="text-sm sm:text-base lg:text-lg text-white/90 text-center italic">
+                  Join us in creating a greener future, one purchase at a time! 🌍
+                </p>
+              </div>
             </div>
           </div>
         </div>

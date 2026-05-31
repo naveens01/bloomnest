@@ -103,6 +103,10 @@ const PaymentPage = () => {
       }
 
       // Initialize Razorpay checkout
+      console.log('Razorpay Key ID:', data.data.keyId);
+      console.log('Order ID:', data.data.orderId);
+      console.log('Amount:', data.data.amount);
+      
       const options = {
         key: data.data.keyId,
         amount: data.data.amount,
@@ -111,53 +115,8 @@ const PaymentPage = () => {
         description: 'Eco-Friendly Products',
         image: '/logo.png',
         order_id: data.data.orderId,
-        method: {
-          upi: true,
-          card: true,
-          netbanking: true,
-          wallet: true,
-          paylater: true,
-        },
-        config: {
-          display: {
-            blocks: {
-              banks: {
-                name: 'Pay via UPI',
-                instruments: [
-                  {
-                    method: 'upi',
-                    flows: ['intent', 'collect', 'qr'],
-                    apps: ['google_pay', 'phonepe', 'paytm', 'bhim', 'amazonpay']
-                  }
-                ]
-              },
-              card: {
-                name: 'Credit/Debit Card',
-                instruments: [
-                  {
-                    method: 'card'
-                  }
-                ]
-              },
-              other: {
-                name: 'Other Payment Methods',
-                instruments: [
-                  {
-                    method: 'netbanking'
-                  },
-                  {
-                    method: 'wallet'
-                  }
-                ]
-              }
-            },
-            sequence: ['block.banks', 'block.card', 'block.other'],
-            preferences: {
-              show_default_blocks: true
-            }
-          }
-        },
         handler: async function (response: any) {
+          console.log('Razorpay payment response:', response);
           try {
             // Verify payment
             const verifyResponse = await fetch(API_ENDPOINTS.verifyPayment, {
