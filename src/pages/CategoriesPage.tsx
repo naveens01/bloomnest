@@ -428,10 +428,10 @@ const CategoriesPage: React.FC = () => {
       {/* Enhanced Call to Action */}
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-eco-gradient rounded-2xl sm:rounded-3xl p-8 sm:p-12 shadow-eco-glow-lg">
-            <div className="inline-flex items-center space-x-2 bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-eco-200 mb-6 sm:mb-8">
-              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
-              <span className="text-xs sm:text-sm font-semibold text-eco-700">Explore More</span>
+          <div className="bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 rounded-2xl sm:rounded-3xl p-8 sm:p-12 shadow-eco-glow-lg">
+            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-white/30 mb-6 sm:mb-8">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              <span className="text-xs sm:text-sm font-semibold text-white">Explore More</span>
                 </div>
             
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
