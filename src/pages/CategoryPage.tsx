@@ -50,10 +50,10 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   useEffect(() => {
     refreshCategories();
     
-    // Wait a bit for categories to load from backend before giving up
+    // Wait longer for categories to load from backend before giving up
     const timer = setTimeout(() => {
       setHasWaitedForCategories(true);
-    }, 1000); // Wait 1 second for categories to load
+    }, 2000); // Wait 2 seconds for categories to load
     
     return () => clearTimeout(timer);
   }, [categoryId, refreshCategories]);
@@ -109,7 +109,7 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
     })));
     
     return null;
-  }, [categories.length, categoryId]);
+  }, [categories, categoryId]);
 
   // IMPORTANT: filteredProducts useMemo must be called BEFORE any early returns to follow Rules of Hooks
   const filteredProducts = useMemo(() => {
