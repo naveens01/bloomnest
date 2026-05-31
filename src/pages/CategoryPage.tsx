@@ -1,9 +1,14 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
+import ProductQuickView from '../components/ProductQuickView';
+import Breadcrumb from '../components/Breadcrumb';
+import ProductFilters, { FilterOptions } from '../components/ProductFilters';
 import { CartItem, Product } from '../types';
 import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart, Filter, Search, Grid, List, ShoppingBag, TrendingUp, Shield, Users, Loader2 } from 'lucide-react';
-import { useHybridCategories, useHybridProducts } from '../hooks/useHybridData';
+import { useHybridCategories } from '../hooks/useHybridData';
+import { categoryApi, transformBackendProduct, BackendProduct, PaginationInfo } from '../services/api';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 interface CategoryPageProps {
   cart: CartItem[];
@@ -21,13 +26,23 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   isInWatchlist
 }) => {
   const { categoryId } = useParams<{ categoryId: string }>();
+  const navigate = useNavigate();
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [page, setPage] = useState(1);
+  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiPagination, setApiPagination] = useState<PaginationInfo | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [filters, setFilters] = useState<FilterOptions>({
+    priceRange: [0, 10000],
+    minRating: 0,
+    inStockOnly: false,
+    sortBy: 'newest',
+  });
   
   // Use hybrid data hooks
   const { data: categories, loading: categoriesLoading, refresh: refreshCategories } = useHybridCategories();
-  const { data: allProducts, loading: productsLoading } = useHybridProducts();
   
   // State to track if we've waited enough for categories to load
   const [hasWaitedForCategories, setHasWaitedForCategories] = useState(false);
@@ -36,10 +51,10 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   useEffect(() => {
     refreshCategories();
     
-    // Wait a bit for categories to load from backend before giving up
+    // Wait longer for categories to load from backend before giving up
     const timer = setTimeout(() => {
       setHasWaitedForCategories(true);
-    }, 1000); // Wait 1 second for categories to load
+    }, 2000); // Wait 2 seconds for categories to load
     
     return () => clearTimeout(timer);
   }, [categoryId, refreshCategories]);
@@ -91,12 +106,104 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
       id: c.id,
       name: c.name,
       slug: (c as any).slug || 'none',
-      generatedSlug: c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').trim()
+      generatedSlug: c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').trim(),
+      hasBackendSlug: !!(c as any).slug
     })));
+    console.log('Categories source - hasBackendData:', categories.length > 0 ? 'yes' : 'no');
+    console.log('First category full object:', categories[0]);
     
     return null;
   }, [categories, categoryId]);
-  
+
+  // IMPORTANT: filteredProducts useMemo must be called BEFORE any early returns to follow Rules of Hooks
+  const filteredProducts = useMemo(() => {
+    let filtered = [...apiProducts];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(query) ||
+        product.brand.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query) ||
+        (product.features && Array.isArray(product.features) && product.features.some(feature => feature.toLowerCase().includes(query)))
+      );
+    }
+
+    // Apply price range filter
+    filtered = filtered.filter(
+      product => product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
+    );
+
+    // Apply rating filter
+    if (filters.minRating > 0) {
+      filtered = filtered.filter(product => product.rating >= filters.minRating);
+    }
+
+    // Apply stock filter
+    if (filters.inStockOnly) {
+      filtered = filtered.filter(product => product.inStock);
+    }
+
+    return filtered;
+  }, [searchQuery, apiProducts, filters.priceRange[0], filters.priceRange[1], filters.minRating, filters.inStockOnly]);
+
+  // Load category products effect
+  useEffect(() => {
+    if (!category) return;
+
+    const loadCategoryProducts = async () => {
+      try {
+        setApiLoading(true);
+        const slug = (category as any).slug || categoryId || '';
+        const sortParam =
+          sortBy === 'price-low' || sortBy === 'price-high' || sortBy === 'rating' || sortBy === 'newest'
+            ? sortBy
+            : 'newest';
+
+        const response = await categoryApi.getProducts(slug, page, 12, sortParam);
+        const backendProducts: BackendProduct[] = response.data.products || [];
+        
+        if (page === 1) {
+          setApiProducts(backendProducts.map(transformBackendProduct));
+        } else {
+          setApiProducts(prev => [...prev, ...backendProducts.map(transformBackendProduct)]);
+        }
+        
+        setApiPagination(response.data.pagination || null);
+      } catch (error) {
+        console.error('Failed loading category products:', error);
+        if (page === 1) {
+          setApiProducts([]);
+        }
+        setApiPagination(null);
+      } finally {
+        setApiLoading(false);
+      }
+    };
+
+    loadCategoryProducts();
+  }, [category, categoryId, page, sortBy]);
+
+  useEffect(() => {
+    setPage(1);
+    setApiProducts([]);
+  }, [categoryId, sortBy]);
+
+  const loadMore = useCallback(() => {
+    if (apiPagination?.hasNext && !apiLoading) {
+      setPage(prev => prev + 1);
+    }
+  }, [apiPagination, apiLoading]);
+
+  const sentinelRef = useInfiniteScroll({
+    loading: apiLoading && page > 1,
+    hasMore: apiPagination?.hasNext || false,
+    onLoadMore: loadMore,
+    threshold: 300
+  });
+
+  // Early returns AFTER all hooks to follow Rules of Hooks
   // Loading state
   if (categoriesLoading || (!hasWaitedForCategories && (!categories || categories.length === 0))) {
     return (
@@ -107,14 +214,8 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
   }
   
   // Only redirect if we've waited for categories to load AND category is still not found
-  // Don't redirect if we haven't waited yet (categories might still be loading from backend)
   if (!category && hasWaitedForCategories && !categoriesLoading && categories && categories.length > 0) {
     console.log('Category not found after waiting, redirecting to home. categoryId:', categoryId);
-    console.log('Available categories:', categories.map(c => ({
-      id: c.id,
-      name: c.name,
-      slug: (c as any).slug || 'none'
-    })));
     return <Navigate to="/" replace />;
   }
   
@@ -127,76 +228,22 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
     );
   }
   
-  // If still no category after waiting and categories loaded, redirect
-  if (!category && hasWaitedForCategories) {
+  // If still no category after waiting, redirect
+  if (!category) {
     return <Navigate to="/" replace />;
   }
-  
-  // Category not found but we're still waiting - show loading
-  if (!category) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
-      </div>
-    );
-  }
 
-  const filteredProducts = useMemo(() => {
-    // Filter products by category ID, slug, or name
-    let filtered = allProducts.filter(product => {
-      // Check if product has categoryId (backend product)
-      if ((product as any).categoryId) {
-        return (product as any).categoryId === category.id || (product as any).categoryId === categoryId;
-      }
-      // For static products, category is a string like "personal-care"
-      // Match by category slug or name
-      const productCategory = product.category.toLowerCase().replace(/\s+/g, '-');
-      const categorySlug = (category as any).slug || category.id.toLowerCase().replace(/\s+/g, '-');
-      const categoryIdNormalized = categoryId?.toLowerCase().replace(/\s+/g, '-');
-      const categoryNameSlug = category.name.toLowerCase().replace(/\s+/g, '-');
-      
-      return productCategory === categoryIdNormalized || 
-             productCategory === categorySlug ||
-             productCategory === categoryNameSlug ||
-             product.category === categoryId ||
-             product.category === category.name.toLowerCase();
-    });
-
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(query) ||
-        product.brand.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query) ||
-        product.features.some(feature => feature.toLowerCase().includes(query))
-      );
-    }
-
-    // Sort products
-    switch (sortBy) {
-      case 'price-low':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'newest':
-        filtered.sort((a, b) => Math.random() - 0.5); // Simulate newest
-        break;
-      default:
-        // Featured - keep original order
-        break;
-    }
-
-    return filtered;
-  }, [categoryId, searchQuery, sortBy, allProducts, category]);
+  const breadcrumbItems = [
+    { label: 'Categories', path: '/categories' },
+    { label: category.name },
+  ];
 
   return (
     <main className="min-h-screen bg-eco-pattern">
+      {/* Breadcrumb Navigation */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <Breadcrumb items={breadcrumbItems} />
+      </div>
       {/* Enhanced Category Header */}
       <section className="relative bg-eco-gradient py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Animated Background Elements */}
@@ -283,140 +330,133 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
       {/* Enhanced Search and Filter Section */}
       <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-glass-eco rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-eco-200 shadow-eco-glow">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 items-center">
-              {/* Search Bar */}
-              <div className="lg:col-span-2">
-                <div className="relative group">
-                  <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-eco-400 group-hover:text-eco-600 transition-colors" />
-                  <input
-                    type="text"
-                    placeholder={`Search ${category.name.toLowerCase()} products...`}
-                    className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 border-2 border-eco-200 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-sm sm:text-lg"
-                    value={searchQuery}
-                    readOnly
-                  />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Filters Sidebar */}
+            <div className="lg:col-span-1">
+              <ProductFilters
+                filters={filters}
+                onFilterChange={setFilters}
+                maxPrice={10000}
+              />
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:col-span-3">
+              <div className="bg-glass-eco rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-eco-200 shadow-eco-glow mb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
+                  {/* Search Bar */}
+                  <div className="lg:col-span-2">
+                    <div className="relative group">
+                      <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-eco-400 group-hover:text-eco-600 transition-colors" />
+                      <input
+                        type="text"
+                        placeholder={`Search ${category.name.toLowerCase()} products...`}
+                        className="w-full pl-10 sm:pl-12 pr-4 py-3 border-2 border-eco-200 rounded-xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300"
+                        value={searchQuery}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* View Mode Toggle */}
+                  <div className="flex items-center justify-end space-x-2">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`p-2 sm:p-3 rounded-xl transition-all duration-300 ${
+                        viewMode === 'grid'
+                          ? 'bg-eco-gradient text-white shadow-eco-glow'
+                          : 'bg-white/80 text-eco-600 hover:bg-eco-100'
+                      }`}
+                    >
+                      <Grid className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-2 sm:p-3 rounded-xl transition-all duration-300 ${
+                        viewMode === 'list'
+                          ? 'bg-eco-gradient text-white shadow-eco-glow'
+                          : 'bg-white/80 text-eco-600 hover:bg-eco-100'
+                      }`}
+                    >
+                      <List className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
               
-              {/* Sort Dropdown */}
-              <div>
-                <select 
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-3 sm:py-4 border-2 border-eco-200 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/90 backdrop-blur-sm hover:bg-white hover:border-eco-300 text-sm sm:text-lg"
-                >
-                  <option value="featured">Sort by: Featured</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Customer Rating</option>
-                  <option value="newest">Newest First</option>
-                </select>
-              </div>
-              
-              {/* View Mode Toggle */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 sm:p-3 rounded-xl transition-all duration-300 ${
-                    viewMode === 'grid'
-                      ? 'bg-eco-gradient text-white shadow-eco-glow'
-                      : 'bg-white/80 text-eco-600 hover:bg-eco-100'
-                  }`}
-                >
-                  <Grid className="h-4 w-4 sm:h-5 sm:w-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 sm:p-3 rounded-xl transition-all duration-300 ${
-                    viewMode === 'list'
-                      ? 'bg-eco-gradient text-white shadow-eco-glow'
-                      : 'bg-white/80 text-eco-600 hover:bg-eco-100'
-                  }`}
-                >
-                  <List className="h-4 w-4 sm:h-5 sm:w-5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced Products Section */}
-      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Section Header */}
-          <div className="text-center mb-12 sm:mb-16">
-            <div className="inline-flex items-center space-x-2 bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-eco-200 mb-4 sm:mb-6">
-              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
-              <span className="text-xs sm:text-sm font-semibold text-eco-700">Products Found</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gradient-eco mb-4 sm:mb-6">
-              {category.name} Collection
-            </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-eco-600 max-w-3xl mx-auto leading-relaxed px-4">
-              {filteredProducts.length} sustainable {category.name.toLowerCase()} product{filteredProducts.length !== 1 ? 's' : ''} 
-              {searchQuery && ` matching "${searchQuery}"`} - all carefully selected for quality and environmental impact
-            </p>
-          </div>
-
-          {/* Results Summary */}
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-8 sm:mb-12">
-            <div className="bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl border border-eco-200">
-              <span className="text-eco-700 font-semibold text-sm sm:text-base">
-                {filteredProducts.length} Product{filteredProducts.length !== 1 ? 's' : ''} Found
-              </span>
-            </div>
-            <div className="bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl border border-eco-200">
-              <span className="text-eco-700 font-semibold text-sm sm:text-base">100% Eco-Friendly</span>
-            </div>
-            <div className="bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl border border-eco-200">
-              <span className="text-eco-700 font-semibold text-sm sm:text-base">Premium Quality</span>
-            </div>
-          </div>
-
-          {productsLoading ? (
-            <div className="flex justify-center items-center py-20">
-              <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-16 sm:py-20">
-              <div className="bg-glass-eco p-8 sm:p-12 rounded-2xl sm:rounded-3xl border border-eco-200 max-w-2xl mx-auto">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-eco-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                  <Search className="h-8 w-8 sm:h-10 sm:w-10 text-eco-600" />
+              {/* Enhanced Products Section */}
+              <div className="py-6">
+                {/* Results Summary */}
+                <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-6">
+                  <div className="bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-eco-200">
+                    <span className="text-eco-700 font-semibold text-sm sm:text-base">
+                      {filteredProducts.length} Product{filteredProducts.length !== 1 ? 's' : ''} Found
+                    </span>
+                  </div>
+                  <div className="bg-glass-eco px-4 sm:px-6 py-2 sm:py-3 rounded-xl border border-eco-200">
+                    <span className="text-eco-700 font-semibold text-sm sm:text-base">100% Eco-Friendly</span>
+                  </div>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-eco-900 mb-3 sm:mb-4">No Products Found</h3>
-                <p className="text-eco-600 mb-6 text-sm sm:text-base">
-                  We couldn't find any {category.name.toLowerCase()} products matching your search criteria.
-                </p>
-                <button className="btn-eco px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
-                  <span>Browse All {category.name}</span>
-                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 ml-2" />
-                </button>
+
+                {apiLoading ? (
+                  <div className="flex justify-center items-center py-20">
+                    <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+                  </div>
+                ) : filteredProducts.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="bg-glass-eco p-8 rounded-2xl border border-eco-200 max-w-2xl mx-auto">
+                      <div className="w-16 h-16 bg-eco-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Search className="h-8 w-8 text-eco-600" />
+                      </div>
+                      <h3 className="text-xl font-bold text-eco-900 mb-3">No Products Found</h3>
+                      <p className="text-eco-600 mb-6 text-sm">
+                        We couldn't find any {category.name.toLowerCase()} products matching your criteria.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className={`grid gap-4 sm:gap-6 ${
+                      viewMode === 'grid'
+                        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                        : 'grid-cols-1'
+                    }`}>
+                      {filteredProducts.map((product, index) => (
+                        <div
+                          key={product.id}
+                          className="animate-fade-in-up"
+                          style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                          <ProductCard
+                            product={product}
+                            onAddToCart={onAddToCart}
+                            isInWatchlist={isInWatchlist(product.id)}
+                            onToggleWatchlist={onToggleWatchlist}
+                            onQuickView={setSelectedProduct}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Infinite Scroll Sentinel */}
+                    <div ref={sentinelRef} className="h-20 flex items-center justify-center mt-8">
+                      {apiLoading && page > 1 && (
+                        <div className="flex flex-col items-center space-y-3 py-8">
+                          <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+                          <p className="text-eco-600 font-medium">Loading more products...</p>
+                        </div>
+                      )}
+                      {apiPagination && !apiPagination.hasNext && filteredProducts.length > 0 && (
+                        <div className="text-center py-8">
+                          <p className="text-eco-600 font-medium">You've seen all {category.name} products! 🌿</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
-          ) : (
-            <div className={`grid gap-4 sm:gap-6 lg:gap-8 ${
-              viewMode === 'grid' 
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-                : 'grid-cols-1'
-            }`}>
-              {filteredProducts.map((product, index) => (
-                <div
-                  key={product.id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <ProductCard
-                    product={product}
-                    onAddToCart={onAddToCart}
-                    isInWatchlist={isInWatchlist(product.id)}
-                    onToggleWatchlist={onToggleWatchlist}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          </div>
         </div>
       </section>
 
@@ -439,12 +479,18 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="btn-eco px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 group hover:shadow-eco-glow-lg bg-white text-eco-600 hover:bg-eco-50">
+              <button
+                onClick={() => navigate('/categories')}
+                className="btn-eco px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 group hover:shadow-eco-glow-lg bg-white text-eco-600 hover:bg-eco-50"
+              >
                 <span>Shop All Categories</span>
                 <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-2 transition-transform duration-300" />
               </button>
               
-              <button className="btn-eco px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 group hover:shadow-eco-glow-lg border-2 border-white text-white hover:bg-white hover:text-eco-600">
+              <button
+                onClick={() => navigate('/about')}
+                className="btn-eco px-8 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-semibold flex items-center justify-center space-x-2 sm:space-x-3 group hover:shadow-eco-glow-lg border-2 border-white text-white hover:bg-white hover:text-eco-600"
+              >
                 <span>Learn About Sustainability</span>
                 <Leaf className="h-5 w-5 sm:h-6 sm:w-6 group-hover:scale-110 transition-transform duration-300" />
               </button>
@@ -452,6 +498,16 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
           </div>
         </div>
       </section>
+
+      {/* Quick View Modal */}
+      <ProductQuickView
+        product={selectedProduct!}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onAddToCart={onAddToCart}
+        isInWatchlist={selectedProduct ? isInWatchlist(selectedProduct.id) : false}
+        onToggleWatchlist={onToggleWatchlist}
+      />
     </main>
   );
 };

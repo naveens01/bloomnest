@@ -1,6 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { uploadToCloudinary, isCloudinaryConfigured } = require('../utils/cloudinary');
 
 // Ensure upload directory exists
 const uploadDir = path.join(__dirname, '../../uploads');
@@ -170,23 +171,49 @@ const generateFileUrl = (req, filename, type = 'products') => {
   return `${baseUrl}/uploads/${type}/${filename}`;
 };
 
-// Process uploaded files
-const processUploadedFiles = (req, type = 'products') => {
+// Process uploaded files with Cloudinary support
+const processUploadedFiles = async (req, type = 'products') => {
   if (!req.files && !req.file) return [];
 
   const files = req.files || [req.file];
-  return files.map(file => {
-    // Extract just the filename from the path
+  const useCloudinary = isCloudinaryConfigured();
+  
+  const processedFiles = [];
+  
+  for (const file of files) {
     const filename = path.basename(file.path);
-    return {
+    let fileUrl = generateFileUrl(req, filename, type);
+    let cloudinaryData = null;
+    
+    // Upload to Cloudinary if configured
+    if (useCloudinary) {
+      try {
+        console.log(`☁️ Uploading to Cloudinary: ${file.originalname}`);
+        cloudinaryData = await uploadToCloudinary(file.path, `bloomnest/${type}`);
+        fileUrl = cloudinaryData.url;
+        console.log(`✅ Cloudinary upload successful: ${fileUrl}`);
+        
+        // Clean up local file after successful Cloudinary upload
+        cleanupFile(file.path);
+      } catch (error) {
+        console.error(`❌ Cloudinary upload failed for ${file.originalname}:`, error.message);
+        console.log(`📁 Falling back to local storage`);
+        // Fall back to local URL if Cloudinary fails
+      }
+    }
+    
+    processedFiles.push({
       originalName: file.originalname,
       filename: filename,
       path: file.path,
       size: file.size,
       mimetype: file.mimetype,
-      url: generateFileUrl(req, filename, type)
-    };
-  });
+      url: fileUrl,
+      cloudinaryPublicId: cloudinaryData?.publicId || null
+    });
+  }
+  
+  return processedFiles;
 };
 
 // Validate image dimensions (optional)

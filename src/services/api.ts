@@ -1,4 +1,12 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+// Debug: Log environment variables at build time
+console.log('🔧 Build-time VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('🔧 Build-time MODE:', import.meta.env.MODE);
+
+const API_BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : 'http://localhost:5000/api';
+
+console.log('🚀 Final API_BASE_URL:', API_BASE_URL);
 
 export interface ApiResponse<T> {
   status: string;
@@ -291,16 +299,32 @@ export const generateSlug = (name: string): string => {
 // Helper function to normalize image URLs
 const normalizeImageUrl = (url: string | undefined): string => {
   if (!url || url.trim() === '') return '';
+  
+  // Check if it's a placeholder text (like "preview1", "preview2")
+  if (!url.includes('/') && !url.startsWith('http')) {
+    // Return a placeholder image URL
+    return 'https://via.placeholder.com/400x400/10b981/ffffff?text=Product+Image';
+  }
+  
   // If already a full URL, return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
+  
+  // Get backend URL from environment or use localhost
+  // Remove /api suffix if present since images are served from root
+  let backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  if (backendUrl.endsWith('/api')) {
+    backendUrl = backendUrl.slice(0, -4);
+  }
+  
   // If starts with /uploads, prepend backend URL
   if (url.startsWith('/uploads')) {
-    return `http://localhost:5000${url}`;
+    return `${backendUrl}${url}`;
   }
+  
   // Otherwise, assume it's a relative path from uploads
-  return `http://localhost:5000/uploads/${url}`;
+  return `${backendUrl}/uploads/${url}`;
 };
 
 // Utility function to transform backend data to frontend format
@@ -311,6 +335,11 @@ export const transformBackendProduct = (backendProduct: BackendProduct) => {
   const categoryId = typeof backendProduct.category === 'object' ? backendProduct.category._id : backendProduct.category;
   const categoryName = typeof backendProduct.category === 'object' ? backendProduct.category.name : backendProduct.category;
   
+  // Transform all images to normalized URLs
+  const allImages = backendProduct.images
+    .map(img => normalizeImageUrl(img.url))
+    .filter(url => url !== ''); // Remove empty URLs
+  
   return {
   id: backendProduct._id,
   name: backendProduct.name,
@@ -319,6 +348,7 @@ export const transformBackendProduct = (backendProduct: BackendProduct) => {
   price: backendProduct.price?.current || 0,
   originalPrice: backendProduct.price?.original,
     image: normalizeImageUrl(primaryImage),
+    images: allImages.length > 0 ? allImages : undefined, // Array of all product images
   category: categoryName.toLowerCase().replace(/\s+/g, '-'),
   categoryId: categoryId, // Store category ID for filtering
   description: backendProduct.description || '',
@@ -344,13 +374,15 @@ export const transformBackendBrand = (backendBrand: BackendBrand) => {
   
   // Only normalize if it's not already a data URI and not a full URL
   if (logoUrl && !logoUrl.startsWith('data:') && !logoUrl.startsWith('http://') && !logoUrl.startsWith('https://')) {
+    // Get backend URL from environment or use localhost
+    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     // Handle legacy file paths
     if (logoUrl.startsWith('/uploads')) {
-      normalizedLogoUrl = `http://localhost:5000${logoUrl}`;
+      normalizedLogoUrl = `${backendUrl}${logoUrl}`;
     } else if (logoUrl.includes('brands/')) {
-      normalizedLogoUrl = `http://localhost:5000/uploads/${logoUrl}`;
+      normalizedLogoUrl = `${backendUrl}/uploads/${logoUrl}`;
     } else {
-      normalizedLogoUrl = `http://localhost:5000/uploads/brands/${logoUrl}`;
+      normalizedLogoUrl = `${backendUrl}/uploads/brands/${logoUrl}`;
     }
   }
   
@@ -563,6 +595,69 @@ export const adminApi = {
         body: JSON.stringify({ isFeatured }),
       });
     },
+  },
+
+  // Reviews CRUD
+  reviews: {
+    getAll: async (): Promise<ApiResponse<{ reviews: any[] }>> => {
+      return apiCall('/admin/reviews', {
+        method: 'GET',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+    create: async (data: {
+      reviewType: 'product' | 'category' | 'brand';
+      targetId: string;
+      userName: string;
+      rating: number;
+      comment: string;
+      isVerified?: boolean;
+      isApproved?: boolean;
+    }): Promise<ApiResponse<{ review: any }>> => {
+      return apiCall('/admin/reviews', {
+        method: 'POST',
+        headers: adminApi.getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+    },
+    update: async (id: string, data: {
+      userName?: string;
+      rating?: number;
+      comment?: string;
+      isVerified?: boolean;
+      isApproved?: boolean;
+    }): Promise<ApiResponse<{ review: any }>> => {
+      return apiCall(`/admin/reviews/${id}`, {
+        method: 'PUT',
+        headers: adminApi.getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+    },
+    delete: async (id: string): Promise<ApiResponse<void>> => {
+      return apiCall(`/admin/reviews/${id}`, {
+        method: 'DELETE',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+    getStats: async (reviewType: string, targetId: string): Promise<ApiResponse<any>> => {
+      return apiCall(`/admin/reviews/stats/${reviewType}/${targetId}`, {
+        method: 'GET',
+        headers: adminApi.getAuthHeaders(),
+      });
+    },
+  },
+};
+
+// Public Review API calls
+export const reviewApi = {
+  getProductReviews: async (slug: string, page = 1, limit = 10, sort = '-createdAt'): Promise<any> => {
+    return apiCall(`/products/${slug}/reviews?page=${page}&limit=${limit}&sort=${sort}`);
+  },
+  getCategoryReviews: async (slug: string, page = 1, limit = 10, sort = '-createdAt'): Promise<any> => {
+    return apiCall(`/categories/${slug}/reviews?page=${page}&limit=${limit}&sort=${sort}`);
+  },
+  getBrandReviews: async (slug: string, page = 1, limit = 10, sort = '-createdAt'): Promise<any> => {
+    return apiCall(`/brands/${slug}/reviews?page=${page}&limit=${limit}&sort=${sort}`);
   },
 };
 

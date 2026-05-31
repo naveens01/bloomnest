@@ -1,27 +1,27 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Award, Sparkles, ArrowRight, Star, TrendingUp, ShoppingBag, Crown, Target, Lightbulb, Loader2 } from 'lucide-react';
+import { Search, Award, Sparkles, ArrowRight, Star, TrendingUp, ShoppingBag, Crown, Target, Lightbulb, Loader2, Grid } from 'lucide-react';
 import { useHybridBrands } from '../hooks/useHybridData';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 const BrandsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('featured');
+  const [sortBy, setSortBy] = useState('name');
+  const [displayedBrands, setDisplayedBrands] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const ITEMS_PER_PAGE = 12;
 
-  // Use hybrid data hook to get brands from both static and backend
-  // The hook automatically refreshes when page becomes visible or window gains focus
   const { data: brands, loading: brandsLoading, hasBackendData, refresh } = useHybridBrands();
 
-  // Refresh brands when component mounts to get latest data
   useEffect(() => {
     refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount
+  }, []);
 
   const filteredBrands = useMemo(() => {
-    let filtered = [...brands]; // Create a new array to ensure reactivity
+    let filtered = [...brands];
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(brand =>
@@ -31,7 +31,6 @@ const BrandsPage: React.FC = () => {
       );
     }
 
-    // Sort brands
     switch (sortBy) {
       case 'name':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -40,143 +39,188 @@ const BrandsPage: React.FC = () => {
         filtered.sort((a, b) => b.productCount - a.productCount);
         break;
       case 'newest':
-        filtered.sort(() => Math.random() - 0.5); // Simulate newest
+        filtered.sort(() => Math.random() - 0.5);
         break;
       default:
-        // Featured - keep original order
         break;
     }
 
     return filtered;
-  }, [searchQuery, sortBy, brands]); // Include brands in dependencies
+  }, [searchQuery, sortBy, brands]);
+
+  useEffect(() => {
+    setPage(1);
+    setDisplayedBrands(filteredBrands.slice(0, ITEMS_PER_PAGE));
+  }, [filteredBrands]);
+
+  const hasMore = displayedBrands.length < filteredBrands.length;
+
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      setLoadingMore(true);
+      setTimeout(() => {
+        const nextPage = page + 1;
+        const startIndex = page * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const newBrands = filteredBrands.slice(startIndex, endIndex);
+        setDisplayedBrands(prev => [...prev, ...newBrands]);
+        setPage(nextPage);
+        setLoadingMore(false);
+      }, 500);
+    }
+  }, [page, loadingMore, hasMore, filteredBrands]);
+
+  const sentinelRef = useInfiniteScroll({
+    loading: loadingMore,
+    hasMore,
+    onLoadMore: loadMore,
+    threshold: 300
+  });
 
   const categories = ['all', 'personal-care', 'home-living', 'fashion', 'food-beverages', 'electronics'];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-20 sm:pt-0">
-      {/* Grand Hero Section */}
-      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-20 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        {/* Magnificent Animated Background Elements */}
+    <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-32 sm:pt-24 md:pt-28">
+      {/* Compact Hero Section */}
+      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* Grand Floating Orbs */}
+          {/* Floating Orbs */}
           <div className="absolute -top-32 sm:-top-48 -right-32 sm:-right-48 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-eco-300 to-nature-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob"></div>
           <div className="absolute -bottom-32 sm:-bottom-48 -left-32 sm:-left-48 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-nature-300 to-ocean-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob animation-delay-2000"></div>
           <div className="absolute top-32 sm:top-48 left-32 sm:left-48 w-64 sm:w-96 h-64 sm:h-96 bg-gradient-to-br from-ocean-300 to-eco-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob animation-delay-4000"></div>
           
-          {/* Grand Floating Elements */}
-          <div className="absolute top-16 sm:top-24 right-16 sm:right-24 animate-nature-float">
-            <div className="w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-br from-eco-200 to-nature-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
-              <Crown className="h-8 w-8 sm:h-10 sm:w-10 text-eco-600" />
+          {/* Floating Elements - hidden on mobile */}
+          <div className="hidden sm:block absolute top-16 sm:top-24 right-16 sm:right-24 animate-nature-float">
+            <div className="w-12 sm:w-20 h-12 sm:h-20 bg-gradient-to-br from-eco-200 to-nature-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
+              <Crown className="h-6 w-6 sm:h-10 sm:w-10 text-eco-600" />
             </div>
           </div>
-          <div className="absolute bottom-16 sm:bottom-24 left-16 sm:left-24 animate-nature-float animation-delay-2000">
-            <div className="w-14 sm:w-16 h-14 sm:h-16 bg-gradient-to-br from-nature-200 to-ocean-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
-              <Target className="h-7 w-7 sm:h-8 sm:w-8 text-nature-600" />
+          <div className="hidden sm:block absolute bottom-16 sm:bottom-24 left-16 sm:left-24 animate-nature-float animation-delay-2000">
+            <div className="w-10 sm:w-16 h-10 sm:h-16 bg-gradient-to-br from-nature-200 to-ocean-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
+              <Target className="h-5 w-5 sm:h-8 sm:w-8 text-nature-600" />
             </div>
           </div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-nature-float animation-delay-4000">
-            <div className="w-12 sm:w-14 h-12 sm:h-14 bg-gradient-to-br from-ocean-200 to-eco-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
-              <Lightbulb className="h-6 w-6 sm:h-7 sm:w-7 text-ocean-600" />
+          <div className="hidden sm:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-nature-float animation-delay-4000">
+            <div className="w-10 sm:w-14 h-10 sm:h-14 bg-gradient-to-br from-ocean-200 to-eco-200 rounded-full flex items-center justify-center opacity-90 shadow-2xl">
+              <Lightbulb className="h-5 w-5 sm:h-7 sm:w-7 text-ocean-600" />
             </div>
           </div>
         </div>
         
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
-            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-6 sm:px-8 py-3 sm:py-4 rounded-full border border-white/30 mb-8 sm:mb-12 animate-fade-in-up">
-              <Award className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              <span className="text-sm sm:text-base font-bold text-white">Premium Trusted Brands</span>
+            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-3 sm:px-8 py-1.5 sm:py-4 rounded-full border border-white/30 mb-3 sm:mb-8 animate-fade-in-up">
+              <Award className="h-3 w-3 sm:h-6 sm:w-6 text-white" />
+              <span className="text-xs sm:text-base font-bold text-white">Premium Trusted Brands</span>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-8 sm:mb-12 animate-fade-in-up animation-delay-200">
+            <h1 className="text-2xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-8 animate-fade-in-up animation-delay-200">
               Discover Sustainable Brands
             </h1>
             
-            <p className="text-lg sm:text-xl lg:text-2xl xl:text-3xl text-white/90 max-w-5xl mx-auto leading-relaxed px-4 mb-12 sm:mb-16 animate-fade-in-up animation-delay-400">
-              Explore our curated collection of eco-conscious brands that are committed to sustainability, 
-              quality, and positive environmental impact. Each brand shares our vision for a greener future.
+            <p className="text-sm sm:text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed px-4 mb-4 sm:mb-10 animate-fade-in-up animation-delay-400">
+              Explore our curated collection of eco-conscious brands committed to sustainability
             </p>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto animate-fade-in-up animation-delay-600">
-              <div className="bg-white/20 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-white/30 shadow-2xl">
-                <div className="text-3xl sm:text-4xl font-bold text-white mb-2">{brands.length}</div>
-                <div className="text-sm sm:text-base text-white/90">Trusted Brands</div>
+            <div className="grid grid-cols-3 gap-3 sm:gap-8 max-w-2xl sm:max-w-4xl mx-auto animate-fade-in-up animation-delay-600">
+              <div className="bg-white/20 backdrop-blur-md p-3 sm:p-8 rounded-xl sm:rounded-3xl border border-white/30 shadow-2xl">
+                <div className="text-xl sm:text-4xl font-bold text-white mb-0.5 sm:mb-2">{brands.length}</div>
+                <div className="text-xs sm:text-base text-white/90">Trusted Brands</div>
               </div>
-              <div className="bg-white/20 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-white/30 shadow-2xl">
-                <div className="text-3xl sm:text-4xl font-bold text-white mb-2">100%</div>
-                <div className="text-sm sm:text-base text-white/90">Eco-Certified</div>
+              <div className="bg-white/20 backdrop-blur-md p-3 sm:p-8 rounded-xl sm:rounded-3xl border border-white/30 shadow-2xl">
+                <div className="text-xl sm:text-4xl font-bold text-white mb-0.5 sm:mb-2">100%</div>
+                <div className="text-xs sm:text-base text-white/90">Eco-Certified</div>
               </div>
-              <div className="bg-white/20 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-white/30 shadow-2xl">
-                <div className="text-3xl sm:text-4xl font-bold text-white mb-2">24/7</div>
-                <div className="text-sm sm:text-base text-white/90">Support</div>
+              <div className="bg-white/20 backdrop-blur-md p-3 sm:p-8 rounded-xl sm:rounded-3xl border border-white/30 shadow-2xl">
+                <div className="text-xl sm:text-4xl font-bold text-white mb-0.5 sm:mb-2">24/7</div>
+                <div className="text-xs sm:text-base text-white/90">Support</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Grand Search and Filter Section */}
-      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-gradient-to-r from-eco-100 via-nature-100 to-ocean-100 rounded-3xl p-8 sm:p-12 shadow-eco-glow-lg border border-eco-200">
-            {/* Search Bar */}
-            <div className="mb-8 sm:mb-12">
-              <div className="relative max-w-2xl mx-auto">
-                <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 h-6 w-6 text-eco-600" />
-                <input
-                  type="text"
-                  placeholder="Search for sustainable brands..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-16 pr-6 py-4 text-lg border-2 border-eco-200 rounded-2xl focus:ring-4 focus:ring-eco-400 focus:border-eco-400 transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white hover:border-eco-300 shadow-lg"
-                />
-                <div className="absolute right-6 top-1/2 transform -translate-y-1/2">
-                  <Sparkles className="h-5 w-5 text-eco-400" />
+      {/* Premium Search and Filter Section */}
+      <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-eco-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-nature-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Premium Glass Card */}
+          <div className="bg-white/70 backdrop-blur-xl rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl border border-white/50">
+            {/* Premium Search Bar */}
+            <div className="mb-8">
+              <div className="relative max-w-3xl mx-auto group">
+                <div className="absolute inset-0 bg-gradient-to-r from-eco-400 to-nature-400 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                <div className="relative flex items-center">
+                  <Search className="absolute left-5 h-5 w-5 text-eco-600" />
+                  <input
+                    type="text"
+                    placeholder="Search for sustainable brands..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-14 pr-14 py-4 text-base bg-white/90 backdrop-blur-sm border-2 border-eco-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-eco-500 focus:border-transparent shadow-lg hover:shadow-xl transition-all duration-300 placeholder-gray-400"
+                  />
+                  <Sparkles className="absolute right-5 h-5 w-5 text-eco-500 animate-pulse" />
                 </div>
               </div>
             </div>
 
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-8 sm:mb-12">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base transition-all duration-300 transform hover:scale-105 ${
-                    selectedCategory === category
-                      ? 'bg-gradient-to-r from-eco-500 to-nature-500 text-white shadow-eco-glow-lg'
-                      : 'bg-white/80 text-eco-700 hover:bg-white hover:shadow-lg border-2 border-eco-200'
-                  }`}
-                >
-                  {category === 'all' ? 'All Categories' : category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                </button>
-              ))}
-            </div>
-
-            {/* Sort Options */}
-            <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-              {[
-                { value: 'featured', label: 'Featured', icon: Star },
-                { value: 'name', label: 'Name', icon: TrendingUp },
-                { value: 'products', label: 'Products', icon: ShoppingBag },
-                { value: 'newest', label: 'Newest', icon: Sparkles }
-              ].map((option) => {
-                const IconComponent = option.icon;
-                return (
+            {/* Premium Category Filter Buttons - Centered with Better Size */}
+            <div className="mb-8">
+              <h3 className="text-sm font-bold text-gray-700 mb-4 text-center flex items-center justify-center gap-2">
+                <Grid className="h-4 w-4" />
+                Categories
+              </h3>
+              <div className="flex flex-wrap gap-2.5 justify-center">
+                {categories.map((category) => (
                   <button
-                    key={option.value}
-                    onClick={() => setSortBy(option.value)}
-                    className={`flex items-center space-x-2 px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base transition-all duration-300 transform hover:scale-105 ${
-                      sortBy === option.value
-                        ? 'bg-gradient-to-r from-nature-500 to-ocean-500 text-white shadow-nature-glow-lg'
-                        : 'bg-white/80 text-nature-700 hover:bg-white hover:shadow-lg border-2 border-nature-200'
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`group relative px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
+                      selectedCategory === category
+                        ? 'bg-gradient-to-r from-eco-500 via-nature-500 to-ocean-500 text-white shadow-lg shadow-eco-500/50'
+                        : 'bg-white/80 text-gray-700 border-2 border-gray-200 hover:border-eco-400 hover:bg-eco-50 shadow-md'
                     }`}
                   >
-                    <IconComponent className="h-4 w-4 sm:h-5 sm:w-5" />
-                    <span>{option.label}</span>
+                    <span className="relative z-10">
+                      {category === 'all' ? '✨ All Brands' : category.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    </span>
+                    {selectedCategory === category && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-eco-400 to-nature-400 rounded-xl blur opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                    )}
                   </button>
-                );
-              })}
+                ))}
+              </div>
+            </div>
+
+            {/* Premium Sort Dropdown - Centered */}
+            <div className="flex justify-center">
+              <div className="relative group w-full sm:w-auto sm:min-w-[320px]">
+                <label className="block text-sm font-bold text-gray-700 mb-3 text-center flex items-center justify-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Sort By
+                </label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full appearance-none px-6 py-4 pr-12 rounded-2xl border-2 border-eco-200 focus:border-eco-400 focus:ring-4 focus:ring-eco-100 transition-all duration-300 text-base font-semibold text-eco-700 bg-gradient-to-r from-nature-50 to-ocean-50 hover:from-nature-100 hover:to-ocean-100 shadow-lg group-hover:shadow-xl cursor-pointer"
+                >
+                  <option value="featured">⭐ Featured</option>
+                  <option value="name">🔤 A to Z</option>
+                  <option value="products">📦 Most Products</option>
+                  <option value="newest">✨ Newest</option>
+                </select>
+                <div className="absolute right-4 top-[52px] pointer-events-none">
+                  <svg className="h-5 w-5 text-eco-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -184,12 +228,12 @@ const BrandsPage: React.FC = () => {
 
       {/* Grand Brands Grid */}
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-none mx-auto">
+        <div className="max-w-7xl mx-auto">
           {brandsLoading ? (
             <div className="flex justify-center items-center py-20">
               <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
             </div>
-          ) : filteredBrands.length === 0 ? (
+          ) : displayedBrands.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-eco-700 text-lg">No brands found. Try adjusting your search or filters.</p>
             </div>
@@ -203,95 +247,147 @@ const BrandsPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-8 sm:gap-10">
-                {filteredBrands.map((brand, index) => {
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {displayedBrands.map((brand, index) => {
                   // Generate the brand URL - use slug if available, otherwise generate from name
                   const brandSlug = (brand as any).slug;
-                  const brandUrl = brandSlug 
+                  const brandUrl = brandSlug
                     ? `/brand/${brandSlug.toLowerCase()}`
                     : `/brand/${brand.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || brand.id}`;
                   
                   return (
-              <div
-                key={brand.id}
-                className="group bg-gradient-to-br from-white to-eco-50 rounded-3xl p-8 sm:p-10 shadow-eco-glow hover:shadow-eco-glow-xl transition-all duration-500 transform hover:scale-105 border border-eco-200 animate-fade-in-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                {/* Brand Header */}
-                <div className="text-center mb-6 sm:mb-8">
-                  {/* Brand Image */}
-                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 sm:mb-6">
-                    <img
-                      src={brand.image}
-                      alt={brand.name}
-                      className="w-full h-full object-cover rounded-3xl shadow-eco-glow group-hover:shadow-eco-glow-lg transition-all duration-300 group-hover:scale-105"
-                    />
-                    {/* Brand Logo Overlay */}
-                    <div className="absolute -bottom-2 -right-2 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-eco-400 to-nature-400 rounded-2xl flex items-center justify-center shadow-lg">
-                      {brand.logo ? (
-                        <img
-                          src={brand.logo}
-                          alt={`${brand.name} logo`}
-                          className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                          onError={(e) => {
-                            // Fallback if image fails to load
-                            console.error('Failed to load brand logo:', brand.logo, 'for brand:', brand.name);
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                          onLoad={() => {
-                            console.log('Successfully loaded brand logo:', brand.logo, 'for brand:', brand.name);
-                          }}
-                        />
-                      ) : (
-                        <Award className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-                      )}
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-xl sm:text-2xl font-bold text-eco-800 mb-2">{brand.name}</h3>
-                  <p className="text-sm sm:text-base text-eco-600 mb-3">{brand.specialty}</p>
-                  <div className="flex items-center justify-center space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                          i < 4 ? 'text-yellow-400 fill-current' : 'text-eco-200'
-                        }`}
-                      />
-                    ))}
-                    <span className="ml-2 text-sm text-eco-600">(4.5)</span>
-                  </div>
-                </div>
+                    <Link
+                      key={brand.id}
+                      to={brandUrl}
+                      className="group relative cursor-pointer animate-fade-in-up"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      {/* Main Card Container with Fixed Height */}
+                      <div className="bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-2xl shadow-eco hover:shadow-eco-glow-xl transition-all duration-500 cursor-pointer overflow-hidden hover:-translate-y-2 border border-eco-200 relative flex flex-col h-full">
+                        {/* Enhanced Image Section */}
+                        <div className="relative h-48 sm:h-56 overflow-hidden flex-shrink-0">
+                          <img
+                            src={brand.image}
+                            alt={brand.name}
+                            className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-1000 ease-out"
+                          />
+                          
+                          {/* Enhanced Overlay with Grand Gradient */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-eco-900/90 via-nature-800/60 to-transparent group-hover:from-eco-800/95 transition-all duration-700" />
+                          
+                          {/* Floating Brand Logo with Enhanced Design */}
+                          <div className="absolute top-4 left-4">
+                            <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl border border-white/30 shadow-2xl group-hover:scale-110 transition-all duration-500 flex items-center justify-center">
+                              {brand.logo ? (
+                                <img
+                                  src={brand.logo}
+                                  alt={`${brand.name} logo`}
+                                  className="w-16 h-16 object-contain rounded-xl"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <Award className="w-16 h-16 text-eco-600" />
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Enhanced Brand Info Overlay */}
+                          <div className="absolute bottom-3 left-3 right-3 text-white">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="text-lg sm:text-xl font-bold group-hover:scale-105 transition-transform duration-500 drop-shadow-lg line-clamp-1">
+                                {brand.name}
+                              </h3>
+                              <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 flex-shrink-0" />
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full border border-white/30">
+                                <span className="text-xs font-semibold">{brand.productCount} Products</span>
+                              </div>
+                              <div className="bg-white/20 backdrop-blur-md px-2 py-1 rounded-full border border-white/30">
+                                <Star className="h-3 w-3 text-yellow-300" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Enhanced Content Section - Mobile Optimized with Fixed Structure */}
+                        <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-eco-50 via-white to-eco-50 flex flex-col flex-grow">
+                          <div className="mb-4 sm:mb-6 flex-grow flex flex-col">
+                            <p className="text-eco-700 leading-relaxed text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 min-h-[3rem]">
+                              {brand.description}
+                            </p>
+                            
+                            {/* Enhanced Feature Tags - Mobile Optimized */}
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4 min-h-[2rem]">
+                              <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
+                                <span className="text-xs font-medium text-eco-700 whitespace-nowrap">{brand.specialty}</span>
+                              </div>
+                              <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
+                                <span className="text-xs font-medium text-eco-700 whitespace-nowrap">{brand.established}</span>
+                              </div>
+                            </div>
+                            
+                            {/* Enhanced Stats Row - Mobile Optimized */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-2 sm:space-x-3">
+                                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-eco-500 rounded-full animate-pulse"></div>
+                                <span className="text-xs sm:text-sm font-semibold text-eco-700">{brand.productCount} Items</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <ShoppingBag className="h-3 w-3 text-eco-500" />
+                                <span className="text-xs text-eco-600 hidden sm:inline">Shop Now</span>
+                              </div>
+                            </div>
+                          </div>
 
-                {/* Brand Description */}
-                <p className="text-eco-700 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8 text-center">
-                  {brand.description}
-                </p>
-
-                {/* Brand Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-6 sm:mb-8">
-                  <div className="text-center p-3 bg-eco-100 rounded-2xl">
-                    <div className="text-lg sm:text-xl font-bold text-eco-700">{brand.productCount}</div>
-                    <div className="text-xs sm:text-sm text-eco-600">Products</div>
-                  </div>
-                  <div className="text-center p-3 bg-nature-100 rounded-2xl">
-                    <div className="text-lg sm:text-xl font-bold text-nature-700">Est. {brand.established}</div>
-                    <div className="text-xs sm:text-sm text-nature-600">Established</div>
-                  </div>
-                </div>
-
-                {/* CTA Button */}
-                <Link
-                  to={brandUrl}
-                  className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-eco-500 to-nature-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-semibold text-sm sm:text-base hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105"
-                >
-                  <span>Explore Brand</span>
-                  <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                </Link>
-              </div>
+                          {/* Enhanced Action Section - Mobile Optimized - Fixed at Bottom */}
+                          <div className="flex items-center justify-between mt-auto">
+                            <div className="flex items-center space-x-2 sm:space-x-3">
+                              <div className="bg-eco-200 p-2 sm:p-3 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform duration-300">
+                                <Award className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
+                              </div>
+                              <span className="text-xs sm:text-sm font-medium text-eco-700 hidden sm:inline">Premium Brand</span>
+                            </div>
+                            
+                            {/* Enhanced CTA Button - Mobile Optimized */}
+                            <div className="bg-eco-gradient text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-semibold text-xs sm:text-sm hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-eco-glow-xl">
+                              <span className="flex items-center space-x-1 sm:space-x-2">
+                                <span>Explore</span>
+                                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Enhanced Hover Effects */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-eco-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                      </div>
+                      
+                      {/* Floating Decorative Elements - Hidden on mobile for performance */}
+                      <div className="hidden sm:block absolute -top-2 -right-2 w-4 h-4 bg-eco-300 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-3000"></div>
+                      <div className="hidden sm:block absolute -bottom-2 -left-2 w-3 h-3 bg-eco-200 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
+                    </Link>
                   );
                 })}
+              </div>
+
+              {/* Infinite Scroll Sentinel */}
+              <div ref={sentinelRef} className="h-20 flex items-center justify-center mt-8">
+                {loadingMore && (
+                  <div className="flex flex-col items-center space-y-3 py-8">
+                    <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+                    <p className="text-eco-600 font-medium">Loading more brands...</p>
+                  </div>
+                )}
+                {!hasMore && displayedBrands.length > 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-eco-600 font-medium">You've seen all brands! 🌿</p>
+                  </div>
+                )}
               </div>
             </>
           )}

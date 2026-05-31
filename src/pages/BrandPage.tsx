@@ -1,9 +1,11 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { CartItem, Product } from '../types';
 import { MapPin, Calendar, Award, Loader2, Star, Search, Grid, List, Filter, TrendingUp, Sparkles, Leaf, ShoppingBag, ArrowRight, Shield, Heart } from 'lucide-react';
-import { useHybridBrands, useHybridProducts } from '../hooks/useHybridData';
+import { useHybridBrands } from '../hooks/useHybridData';
+import { brandApi, transformBackendProduct, BackendProduct, PaginationInfo } from '../services/api';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 interface BrandPageProps {
   cart: CartItem[];
@@ -24,10 +26,13 @@ const BrandPage: React.FC<BrandPageProps> = ({
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiPagination, setApiPagination] = useState<PaginationInfo | null>(null);
   
   // Use hybrid data hooks
   const { data: brands, loading: brandsLoading, refresh: refreshBrands } = useHybridBrands();
-  const { data: allProducts, loading: productsLoading } = useHybridProducts();
   
   // State to track if we've waited enough for brands to load
   const [hasWaitedForBrands, setHasWaitedForBrands] = useState(false);
@@ -104,23 +109,7 @@ const BrandPage: React.FC<BrandPageProps> = ({
     // Combine global search query with local search
     const effectiveSearchQuery = localSearchQuery.trim() || searchQuery.trim();
     
-    // Filter products by brand ID, slug, or name
-    let filtered = allProducts.filter(product => {
-      // Check if product has brandId (backend product)
-      if ((product as any).brandId) {
-        return (product as any).brandId === brand.id || (product as any).brandId === brandId;
-      }
-      // For static products, brand is a string (brand name)
-      // Match by brand name or normalized brand name
-      const productBrand = product.brand.toLowerCase();
-      const brandName = brand.name.toLowerCase();
-      const brandIdNormalized = brandId?.toLowerCase().replace(/\s+/g, '');
-      const productBrandNormalized = productBrand.replace(/\s+/g, '');
-      
-      return productBrand === brandName || 
-             productBrandNormalized === brandIdNormalized ||
-             productBrand === brandId?.toLowerCase();
-    });
+    let filtered = [...apiProducts];
 
     // Filter by search query
     if (effectiveSearchQuery) {
@@ -152,7 +141,60 @@ const BrandPage: React.FC<BrandPageProps> = ({
     }
 
     return filtered;
-  }, [brandId, searchQuery, localSearchQuery, sortBy, allProducts, brand]);
+  }, [searchQuery, localSearchQuery, apiProducts, brand]);
+
+  useEffect(() => {
+    if (!brand) return;
+
+    const loadBrandProducts = async () => {
+      try {
+        setApiLoading(true);
+        const slug = (brand as any).slug || brandId || '';
+        const sortParam =
+          sortBy === 'price-low' || sortBy === 'price-high' || sortBy === 'rating' || sortBy === 'newest'
+            ? sortBy
+            : 'newest';
+        const response = await brandApi.getProducts(slug, page, 12, sortParam);
+        const backendProducts: BackendProduct[] = response.data.products || [];
+        
+        if (page === 1) {
+          setApiProducts(backendProducts.map(transformBackendProduct));
+        } else {
+          setApiProducts(prev => [...prev, ...backendProducts.map(transformBackendProduct)]);
+        }
+        
+        setApiPagination(response.data.pagination || null);
+      } catch (error) {
+        console.error('Failed loading brand products:', error);
+        if (page === 1) {
+          setApiProducts([]);
+        }
+        setApiPagination(null);
+      } finally {
+        setApiLoading(false);
+      }
+    };
+
+    loadBrandProducts();
+  }, [brand, brandId, page, sortBy]);
+
+  useEffect(() => {
+    setPage(1);
+    setApiProducts([]);
+  }, [brandId, sortBy]);
+
+  const loadMore = useCallback(() => {
+    if (apiPagination?.hasNext && !apiLoading) {
+      setPage(prev => prev + 1);
+    }
+  }, [apiPagination, apiLoading]);
+
+  const sentinelRef = useInfiniteScroll({
+    loading: apiLoading && page > 1,
+    hasMore: apiPagination?.hasNext || false,
+    onLoadMore: loadMore,
+    threshold: 300
+  });
 
   // Loading state - AFTER all hooks
   // Show loading while brands are loading, but don't redirect yet
@@ -201,7 +243,7 @@ const BrandPage: React.FC<BrandPageProps> = ({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-20 sm:pt-0">
+    <main className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50 pt-32 sm:pt-24 md:pt-28">
       {/* Enhanced Brand Header */}
       <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Animated Background Elements */}
@@ -407,7 +449,7 @@ const BrandPage: React.FC<BrandPageProps> = ({
               {brand.name} Products
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-eco-600 max-w-3xl mx-auto leading-relaxed px-4">
-              {productsLoading ? 'Loading products...' : `${filteredProducts.length} sustainable product${filteredProducts.length !== 1 ? 's' : ''}`}
+              {apiLoading ? 'Loading products...' : `${filteredProducts.length} sustainable product${filteredProducts.length !== 1 ? 's' : ''}`}
               {(localSearchQuery || searchQuery) && ` matching "${localSearchQuery || searchQuery}"`}
               {' - all carefully selected for quality and environmental impact'}
             </p>
@@ -428,7 +470,7 @@ const BrandPage: React.FC<BrandPageProps> = ({
             </div>
           </div>
 
-          {productsLoading ? (
+          {apiLoading ? (
             <div className="flex justify-center items-center py-20">
               <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
             </div>
@@ -452,26 +494,43 @@ const BrandPage: React.FC<BrandPageProps> = ({
               </div>
             </div>
           ) : (
-            <div className={`grid gap-4 sm:gap-6 lg:gap-8 ${
-              viewMode === 'grid' 
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-                : 'grid-cols-1'
-            }`}>
-              {filteredProducts.map((product, index) => (
-                <div
-                  key={product.id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <ProductCard
-                    product={product}
-                    onAddToCart={onAddToCart}
-                    isInWatchlist={isInWatchlist(product.id)}
-                    onToggleWatchlist={onToggleWatchlist}
-                  />
-                </div>
-              ))}
-            </div>
+            <>
+              <div className={`grid gap-4 sm:gap-6 lg:gap-8 ${
+                viewMode === 'grid'
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  : 'grid-cols-1'
+              }`}>
+                {filteredProducts.map((product, index) => (
+                  <div
+                    key={product.id}
+                    className="animate-fade-in-up"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <ProductCard
+                      product={product}
+                      onAddToCart={onAddToCart}
+                      isInWatchlist={isInWatchlist(product.id)}
+                      onToggleWatchlist={onToggleWatchlist}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Infinite Scroll Sentinel */}
+              <div ref={sentinelRef} className="h-20 flex items-center justify-center mt-8">
+                {apiLoading && page > 1 && (
+                  <div className="flex flex-col items-center space-y-3 py-8">
+                    <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+                    <p className="text-eco-600 font-medium">Loading more products...</p>
+                  </div>
+                )}
+                {apiPagination && !apiPagination.hasNext && filteredProducts.length > 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-eco-600 font-medium">You've seen all {brand.name} products! 🌿</p>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </section>

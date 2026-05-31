@@ -52,6 +52,10 @@ const productSchema = new mongoose.Schema({
     order: {
       type: Number,
       default: 0
+    },
+    cloudinaryPublicId: {
+      type: String,
+      default: null
     }
   }],
   price: {
@@ -186,6 +190,11 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  displayOrder: {
+    type: Number,
+    default: 0,
+    min: [0, 'Display order cannot be negative']
+  },
   isActive: {
     type: Boolean,
     default: true
@@ -218,6 +227,11 @@ const productSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     }
+  },
+  unitsSold: {
+    type: Number,
+    default: 0,
+    min: [0, 'Units sold cannot be negative']
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

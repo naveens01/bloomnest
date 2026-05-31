@@ -4,36 +4,42 @@ export const categories: Category[] = [
   {
     id: 'home-living',
     name: 'Home & Living',
+    slug: 'home-living',
     image: 'https://images.pexels.com/photos/6957241/pexels-photo-6957241.jpeg?auto=compress&cs=tinysrgb&w=400',
     count: 156
   },
   {
     id: 'personal-care',
     name: 'Personal Care',
+    slug: 'personal-care',
     image: 'https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=400',
     count: 89
   },
   {
     id: 'fashion',
     name: 'Sustainable Fashion',
+    slug: 'fashion',
     image: 'https://images.pexels.com/photos/934070/pexels-photo-934070.jpeg?auto=compress&cs=tinysrgb&w=400',
     count: 234
   },
   {
     id: 'food-beverages',
     name: 'Food & Beverages',
+    slug: 'food-beverages',
     image: 'https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&w=400',
     count: 67
   },
   {
     id: 'baby-kids',
     name: 'Baby & Kids',
+    slug: 'baby-kids',
     image: 'https://images.pexels.com/photos/1148998/pexels-photo-1148998.jpeg?auto=compress&cs=tinysrgb&w=400',
     count: 43
   },
   {
     id: 'wellness',
     name: 'Health & Wellness',
+    slug: 'wellness',
     image: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400',
     count: 78
   }

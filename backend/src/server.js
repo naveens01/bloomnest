@@ -15,6 +15,9 @@ const brandRoutes = require('./routes/brands');
 const categoryRoutes = require('./routes/categories');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
+const paymentRoutes = require('./routes/payment');
+const reviewRoutes = require('./routes/reviews');
+const settingsRoutes = require('./routes/settings');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorHandler');
@@ -35,8 +38,12 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
+  origin: process.env.NODE_ENV === 'production'
+    ? [
+        'https://bloomnest-pi.vercel.app',
+        'https://bloomnest-naveens01.vercel.app',
+        process.env.FRONTEND_URL
+      ].filter(Boolean)
     : ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true
 }));
@@ -86,6 +93,9 @@ app.use('/api/brands', brandRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api', reviewRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -110,7 +120,7 @@ app.use(errorHandler);
 // Database connection
 const DB_TARGET = process.env.DB_TARGET || 'local';
 const mongodbUri = DB_TARGET === 'atlas'
-  ? (process.env.MONGODB_URI_ATLAS || process.env.MONGODB_URI_PROD)
+  ? (process.env.MONGODB_URI_ATLAS || process.env.MONGODB_URI_PROD || process.env.MONGODB_URI)
   : process.env.MONGODB_URI;
 
 mongoose.connect(mongodbUri)

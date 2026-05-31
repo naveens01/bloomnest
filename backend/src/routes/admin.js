@@ -6,11 +6,13 @@ const Product = require('../models/Product');
 const Brand = require('../models/Brand');
 const Category = require('../models/Category');
 const Order = require('../models/Order');
+const Review = require('../models/Review');
+const Settings = require('../models/Settings');
 const { protect, adminOnly } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { 
-  productImagesUpload, 
-  brandLogoUpload, 
+const {
+  productImagesUpload,
+  brandLogoUpload,
   categoryImageUpload,
   processUploadedFiles,
   cleanupFiles,
@@ -21,6 +23,12 @@ const router = express.Router();
 
 // Apply admin middleware to all routes
 router.use(protect, adminOnly);
+
+const parseBoolean = (value) => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value.toLowerCase() === 'true';
+  return false;
+};
 
 // ==================== DASHBOARD ====================
 // @desc    Get admin dashboard stats
@@ -240,6 +248,16 @@ router.get('/products', asyncHandler(async (req, res) => {
 // @access  Admin only
 router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
   const productData = req.body;
+  const isFeaturedRequested = parseBoolean(productData.isFeatured);
+  if (isFeaturedRequested) {
+    const featuredCount = await Product.countDocuments({ isFeatured: true, isActive: true, status: 'published' });
+    if (featuredCount >= 10) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 10 featured products are allowed on home. Unfeature one product before adding another featured product.'
+      });
+    }
+  }
   
   // Parse nested form data (price.current, inventory.stock, etc.)
   if (productData['price.current']) {
@@ -260,6 +278,24 @@ router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
     delete productData['inventory.stock'];
   }
   
+  // Parse ratings data
+  if (productData['ratings.average'] || productData['ratings.count']) {
+    productData.ratings = productData.ratings || {};
+    if (productData['ratings.average']) {
+      productData.ratings.average = parseFloat(productData['ratings.average']);
+      delete productData['ratings.average'];
+    }
+    if (productData['ratings.count']) {
+      productData.ratings.count = parseInt(productData['ratings.count']);
+      delete productData['ratings.count'];
+    }
+  }
+  
+  // Parse unitsSold
+  if (productData.unitsSold) {
+    productData.unitsSold = parseInt(productData.unitsSold);
+  }
+  
   // Handle arrays (features, tags)
   if (productData.features && !Array.isArray(productData.features)) {
     productData.features = [productData.features];
@@ -269,20 +305,35 @@ router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
   }
   
   // Process uploaded images
-  const uploadedFiles = processUploadedFiles(req, 'products');
+  console.log('📸 Processing images - req.files:', req.files ? req.files.length : 0);
+  console.log('📸 Processing images - req.file:', req.file ? 'exists' : 'none');
+  
+  const uploadedFiles = await processUploadedFiles(req, 'products');
+  console.log('📸 Uploaded files processed:', uploadedFiles.length);
+  
   if (uploadedFiles.length > 0) {
     productData.images = uploadedFiles.map((file, index) => ({
       url: file.url,
-      alt: file.originalName,
+      alt: file.originalName || file.filename,
       isPrimary: index === 0,
-      order: index
+      order: index,
+      cloudinaryPublicId: file.cloudinaryPublicId || null
     }));
+    console.log('📸 Images to save:', JSON.stringify(productData.images, null, 2));
+  } else {
+    console.log('⚠️ No images uploaded or processed');
   }
 
   // Add creator info
   productData.createdBy = req.user._id;
 
+  console.log('💾 Creating product with data:', {
+    name: productData.name,
+    imagesCount: productData.images ? productData.images.length : 0
+  });
+
   const product = await Product.create(productData);
+  console.log('✅ Product created with images:', product.images ? product.images.length : 0);
   await product.populate(['brand', 'category']);
 
   res.status(201).json({
@@ -297,6 +348,24 @@ router.post('/products', productImagesUpload, asyncHandler(async (req, res) => {
 // @access  Admin only
 router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) => {
   const productData = req.body;
+  const existingProduct = await Product.findById(req.params.id);
+  if (!existingProduct) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Product not found'
+    });
+  }
+
+  const isFeaturedRequested = parseBoolean(productData.isFeatured);
+  if (isFeaturedRequested && !existingProduct.isFeatured) {
+    const featuredCount = await Product.countDocuments({ isFeatured: true, isActive: true, status: 'published' });
+    if (featuredCount >= 10) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 10 featured products are allowed on home. Unfeature one product before adding another featured product.'
+      });
+    }
+  }
   
   // Parse nested form data (price.current, inventory.stock, etc.)
   if (productData['price.current']) {
@@ -317,6 +386,24 @@ router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) =
     delete productData['inventory.stock'];
   }
   
+  // Parse ratings data
+  if (productData['ratings.average'] || productData['ratings.count']) {
+    productData.ratings = existingProduct.ratings || {};
+    if (productData['ratings.average']) {
+      productData.ratings.average = parseFloat(productData['ratings.average']);
+      delete productData['ratings.average'];
+    }
+    if (productData['ratings.count']) {
+      productData.ratings.count = parseInt(productData['ratings.count']);
+      delete productData['ratings.count'];
+    }
+  }
+  
+  // Parse unitsSold
+  if (productData.unitsSold) {
+    productData.unitsSold = parseInt(productData.unitsSold);
+  }
+  
   // Handle arrays (features, tags)
   if (productData.features && !Array.isArray(productData.features)) {
     productData.features = [productData.features];
@@ -326,9 +413,8 @@ router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) =
   }
   
   // Process uploaded images if any
-  const uploadedFiles = processUploadedFiles(req, 'products');
+  const uploadedFiles = await processUploadedFiles(req, 'products');
   if (uploadedFiles.length > 0) {
-    const existingProduct = await Product.findById(req.params.id);
     if (existingProduct && existingProduct.images.length > 0) {
       // Merge existing and new images
       productData.images = [
@@ -337,7 +423,8 @@ router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) =
           url: file.url,
           alt: file.originalName,
           isPrimary: false,
-          order: existingProduct.images.length + index
+          order: existingProduct.images.length + index,
+          cloudinaryPublicId: file.cloudinaryPublicId || null
         }))
       ];
     } else {
@@ -345,7 +432,8 @@ router.put('/products/:id', productImagesUpload, asyncHandler(async (req, res) =
         url: file.url,
         alt: file.originalName,
         isPrimary: index === 0,
-        order: index
+        order: index,
+        cloudinaryPublicId: file.cloudinaryPublicId || null
       }));
     }
   }
@@ -426,6 +514,16 @@ router.get('/brands', asyncHandler(async (req, res) => {
 // @access  Admin only
 router.post('/brands', brandLogoUpload, asyncHandler(async (req, res) => {
   const brandData = req.body;
+  const isFeaturedRequested = parseBoolean(brandData.isFeatured);
+  if (isFeaturedRequested) {
+    const featuredCount = await Brand.countDocuments({ isFeatured: true, isActive: true });
+    if (featuredCount >= 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 6 featured brands are allowed on home. Unfeature one brand before adding another featured brand.'
+      });
+    }
+  }
   
   // Generate slug from name if not provided
   if (!brandData.slug && brandData.name) {
@@ -491,6 +589,24 @@ router.post('/brands', brandLogoUpload, asyncHandler(async (req, res) => {
 // @access  Admin only
 router.put('/brands/:id', brandLogoUpload, asyncHandler(async (req, res) => {
   const brandData = req.body;
+  const existingBrand = await Brand.findById(req.params.id);
+  if (!existingBrand) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Brand not found'
+    });
+  }
+
+  const isFeaturedRequested = parseBoolean(brandData.isFeatured);
+  if (isFeaturedRequested && !existingBrand.isFeatured) {
+    const featuredCount = await Brand.countDocuments({ isFeatured: true, isActive: true });
+    if (featuredCount >= 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 6 featured brands are allowed on home. Unfeature one brand before adding another featured brand.'
+      });
+    }
+  }
   
   // Generate slug from name if name changed and slug not provided
   if (brandData.name && !brandData.slug) {
@@ -613,13 +729,24 @@ router.get('/categories', asyncHandler(async (req, res) => {
 // @access  Admin only
 router.post('/categories', categoryImageUpload, asyncHandler(async (req, res) => {
   const categoryData = req.body;
+  const isFeaturedRequested = parseBoolean(categoryData.isFeatured);
+  if (isFeaturedRequested) {
+    const featuredCount = await Category.countDocuments({ isFeatured: true, isActive: true });
+    if (featuredCount >= 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 6 featured categories are allowed on home. Unfeature one category before adding another featured category.'
+      });
+    }
+  }
   
-  // Process uploaded image if any
-  if (req.file) {
-    const filename = path.basename(req.file.path);
+  // Process uploaded image with Cloudinary support
+  const uploadedFiles = await processUploadedFiles(req, 'categories');
+  if (uploadedFiles.length > 0) {
     categoryData.image = {
-      url: generateFileUrl(req, filename, 'categories'),
-      alt: req.file.originalname
+      url: uploadedFiles[0].url,
+      alt: uploadedFiles[0].originalName,
+      cloudinaryPublicId: uploadedFiles[0].cloudinaryPublicId || null
     };
   }
 
@@ -640,13 +767,32 @@ router.post('/categories', categoryImageUpload, asyncHandler(async (req, res) =>
 // @access  Admin only
 router.put('/categories/:id', categoryImageUpload, asyncHandler(async (req, res) => {
   const categoryData = req.body;
+  const existingCategory = await Category.findById(req.params.id);
+  if (!existingCategory) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Category not found'
+    });
+  }
+
+  const isFeaturedRequested = parseBoolean(categoryData.isFeatured);
+  if (isFeaturedRequested && !existingCategory.isFeatured) {
+    const featuredCount = await Category.countDocuments({ isFeatured: true, isActive: true });
+    if (featuredCount >= 6) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Only 6 featured categories are allowed on home. Unfeature one category before adding another featured category.'
+      });
+    }
+  }
   
-  // Process uploaded image if any
-  if (req.file) {
-    const filename = path.basename(req.file.path);
+  // Process uploaded image with Cloudinary support
+  const uploadedFiles = await processUploadedFiles(req, 'categories');
+  if (uploadedFiles.length > 0) {
     categoryData.image = {
-      url: generateFileUrl(req, filename, 'categories'),
-      alt: req.file.originalname
+      url: uploadedFiles[0].url,
+      alt: uploadedFiles[0].originalName,
+      cloudinaryPublicId: uploadedFiles[0].cloudinaryPublicId || null
     };
   }
 
@@ -658,13 +804,6 @@ router.put('/categories/:id', categoryImageUpload, asyncHandler(async (req, res)
     categoryData,
     { new: true, runValidators: true }
   );
-
-  if (!category) {
-    return res.status(404).json({
-      status: 'error',
-      message: 'Category not found'
-    });
-  }
 
   res.status(200).json({
     status: 'success',
@@ -803,4 +942,298 @@ router.put('/orders/:id/tracking', asyncHandler(async (req, res) => {
   });
 }));
 
+// ==================== REVIEWS ====================
+// @desc    Get all reviews
+// @route   GET /api/admin/reviews
+// @access  Admin only
+router.get('/reviews', asyncHandler(async (req, res) => {
+  const { reviewType, targetId, page = 1, limit = 20 } = req.query;
+  
+  const query = {};
+  if (reviewType) query.reviewType = reviewType;
+  if (targetId) query.targetId = targetId;
+  
+  const skip = (page - 1) * limit;
+  
+  const [reviews, total] = await Promise.all([
+    Review.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit)),
+    Review.countDocuments(query)
+  ]);
+  
+  res.status(200).json({
+    status: 'success',
+    data: {
+      reviews,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalReviews: total,
+        hasNext: skip + reviews.length < total,
+        hasPrev: page > 1
+      }
+    }
+  });
+}));
+
+// @desc    Create a new review
+// @route   POST /api/admin/reviews
+// @access  Admin only
+router.post('/reviews', asyncHandler(async (req, res) => {
+  const { reviewType, targetId, userName, userEmail, rating, comment, isVerified, isApproved } = req.body;
+  
+  // Validate required fields
+  if (!reviewType || !targetId || !userName || !rating || !comment) {
+    res.status(400);
+    throw new Error('Please provide all required fields');
+  }
+  
+  // Validate rating
+  if (rating < 1 || rating > 5) {
+    res.status(400);
+    throw new Error('Rating must be between 1 and 5');
+  }
+  
+  // Determine target model based on review type
+  let targetModel;
+  switch (reviewType) {
+    case 'product':
+      targetModel = 'Product';
+      // Verify product exists
+      const product = await Product.findById(targetId);
+      if (!product) {
+        res.status(404);
+        throw new Error('Product not found');
+      }
+      break;
+    case 'category':
+      targetModel = 'Category';
+      // Verify category exists
+      const category = await Category.findById(targetId);
+      if (!category) {
+        res.status(404);
+        throw new Error('Category not found');
+      }
+      break;
+    case 'brand':
+      targetModel = 'Brand';
+      // Verify brand exists
+      const brand = await Brand.findById(targetId);
+      if (!brand) {
+        res.status(404);
+        throw new Error('Brand not found');
+      }
+      break;
+    default:
+      res.status(400);
+      throw new Error('Invalid review type');
+  }
+  
+  // Create review
+  const review = await Review.create({
+    reviewType,
+    targetId,
+    targetModel,
+    userName,
+    userEmail,
+    rating,
+    comment,
+    isVerified: isVerified || false,
+    isApproved: isApproved !== undefined ? isApproved : true,
+    createdBy: req.user._id
+  });
+  
+  res.status(201).json({
+    status: 'success',
+    data: { review }
+  });
+}));
+
+// @desc    Update a review
+// @route   PUT /api/admin/reviews/:id
+// @access  Admin only
+router.put('/reviews/:id', asyncHandler(async (req, res) => {
+  const { userName, userEmail, rating, comment, isVerified, isApproved } = req.body;
+  
+  const review = await Review.findById(req.params.id);
+  
+  if (!review) {
+    res.status(404);
+    throw new Error('Review not found');
+  }
+  
+  // Update fields
+  if (userName) review.userName = userName;
+  if (userEmail !== undefined) review.userEmail = userEmail;
+  if (rating) {
+    if (rating < 1 || rating > 5) {
+      res.status(400);
+      throw new Error('Rating must be between 1 and 5');
+    }
+    review.rating = rating;
+  }
+  if (comment) review.comment = comment;
+  if (isVerified !== undefined) review.isVerified = isVerified;
+  if (isApproved !== undefined) review.isApproved = isApproved;
+  
+  await review.save();
+  
+  res.status(200).json({
+    status: 'success',
+    data: { review }
+  });
+}));
+
+// @desc    Delete a review
+// @route   DELETE /api/admin/reviews/:id
+// @access  Admin only
+router.delete('/reviews/:id', asyncHandler(async (req, res) => {
+  const review = await Review.findById(req.params.id);
+  
+  if (!review) {
+    res.status(404);
+    throw new Error('Review not found');
+  }
+  
+  await review.deleteOne();
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Review deleted successfully'
+  });
+}));
+
+// @desc    Get review statistics for a target
+// @route   GET /api/admin/reviews/stats/:reviewType/:targetId
+// @access  Admin only
+router.get('/reviews/stats/:reviewType/:targetId', asyncHandler(async (req, res) => {
+  const { reviewType, targetId } = req.params;
+  
+  const [averageData, distribution] = await Promise.all([
+    Review.getAverageRating(reviewType, targetId),
+    Review.getRatingDistribution(reviewType, targetId)
+  ]);
+  
+  res.status(200).json({
+    status: 'success',
+    data: {
+      averageRating: averageData.averageRating,
+      totalReviews: averageData.totalReviews,
+      distribution
+    }
+  });
+}));
+
 module.exports = router;
+
+// ==================== SETTINGS MANAGEMENT ====================
+// @desc    Get all settings
+// @route   GET /api/admin/settings
+// @access  Admin only
+router.get('/settings', asyncHandler(async (req, res) => {
+  const { category } = req.query;
+  
+  const query = {};
+  if (category) query.category = category;
+  
+  const settings = await Settings.find(query).sort({ category: 1, key: 1 });
+  
+  res.status(200).json({
+    status: 'success',
+    data: { settings }
+  });
+}));
+
+// @desc    Get single setting
+// @route   GET /api/admin/settings/:key
+// @access  Admin only
+router.get('/settings/:key', asyncHandler(async (req, res) => {
+  const setting = await Settings.findOne({ key: req.params.key });
+  
+  if (!setting) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Setting not found'
+    });
+  }
+  
+  res.status(200).json({
+    status: 'success',
+    data: { setting }
+  });
+}));
+
+// @desc    Update setting
+// @route   PUT /api/admin/settings/:key
+// @access  Admin only
+router.put('/settings/:key', asyncHandler(async (req, res) => {
+  const { value } = req.body;
+  
+  const setting = await Settings.setValue(req.params.key, value, req.user._id);
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Setting updated successfully',
+    data: { setting }
+  });
+}));
+
+// ==================== SETTINGS MANAGEMENT ====================
+// @desc    Get app settings
+// @route   GET /api/admin/settings
+// @access  Admin only
+router.get('/settings', asyncHandler(async (req, res) => {
+  const settings = await Settings.getSettings();
+  
+  res.status(200).json({
+    status: 'success',
+    data: { settings }
+  });
+}));
+
+// @desc    Update app settings
+// @route   PUT /api/admin/settings
+// @access  Admin only
+router.put('/settings', asyncHandler(async (req, res) => {
+  const allowedUpdates = [
+    'codEnabled',
+    'storeName',
+    'storeEmail',
+    'storePhone',
+    'freeShippingThreshold',
+    'standardShippingFee',
+    'minOrderAmount',
+    'maxOrderAmount',
+    'maintenanceMode',
+    'allowGuestCheckout'
+  ];
+  
+  const updates = {};
+  Object.keys(req.body).forEach(key => {
+    if (allowedUpdates.includes(key)) {
+      updates[key] = req.body[key];
+    }
+  });
+  
+  const settings = await Settings.updateSettings(updates, req.user._id);
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Settings updated successfully',
+    data: { settings }
+  });
+}));
+
+// @desc    Initialize default settings
+// @route   POST /api/admin/settings/initialize
+// @access  Admin only
+router.post('/settings/initialize', asyncHandler(async (req, res) => {
+  await Settings.initializeDefaults();
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Default settings initialized successfully'
+  });
+}));

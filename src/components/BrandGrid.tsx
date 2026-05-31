@@ -69,7 +69,7 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
           </p>
         </div>
 
-        {/* Enhanced Brand Cards Grid */}
+        {/* Amazon-Style Brand Cards Grid */}
         {loading ? (
           <div className="flex justify-center items-center py-16">
             <LoadingSpinner size="lg" text="Loading brands..." />
@@ -83,10 +83,10 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
               className="group relative cursor-pointer animate-fade-in-up"
               style={{ animationDelay: `${index * 200}ms` }}
             >
-              {/* Main Card Container */}
-              <div className="bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-3xl shadow-eco-glow hover:shadow-eco-glow-xl transition-all duration-700 cursor-pointer overflow-hidden hover:-translate-y-4 border border-eco-200 relative">
+              {/* Main Card Container with Fixed Height */}
+              <div className="bg-gradient-to-br from-white via-eco-50 to-nature-50 rounded-2xl shadow-eco hover:shadow-eco-glow-xl transition-all duration-500 cursor-pointer overflow-hidden hover:-translate-y-2 border border-eco-200 relative flex flex-col h-full">
                 {/* Enhanced Image Section */}
-                <div className="relative h-64 overflow-hidden">
+                <div className="relative h-48 sm:h-56 overflow-hidden flex-shrink-0">
                   <img
                     src={brand.image}
                     alt={brand.name}
@@ -127,20 +127,20 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
                   </div>
                   
                   {/* Enhanced Brand Info Overlay */}
-                  <div className="absolute bottom-6 left-6 right-6 text-white">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-2xl font-bold group-hover:scale-105 transition-transform duration-500 drop-shadow-lg">
+                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-lg sm:text-xl font-bold group-hover:scale-105 transition-transform duration-500 drop-shadow-lg line-clamp-1">
                         {brand.name}
                       </h3>
-                      <ArrowRight className="h-7 w-7 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500" />
+                      <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500 flex-shrink-0" />
                     </div>
                     
-                    <div className="flex items-center space-x-4 mb-3">
-                      <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30">
-                        <span className="text-sm font-semibold">{brand.productCount} Products</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full border border-white/30">
+                        <span className="text-xs font-semibold">{brand.productCount} Products</span>
                       </div>
-                      <div className="bg-white/20 backdrop-blur-md px-3 py-2 rounded-full border border-white/30">
-                        <Star className="h-4 w-4 text-yellow-300" />
+                      <div className="bg-white/20 backdrop-blur-md px-2 py-1 rounded-full border border-white/30">
+                        <Star className="h-3 w-3 text-yellow-300" />
                       </div>
                     </div>
                   </div>
@@ -153,65 +153,59 @@ const BrandGrid: React.FC<BrandGridProps> = ({ brands, loading = false, hasBacke
                   </div>
                 </div>
                 
-                {/* Enhanced Content Section with Grand Gradients */}
-                <div className="p-8 bg-gradient-to-br from-white via-eco-50 to-nature-50">
-                  <div className="mb-6">
-                    <p className="text-eco-700 leading-relaxed text-sm mb-4 line-clamp-2">
+                {/* Enhanced Content Section - Mobile Optimized with Fixed Structure */}
+                <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-eco-50 via-white to-eco-50 flex flex-col flex-grow">
+                  <div className="mb-4 sm:mb-6 flex-grow flex flex-col">
+                    <p className="text-eco-700 leading-relaxed text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 min-h-[3rem]">
                       {brand.description}
                     </p>
                     
-                    {/* Enhanced Feature Tags with Beautiful Gradients */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <div className="bg-gradient-to-r from-eco-100 to-nature-100 px-3 py-1 rounded-full border border-eco-200 shadow-sm">
-                        <span className="text-xs font-medium text-eco-700">{brand.specialty}</span>
-                      </div>
-                      <div className="bg-gradient-to-r from-nature-100 to-ocean-100 px-3 py-1 rounded-full border border-nature-200 shadow-sm">
-                        <span className="text-xs font-medium text-nature-700">Est. {brand.established}</span>
-                      </div>
-                      <div className="bg-gradient-to-r from-ocean-100 to-eco-100 px-3 py-1 rounded-full border border-ocean-200 shadow-sm">
-                        <span className="text-xs font-medium text-ocean-700">Trusted</span>
+                    {/* Enhanced Feature Tags - Mobile Optimized */}
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4 min-h-[2rem]">
+                      <div className="bg-eco-100 px-2 sm:px-3 py-1 rounded-full border border-eco-200">
+                        <span className="text-xs font-medium text-eco-700 whitespace-nowrap">{brand.specialty}</span>
                       </div>
                     </div>
                     
-                    {/* Enhanced Stats Row */}
+                    {/* Enhanced Stats Row - Mobile Optimized */}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-gradient-to-r from-eco-500 to-nature-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-semibold text-eco-700">{brand.productCount} Items</span>
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-eco-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs sm:text-sm font-semibold text-eco-700">{brand.productCount} Items</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Clock className="h-3 w-3 text-nature-500" />
-                        <span className="text-xs text-nature-600">Premium Quality</span>
+                        <Shield className="h-3 w-3 text-eco-500" />
+                        <span className="text-xs text-eco-600 hidden sm:inline">Verified</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Enhanced Action Section */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-gradient-to-r from-eco-200 to-nature-200 p-3 rounded-xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                        <Shield className="h-5 w-5 text-eco-600" />
+                  {/* Enhanced Action Section - Mobile Optimized - Fixed at Bottom */}
+                  <div className="flex items-center justify-between mt-auto">
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                      <div className="bg-eco-200 p-2 sm:p-3 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform duration-300">
+                        <Award className="h-4 w-4 sm:h-5 sm:w-5 text-eco-600" />
                       </div>
-                      <span className="text-sm font-medium text-eco-700">Verified Brand</span>
+                      <span className="text-xs sm:text-sm font-medium text-eco-700 hidden sm:inline">Premium Brand</span>
                     </div>
                     
-                    {/* Enhanced CTA Button with Grand Design */}
-                    <button className="bg-gradient-to-r from-eco-500 to-nature-500 text-white px-6 py-3 rounded-2xl font-semibold text-sm hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-eco-glow-xl">
-                      <span className="flex items-center space-x-2">
-                        <span>View Products</span>
-                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                    {/* Enhanced CTA Button - Mobile Optimized */}
+                    <button className="bg-eco-gradient text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-semibold text-xs sm:text-sm hover:shadow-eco-glow-lg transition-all duration-300 transform hover:scale-105 group-hover:shadow-eco-glow-xl">
+                      <span className="flex items-center space-x-1 sm:space-x-2">
+                        <span>Explore</span>
+                        <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform duration-300" />
                       </span>
                     </button>
                   </div>
                 </div>
                 
-                {/* Enhanced Hover Effects with Grand Gradients */}
-                <div className="absolute inset-0 bg-gradient-to-r from-eco-400/10 via-nature-400/10 to-ocean-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                {/* Enhanced Hover Effects */}
+                <div className="absolute inset-0 bg-gradient-to-r from-eco-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
               </div>
               
-              {/* Floating Decorative Elements with Enhanced Colors */}
-              <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-eco-400 to-nature-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-3000"></div>
-              <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-gradient-to-r from-nature-400 to-ocean-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
+              {/* Floating Decorative Elements - Hidden on mobile for performance */}
+              <div className="hidden sm:block absolute -top-2 -right-2 w-4 h-4 bg-eco-300 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-3000"></div>
+              <div className="hidden sm:block absolute -bottom-2 -left-2 w-3 h-3 bg-eco-200 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
             </div>
           ))}
           </div>

@@ -44,6 +44,9 @@ router.get('/', optionalAuth, asyncHandler(async (req, res) => {
   // Build sort
   let sortOption = {};
   switch (sort) {
+    case 'displayOrder':
+      sortOption = { displayOrder: 1, createdAt: -1 };
+      break;
     case 'price-low':
       sortOption = { 'price.current': 1 };
       break;

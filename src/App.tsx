@@ -3,7 +3,10 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Header from './components/Header';
 import Cart from './components/Cart';
 import Footer from './components/Footer';
+import ToastContainer from './components/ToastContainer';
 import Home from './pages/Home';
+import ProductsPage from './pages/ProductsPage';
+import ProductDetailPage from './pages/ProductDetailPage';
 import CategoryPage from './pages/CategoryPage';
 import BrandPage from './pages/BrandPage';
 import BrandsPage from './pages/BrandsPage';
@@ -12,8 +15,14 @@ import AboutPage from './pages/AboutPage';
 import SignupPage from './pages/SignupPage';
 import SigninPage from './pages/SigninPage';
 import AdminPage from './pages/AdminPage';
+import CheckoutPage from './pages/CheckoutPage';
+import PaymentPage from './pages/PaymentPage';
+import OrderConfirmationPage from './pages/OrderConfirmationPage';
+import ProfilePage from './pages/ProfilePage';
 import { CartItem, Product } from './types';
 import WatchlistPage from './pages/WatchlistPage.tsx';
+import { useHybridProducts } from './hooks/useHybridData';
+import { useToast } from './hooks/useToast';
 
 // ScrollToTop component to handle route changes
 const ScrollToTop: React.FC = () => {
@@ -37,12 +46,15 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [watchlist, setWatchlist] = useState<Product[]>([]);
+  const { data: allProducts } = useHybridProducts();
+  const { toasts, removeToast, success, error, info } = useToast();
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
       
       if (existingItem) {
+        success(`Updated ${product.name} quantity in cart`);
         return prevCart.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -50,6 +62,7 @@ function App() {
         );
       }
       
+      success(`Added ${product.name} to cart`);
       return [...prevCart, { ...product, quantity: 1 }];
     });
   };
@@ -75,8 +88,10 @@ function App() {
     setWatchlist(prev => {
       const exists = prev.some(p => p.id === product.id);
       if (exists) {
+        info(`Removed ${product.name} from watchlist`);
         return prev.filter(p => p.id !== product.id);
       }
+      success(`Added ${product.name} to watchlist`);
       return [...prev, product];
     });
   };
@@ -87,12 +102,16 @@ function App() {
         {/* ScrollToTop component to handle route changes */}
         <ScrollToTop />
         
+        {/* Toast Notifications */}
+        <ToastContainer toasts={toasts} onClose={removeToast} />
+        
         <Header
           cart={cart}
           onCartClick={() => setIsCartOpen(true)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           watchlistCount={watchlist.length}
+          products={allProducts}
         />
         
         <Routes>
@@ -106,11 +125,33 @@ function App() {
                 selectedCategory={selectedCategory}
                 onCategorySelect={setSelectedCategory}
               />
-            } 
+            }
           />
-          <Route 
-            path="/categories" 
-            element={<CategoriesPage />} 
+          <Route
+            path="/products"
+            element={
+              <ProductsPage
+                cart={cart}
+                onAddToCart={addToCart}
+                searchQuery={searchQuery}
+                onToggleWatchlist={toggleWatchlist}
+                isInWatchlist={(productId: string) => watchlist.some(p => p.id === productId)}
+              />
+            }
+          />
+          <Route
+            path="/product/:productId"
+            element={
+              <ProductDetailPage
+                onAddToCart={addToCart}
+                onToggleWatchlist={toggleWatchlist}
+                isInWatchlist={(productId: string) => watchlist.some(p => p.id === productId)}
+              />
+            }
+          />
+          <Route
+            path="/categories"
+            element={<CategoriesPage />}
           />
           <Route 
             path="/category/:categoryId" 
@@ -156,9 +197,25 @@ function App() {
             path="/signin" 
             element={<SigninPage />} 
           />
-          <Route 
-            path="/admin" 
-            element={<AdminPage />} 
+          <Route
+            path="/admin"
+            element={<AdminPage />}
+          />
+          <Route
+            path="/checkout"
+            element={<CheckoutPage cart={cart} onClearCart={() => setCart([])} />}
+          />
+          <Route
+            path="/payment"
+            element={<PaymentPage />}
+          />
+          <Route
+            path="/order-confirmation"
+            element={<OrderConfirmationPage />}
+          />
+          <Route
+            path="/profile"
+            element={<ProfilePage />}
           />
         </Routes>
 
