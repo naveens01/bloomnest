@@ -251,10 +251,13 @@ const CategoriesPage: React.FC = () => {
                 </div>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-                {filteredCategories.map((category, index) => (
+                {filteredCategories.map((category, index) => {
+                  const categoryLink = `/category/${category.slug || category.id}`;
+                  console.log('Category card:', { name: category.name, id: category.id, slug: category.slug, link: categoryLink });
+                  return (
                   <Link
                     key={category.id}
-                    to={`/category/${category.slug || category.id}`}
+                    to={categoryLink}
                     className="group relative cursor-pointer animate-fade-in-up"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
@@ -372,7 +375,8 @@ const CategoriesPage: React.FC = () => {
                     <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-eco-400 to-nature-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-3000"></div>
                     <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-gradient-to-r from-nature-400 to-ocean-400 rounded-full opacity-0 group-hover:opacity-100 animate-ping animation-delay-1500"></div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}
