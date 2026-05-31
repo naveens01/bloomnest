@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { CartItem } from '../types';
 import { CreditCard, MapPin, Package, ArrowLeft, Check, Truck, Lock } from 'lucide-react';
 import { API_ENDPOINTS } from '../config/api';
+import { formatPriceWithDecimals } from '../utils/formatPrice';
 
 interface CheckoutPageProps {
   cart: CartItem[];
@@ -509,7 +510,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cart, onClearCart }) => {
                       <p className="font-medium text-eco-900 text-sm line-clamp-2">{item.name}</p>
                       <p className="text-sm text-eco-600">Qty: {item.quantity}</p>
                     </div>
-                    <p className="font-semibold text-eco-700">₹{(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-semibold text-eco-700">₹{formatPriceWithDecimals(item.price * item.quantity)}</p>
                   </div>
                 ))}
               </div>
@@ -517,19 +518,19 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cart, onClearCart }) => {
               <div className="border-t border-eco-200 pt-4 space-y-3">
                 <div className="flex justify-between text-eco-700">
                   <span>Subtotal</span>
-                  <span>₹{subtotal.toFixed(2)}</span>
+                  <span>₹{formatPriceWithDecimals(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-eco-700">
                   <span>Shipping</span>
-                  <span>{shippingCost === 0 ? 'FREE' : `₹${shippingCost.toFixed(2)}`}</span>
+                  <span>{shippingCost === 0 ? 'FREE' : `₹${formatPriceWithDecimals(shippingCost)}`}</span>
                 </div>
                 <div className="flex justify-between text-eco-700">
                   <span>Tax</span>
-                  <span>₹{tax.toFixed(2)}</span>
+                  <span>₹{formatPriceWithDecimals(tax)}</span>
                 </div>
                 <div className="border-t border-eco-200 pt-3 flex justify-between text-lg font-bold text-eco-900">
                   <span>Total</span>
-                  <span>₹{total.toFixed(2)}</span>
+                  <span>₹{formatPriceWithDecimals(total)}</span>
                 </div>
               </div>
 
@@ -539,7 +540,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cart, onClearCart }) => {
                   <p className="font-semibold text-eco-900">Free Shipping</p>
                 </div>
                 <p className="text-sm text-eco-600">
-                  {subtotal > 50 ? 'You qualify for free shipping!' : `Add ₹${(50 - subtotal).toFixed(2)} more for free shipping`}
+                  {subtotal > 50 ? 'You qualify for free shipping!' : `Add ₹${formatPriceWithDecimals(50 - subtotal)} more for free shipping`}
                 </p>
               </div>
             </div>

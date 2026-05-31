@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Star, Heart, ShoppingCart, Shield, Package, Truck, CheckCircle } from 'lucide-react';
 import { Product } from '../types';
+import { formatPrice } from '../utils/formatPrice';
 
 interface ProductQuickViewProps {
   product: Product;
@@ -148,14 +149,14 @@ const ProductQuickView: React.FC<ProductQuickViewProps> = ({
 
               {/* Price */}
               <div className="flex items-center space-x-3 mb-6">
-                <span className="text-3xl font-bold text-green-600">₹{product.price}</span>
+                <span className="text-3xl font-bold text-green-600">₹{formatPrice(product.price)}</span>
                 {product.originalPrice && (
                   <>
                     <span className="text-xl text-gray-400 line-through">
-                      ₹{product.originalPrice}
+                      ₹{formatPrice(product.originalPrice)}
                     </span>
                     <span className="bg-orange-100 text-orange-600 px-2 py-1 rounded-lg text-sm font-semibold">
-                      Save ₹{product.originalPrice - product.price}
+                      Save ₹{formatPrice(product.originalPrice - product.price)}
                     </span>
                   </>
                 )}

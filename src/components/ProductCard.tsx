@@ -3,6 +3,7 @@ import { Star, Heart, Shield, CheckCircle, Eye, Sparkles, TrendingUp } from 'luc
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 import LazyImage from './LazyImage';
+import { formatPrice } from '../utils/formatPrice';
 
 interface ProductCardProps {
   product: Product;
@@ -174,17 +175,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Price - Smaller but still prominent */}
         <div className="mb-2 bg-gradient-to-r from-eco-50 to-nature-50 p-2 rounded-lg border border-eco-100">
           <div className="flex items-baseline space-x-1.5 mb-0.5">
-            <span className="text-base sm:text-lg font-black text-gray-900">₹{product.price}</span>
+            <span className="text-base sm:text-lg font-black text-gray-900">₹{formatPrice(product.price)}</span>
             {product.originalPrice && (
               <span className="text-[10px] text-gray-500 line-through font-medium">
-                ₹{product.originalPrice}
+                ₹{formatPrice(product.originalPrice)}
               </span>
             )}
           </div>
           {discountPercentage > 0 && (
             <div className="flex items-center space-x-1">
               <span className="text-[10px] font-bold text-green-600">
-                Save ₹{product.originalPrice! - product.price}
+                Save ₹{formatPrice(product.originalPrice! - product.price)}
               </span>
               <span className="text-[9px] text-gray-500">({discountPercentage}% off)</span>
             </div>
