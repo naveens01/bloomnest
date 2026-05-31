@@ -144,7 +144,7 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50">
       {/* Grand Hero Section - Mobile Responsive */}
-      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 pt-24 sm:pt-28 md:pt-32 pb-16 sm:pb-20 lg:pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 pt-28 sm:pt-32 md:pt-36 pb-16 sm:pb-20 lg:pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-20 sm:-top-40 -right-20 sm:-right-40 w-48 sm:w-96 h-48 sm:h-96 bg-eco-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob"></div>
@@ -154,8 +154,8 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-white/30 mb-4 sm:mb-6 animate-fade-in-up">
+            {/* Badge - Extra margin on mobile to clear navbar */}
+            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-white/30 mb-4 sm:mb-6 mt-2 sm:mt-0 animate-fade-in-up">
               <Package className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               <span className="text-xs sm:text-sm font-semibold text-white">Premium Collection</span>
             </div>
