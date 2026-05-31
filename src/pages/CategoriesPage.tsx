@@ -1,26 +1,26 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Leaf, Sparkles, ArrowRight, Award, Clock, Search, Grid, ShoppingBag, Shield, Loader2, TrendingUp, Star } from 'lucide-react';
 import { useHybridCategories } from '../hooks/useHybridData';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 const CategoriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('featured');
+  const [displayedCategories, setDisplayedCategories] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const ITEMS_PER_PAGE = 12;
 
-  // Use hybrid data hook to get categories from both static and backend
-  // The hook automatically refreshes when page becomes visible or window gains focus
   const { data: categories, loading: categoriesLoading, hasBackendData, refresh } = useHybridCategories();
 
-  // Refresh categories when component mounts to get latest data
   useEffect(() => {
     refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount
+  }, []);
 
   const filteredCategories = useMemo(() => {
-    let filtered = [...categories]; // Create a new array to ensure reactivity
+    let filtered = [...categories];
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(category =>
@@ -28,7 +28,6 @@ const CategoriesPage: React.FC = () => {
       );
     }
 
-    // Sort categories
     switch (sortBy) {
       case 'name':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -37,15 +36,43 @@ const CategoriesPage: React.FC = () => {
         filtered.sort((a, b) => b.count - a.count);
         break;
       case 'newest':
-        filtered.sort(() => Math.random() - 0.5); // Simulate newest
+        filtered.sort(() => Math.random() - 0.5);
         break;
       default:
-        // Featured - keep original order
         break;
     }
 
     return filtered;
-  }, [searchQuery, sortBy, categories]); // Include categories in dependencies
+  }, [searchQuery, sortBy, categories]);
+
+  useEffect(() => {
+    setPage(1);
+    setDisplayedCategories(filteredCategories.slice(0, ITEMS_PER_PAGE));
+  }, [filteredCategories]);
+
+  const hasMore = displayedCategories.length < filteredCategories.length;
+
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      setLoadingMore(true);
+      setTimeout(() => {
+        const nextPage = page + 1;
+        const startIndex = page * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const newCategories = filteredCategories.slice(startIndex, endIndex);
+        setDisplayedCategories(prev => [...prev, ...newCategories]);
+        setPage(nextPage);
+        setLoadingMore(false);
+      }, 500);
+    }
+  }, [page, loadingMore, hasMore, filteredCategories]);
+
+  const sentinelRef = useInfiniteScroll({
+    loading: loadingMore,
+    hasMore,
+    onLoadMore: loadMore,
+    threshold: 300
+  });
 
   return (
     <main className="min-h-screen bg-eco-pattern pt-32 sm:pt-24 md:pt-28">
@@ -236,7 +263,7 @@ const CategoriesPage: React.FC = () => {
             <div className="flex justify-center items-center py-20">
               <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
             </div>
-          ) : filteredCategories.length === 0 ? (
+          ) : displayedCategories.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-eco-700 text-lg">No categories found. Try adjusting your search.</p>
             </div>
@@ -251,7 +278,7 @@ const CategoriesPage: React.FC = () => {
                 </div>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
-                {filteredCategories.map((category, index) => {
+                {displayedCategories.map((category, index) => {
                   const categoryLink = `/category/${category.slug || category.id}`;
                   console.log('Category card:', { name: category.name, id: category.id, slug: category.slug, link: categoryLink });
                   return (
@@ -377,6 +404,21 @@ const CategoriesPage: React.FC = () => {
                   </Link>
                   );
                 })}
+              </div>
+
+              {/* Infinite Scroll Sentinel */}
+              <div ref={sentinelRef} className="h-20 flex items-center justify-center mt-8">
+                {loadingMore && (
+                  <div className="flex flex-col items-center space-y-3 py-8">
+                    <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+                    <p className="text-eco-600 font-medium">Loading more categories...</p>
+                  </div>
+                )}
+                {!hasMore && displayedCategories.length > 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-eco-600 font-medium">You've seen all categories! 🌿</p>
+                  </div>
+                )}
               </div>
             </>
           )}

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import ProductQuickView from '../components/ProductQuickView';
@@ -8,6 +8,7 @@ import { CartItem, Product } from '../types';
 import { Leaf, Sparkles, ArrowRight, Star, Award, Clock, Zap, Heart, Filter, Search, Grid, List, ShoppingBag, TrendingUp, Shield, Users, Loader2 } from 'lucide-react';
 import { useHybridCategories } from '../hooks/useHybridData';
 import { categoryApi, transformBackendProduct, BackendProduct, PaginationInfo } from '../services/api';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 interface CategoryPageProps {
   cart: CartItem[];
@@ -162,11 +163,19 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
 
         const response = await categoryApi.getProducts(slug, page, 12, sortParam);
         const backendProducts: BackendProduct[] = response.data.products || [];
-        setApiProducts(backendProducts.map(transformBackendProduct));
+        
+        if (page === 1) {
+          setApiProducts(backendProducts.map(transformBackendProduct));
+        } else {
+          setApiProducts(prev => [...prev, ...backendProducts.map(transformBackendProduct)]);
+        }
+        
         setApiPagination(response.data.pagination || null);
       } catch (error) {
         console.error('Failed loading category products:', error);
-        setApiProducts([]);
+        if (page === 1) {
+          setApiProducts([]);
+        }
         setApiPagination(null);
       } finally {
         setApiLoading(false);
@@ -178,7 +187,21 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
 
   useEffect(() => {
     setPage(1);
+    setApiProducts([]);
   }, [categoryId, sortBy]);
+
+  const loadMore = useCallback(() => {
+    if (apiPagination?.hasNext && !apiLoading) {
+      setPage(prev => prev + 1);
+    }
+  }, [apiPagination, apiLoading]);
+
+  const sentinelRef = useInfiniteScroll({
+    loading: apiLoading && page > 1,
+    hasMore: apiPagination?.hasNext || false,
+    onLoadMore: loadMore,
+    threshold: 300
+  });
 
   // Early returns AFTER all hooks to follow Rules of Hooks
   // Loading state
@@ -392,49 +415,44 @@ const CategoryPage: React.FC<CategoryPageProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <div className={`grid gap-4 sm:gap-6 ${
-                    viewMode === 'grid'
-                      ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-                      : 'grid-cols-1'
-                  }`}>
-                    {filteredProducts.map((product, index) => (
-                      <div
-                        key={product.id}
-                        className="animate-fade-in-up"
-                        style={{ animationDelay: `${index * 100}ms` }}
-                      >
-                        <ProductCard
-                          product={product}
-                          onAddToCart={onAddToCart}
-                          isInWatchlist={isInWatchlist(product.id)}
-                          onToggleWatchlist={onToggleWatchlist}
-                          onQuickView={setSelectedProduct}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
+                  <>
+                    <div className={`grid gap-4 sm:gap-6 ${
+                      viewMode === 'grid'
+                        ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                        : 'grid-cols-1'
+                    }`}>
+                      {filteredProducts.map((product, index) => (
+                        <div
+                          key={product.id}
+                          className="animate-fade-in-up"
+                          style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                          <ProductCard
+                            product={product}
+                            onAddToCart={onAddToCart}
+                            isInWatchlist={isInWatchlist(product.id)}
+                            onToggleWatchlist={onToggleWatchlist}
+                            onQuickView={setSelectedProduct}
+                          />
+                        </div>
+                      ))}
+                    </div>
 
-                {apiPagination && apiPagination.totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-3 mt-10">
-                    <button
-                      onClick={() => setPage(prev => Math.max(1, prev - 1))}
-                      disabled={!apiPagination.hasPrev}
-                      className="px-4 py-2 rounded-xl border border-eco-200 disabled:opacity-50"
-                    >
-                      Prev
-                    </button>
-                    <span className="text-eco-700 font-medium">
-                      Page {apiPagination.currentPage} / {apiPagination.totalPages}
-                    </span>
-                    <button
-                      onClick={() => setPage(prev => prev + 1)}
-                      disabled={!apiPagination.hasNext}
-                      className="px-4 py-2 rounded-xl border border-eco-200 disabled:opacity-50"
-                    >
-                      Next
-                    </button>
-                  </div>
+                    {/* Infinite Scroll Sentinel */}
+                    <div ref={sentinelRef} className="h-20 flex items-center justify-center mt-8">
+                      {apiLoading && page > 1 && (
+                        <div className="flex flex-col items-center space-y-3 py-8">
+                          <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+                          <p className="text-eco-600 font-medium">Loading more products...</p>
+                        </div>
+                      )}
+                      {apiPagination && !apiPagination.hasNext && filteredProducts.length > 0 && (
+                        <div className="text-center py-8">
+                          <p className="text-eco-600 font-medium">You've seen all {category.name} products! 🌿</p>
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             </div>

@@ -1,27 +1,27 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Award, Sparkles, ArrowRight, Star, TrendingUp, ShoppingBag, Crown, Target, Lightbulb, Loader2, Grid } from 'lucide-react';
 import { useHybridBrands } from '../hooks/useHybridData';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 const BrandsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('name'); // Default to A-Z sorting
+  const [sortBy, setSortBy] = useState('name');
+  const [displayedBrands, setDisplayedBrands] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const ITEMS_PER_PAGE = 12;
 
-  // Use hybrid data hook to get brands from both static and backend
-  // The hook automatically refreshes when page becomes visible or window gains focus
   const { data: brands, loading: brandsLoading, hasBackendData, refresh } = useHybridBrands();
 
-  // Refresh brands when component mounts to get latest data
   useEffect(() => {
     refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount
+  }, []);
 
   const filteredBrands = useMemo(() => {
-    let filtered = [...brands]; // Create a new array to ensure reactivity
+    let filtered = [...brands];
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(brand =>
@@ -31,7 +31,6 @@ const BrandsPage: React.FC = () => {
       );
     }
 
-    // Sort brands
     switch (sortBy) {
       case 'name':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -40,15 +39,43 @@ const BrandsPage: React.FC = () => {
         filtered.sort((a, b) => b.productCount - a.productCount);
         break;
       case 'newest':
-        filtered.sort(() => Math.random() - 0.5); // Simulate newest
+        filtered.sort(() => Math.random() - 0.5);
         break;
       default:
-        // Featured - keep original order
         break;
     }
 
     return filtered;
-  }, [searchQuery, sortBy, brands]); // Include brands in dependencies
+  }, [searchQuery, sortBy, brands]);
+
+  useEffect(() => {
+    setPage(1);
+    setDisplayedBrands(filteredBrands.slice(0, ITEMS_PER_PAGE));
+  }, [filteredBrands]);
+
+  const hasMore = displayedBrands.length < filteredBrands.length;
+
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      setLoadingMore(true);
+      setTimeout(() => {
+        const nextPage = page + 1;
+        const startIndex = page * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const newBrands = filteredBrands.slice(startIndex, endIndex);
+        setDisplayedBrands(prev => [...prev, ...newBrands]);
+        setPage(nextPage);
+        setLoadingMore(false);
+      }, 500);
+    }
+  }, [page, loadingMore, hasMore, filteredBrands]);
+
+  const sentinelRef = useInfiniteScroll({
+    loading: loadingMore,
+    hasMore,
+    onLoadMore: loadMore,
+    threshold: 300
+  });
 
   const categories = ['all', 'personal-care', 'home-living', 'fashion', 'food-beverages', 'electronics'];
 
@@ -206,7 +233,7 @@ const BrandsPage: React.FC = () => {
             <div className="flex justify-center items-center py-20">
               <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
             </div>
-          ) : filteredBrands.length === 0 ? (
+          ) : displayedBrands.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-eco-700 text-lg">No brands found. Try adjusting your search or filters.</p>
             </div>
@@ -221,7 +248,7 @@ const BrandsPage: React.FC = () => {
                 </div>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredBrands.map((brand, index) => {
+                {displayedBrands.map((brand, index) => {
                   // Generate the brand URL - use slug if available, otherwise generate from name
                   const brandSlug = (brand as any).slug;
                   const brandUrl = brandSlug
@@ -346,6 +373,21 @@ const BrandsPage: React.FC = () => {
                     </Link>
                   );
                 })}
+              </div>
+
+              {/* Infinite Scroll Sentinel */}
+              <div ref={sentinelRef} className="h-20 flex items-center justify-center mt-8">
+                {loadingMore && (
+                  <div className="flex flex-col items-center space-y-3 py-8">
+                    <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+                    <p className="text-eco-600 font-medium">Loading more brands...</p>
+                  </div>
+                )}
+                {!hasMore && displayedBrands.length > 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-eco-600 font-medium">You've seen all brands! 🌿</p>
+                  </div>
+                )}
               </div>
             </>
           )}

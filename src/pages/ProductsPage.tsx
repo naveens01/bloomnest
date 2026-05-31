@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from '../config/api';
-import { Package, Search, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { Package, Search, SlidersHorizontal, Sparkles, Loader2 } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Product } from '../types';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 interface ProductsPageProps {
   cart: any[];
@@ -22,28 +23,69 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
 }) => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>('displayOrder');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const ITEMS_PER_PAGE = 12;
 
-  useEffect(() => {
-    fetchProducts();
-  }, [sortBy]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async (pageNum: number, append: boolean = false) => {
     try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/products?limit=100&sort=${sortBy}`);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+      
+      const response = await fetch(
+        `${API_BASE_URL}/api/products?limit=${ITEMS_PER_PAGE}&page=${pageNum}&sort=${sortBy}`
+      );
+      
       if (!response.ok) throw new Error('Failed to fetch products');
+      
       const data = await response.json();
-      setProducts(data.data?.products || data.products || []);
+      const newProducts = data.data?.products || data.products || [];
+      
+      if (append) {
+        setProducts(prev => [...prev, ...newProducts]);
+      } else {
+        setProducts(newProducts);
+      }
+      
+      // Check if there are more products to load
+      setHasMore(newProducts.length === ITEMS_PER_PAGE);
       setError(null);
     } catch (err) {
       setError('Failed to load products');
       console.error('Error fetching products:', err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [sortBy]);
+
+  useEffect(() => {
+    setPage(1);
+    setProducts([]);
+    setHasMore(true);
+    fetchProducts(1, false);
+  }, [sortBy, fetchProducts]);
+
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchProducts(nextPage, true);
+    }
+  }, [page, loadingMore, hasMore, fetchProducts]);
+
+  const sentinelRef = useInfiniteScroll({
+    loading: loadingMore,
+    hasMore,
+    onLoadMore: loadMore,
+    threshold: 300
+  });
 
   // Filter products based on search query only
   const filteredProducts = products.filter(product => {
@@ -84,7 +126,12 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
         <div className="text-center">
           <p className="text-red-600 text-lg">{error}</p>
           <button
-            onClick={fetchProducts}
+            onClick={() => {
+              setPage(1);
+              setProducts([]);
+              setHasMore(true);
+              fetchProducts(1, false);
+            }}
             className="mt-4 px-6 py-2 bg-eco-500 text-white rounded-lg hover:bg-eco-600 transition-colors"
           >
             Try Again
@@ -166,17 +213,34 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product._id}
-                product={transformProduct(product)}
-                onAddToCart={onAddToCart}
-                isInWatchlist={isInWatchlist ? isInWatchlist(product._id) : false}
-                onToggleWatchlist={onToggleWatchlist}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product._id}
+                  product={transformProduct(product)}
+                  onAddToCart={onAddToCart}
+                  isInWatchlist={isInWatchlist ? isInWatchlist(product._id) : false}
+                  onToggleWatchlist={onToggleWatchlist}
+                />
+              ))}
+            </div>
+
+            {/* Infinite Scroll Sentinel */}
+            <div ref={sentinelRef} className="h-20 flex items-center justify-center">
+              {loadingMore && (
+                <div className="flex flex-col items-center space-y-3 py-8">
+                  <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+                  <p className="text-eco-600 font-medium">Loading more products...</p>
+                </div>
+              )}
+              {!hasMore && filteredProducts.length > 0 && (
+                <div className="text-center py-8">
+                  <p className="text-eco-600 font-medium">You've reached the end! 🌿</p>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

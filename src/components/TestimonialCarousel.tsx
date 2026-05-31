@@ -88,13 +88,24 @@ const TestimonialCarousel: React.FC = () => {
 
   // Auto-rotate testimonials every 5 seconds
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused) {
+      console.log('Carousel paused');
+      return;
+    }
 
+    console.log('Starting carousel auto-rotation');
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 3) % testimonials.length);
+      setCurrentIndex((prevIndex) => {
+        const newIndex = (prevIndex + 3) % testimonials.length;
+        console.log(`Rotating from index ${prevIndex} to ${newIndex}`);
+        return newIndex;
+      });
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log('Clearing carousel interval');
+      clearInterval(interval);
+    };
   }, [isPaused]);
 
   // Get 3 testimonials to display

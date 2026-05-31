@@ -1,10 +1,11 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { CartItem, Product } from '../types';
 import { MapPin, Calendar, Award, Loader2, Star, Search, Grid, List, Filter, TrendingUp, Sparkles, Leaf, ShoppingBag, ArrowRight, Shield, Heart } from 'lucide-react';
 import { useHybridBrands } from '../hooks/useHybridData';
 import { brandApi, transformBackendProduct, BackendProduct, PaginationInfo } from '../services/api';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 
 interface BrandPageProps {
   cart: CartItem[];
@@ -155,11 +156,19 @@ const BrandPage: React.FC<BrandPageProps> = ({
             : 'newest';
         const response = await brandApi.getProducts(slug, page, 12, sortParam);
         const backendProducts: BackendProduct[] = response.data.products || [];
-        setApiProducts(backendProducts.map(transformBackendProduct));
+        
+        if (page === 1) {
+          setApiProducts(backendProducts.map(transformBackendProduct));
+        } else {
+          setApiProducts(prev => [...prev, ...backendProducts.map(transformBackendProduct)]);
+        }
+        
         setApiPagination(response.data.pagination || null);
       } catch (error) {
         console.error('Failed loading brand products:', error);
-        setApiProducts([]);
+        if (page === 1) {
+          setApiProducts([]);
+        }
         setApiPagination(null);
       } finally {
         setApiLoading(false);
@@ -171,7 +180,21 @@ const BrandPage: React.FC<BrandPageProps> = ({
 
   useEffect(() => {
     setPage(1);
+    setApiProducts([]);
   }, [brandId, sortBy]);
+
+  const loadMore = useCallback(() => {
+    if (apiPagination?.hasNext && !apiLoading) {
+      setPage(prev => prev + 1);
+    }
+  }, [apiPagination, apiLoading]);
+
+  const sentinelRef = useInfiniteScroll({
+    loading: apiLoading && page > 1,
+    hasMore: apiPagination?.hasNext || false,
+    onLoadMore: loadMore,
+    threshold: 300
+  });
 
   // Loading state - AFTER all hooks
   // Show loading while brands are loading, but don't redirect yet
@@ -471,48 +494,43 @@ const BrandPage: React.FC<BrandPageProps> = ({
               </div>
             </div>
           ) : (
-            <div className={`grid gap-4 sm:gap-6 lg:gap-8 ${
-              viewMode === 'grid' 
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
-                : 'grid-cols-1'
-            }`}>
-              {filteredProducts.map((product, index) => (
-                <div
-                  key={product.id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <ProductCard
-                    product={product}
-                    onAddToCart={onAddToCart}
-                    isInWatchlist={isInWatchlist(product.id)}
-                    onToggleWatchlist={onToggleWatchlist}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+            <>
+              <div className={`grid gap-4 sm:gap-6 lg:gap-8 ${
+                viewMode === 'grid'
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  : 'grid-cols-1'
+              }`}>
+                {filteredProducts.map((product, index) => (
+                  <div
+                    key={product.id}
+                    className="animate-fade-in-up"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <ProductCard
+                      product={product}
+                      onAddToCart={onAddToCart}
+                      isInWatchlist={isInWatchlist(product.id)}
+                      onToggleWatchlist={onToggleWatchlist}
+                    />
+                  </div>
+                ))}
+              </div>
 
-          {apiPagination && apiPagination.totalPages > 1 && (
-            <div className="flex justify-center items-center gap-3 mt-10">
-              <button
-                onClick={() => setPage(prev => Math.max(1, prev - 1))}
-                disabled={!apiPagination.hasPrev}
-                className="px-4 py-2 rounded-xl border border-eco-200 disabled:opacity-50"
-              >
-                Prev
-              </button>
-              <span className="text-eco-700 font-medium">
-                Page {apiPagination.currentPage} / {apiPagination.totalPages}
-              </span>
-              <button
-                onClick={() => setPage(prev => prev + 1)}
-                disabled={!apiPagination.hasNext}
-                className="px-4 py-2 rounded-xl border border-eco-200 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
+              {/* Infinite Scroll Sentinel */}
+              <div ref={sentinelRef} className="h-20 flex items-center justify-center mt-8">
+                {apiLoading && page > 1 && (
+                  <div className="flex flex-col items-center space-y-3 py-8">
+                    <Loader2 className="h-8 w-8 text-eco-600 animate-spin" />
+                    <p className="text-eco-600 font-medium">Loading more products...</p>
+                  </div>
+                )}
+                {apiPagination && !apiPagination.hasNext && filteredProducts.length > 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-eco-600 font-medium">You've seen all {brand.name} products! 🌿</p>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </section>
