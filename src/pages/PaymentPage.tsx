@@ -117,18 +117,17 @@ const PaymentPage = () => {
           netbanking: true,
           wallet: true,
           paylater: true,
-          qr: true,
         },
         config: {
           display: {
             blocks: {
-              utib: {
-                name: 'Pay using UPI',
+              banks: {
+                name: 'Pay via UPI',
                 instruments: [
                   {
                     method: 'upi',
-                    flows: ['qr', 'collect', 'intent'],
-                    apps: ['google_pay', 'phonepe', 'paytm', 'bhim']
+                    flows: ['intent', 'collect', 'qr'],
+                    apps: ['google_pay', 'phonepe', 'paytm', 'bhim', 'amazonpay']
                   }
                 ]
               },
@@ -152,9 +151,9 @@ const PaymentPage = () => {
                 ]
               }
             },
-            sequence: ['block.utib', 'block.card', 'block.other'],
+            sequence: ['block.banks', 'block.card', 'block.other'],
             preferences: {
-              show_default_blocks: false
+              show_default_blocks: true
             }
           }
         },

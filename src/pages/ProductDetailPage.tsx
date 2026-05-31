@@ -17,6 +17,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
   const navigate = useNavigate();
   const { data: products, loading } = useHybridProducts();
   const [product, setProduct] = useState<Product | null>(null);
+  const [productLoading, setProductLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
@@ -34,7 +35,12 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
 
   useEffect(() => {
     const loadProduct = async () => {
-      if (!productId) return;
+      if (!productId) {
+        setProductLoading(false);
+        return;
+      }
+      
+      setProductLoading(true);
       
       // Try to fetch from API first to get populated category data
       try {
@@ -43,6 +49,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
           const transformedProduct = transformBackendProduct(response.data.product);
           setProduct(transformedProduct);
           setSelectedImage(0);
+          setProductLoading(false);
           return;
         }
       } catch (error) {
@@ -55,6 +62,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
       if (foundProduct) {
         setSelectedImage(0);
       }
+      setProductLoading(false);
     };
     
     loadProduct();
@@ -154,7 +162,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ onAddToCart, onTo
     document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  if (loading) {
+  if (loading || productLoading) {
     return (
       <div className="min-h-screen bg-eco-pattern pt-24 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-eco-600"></div>
