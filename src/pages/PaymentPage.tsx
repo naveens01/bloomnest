@@ -127,7 +127,8 @@ const PaymentPage = () => {
                 instruments: [
                   {
                     method: 'upi',
-                    flows: ['qr', 'collect', 'intent']
+                    flows: ['qr', 'collect', 'intent'],
+                    apps: ['google_pay', 'phonepe', 'paytm', 'bhim']
                   }
                 ]
               },
