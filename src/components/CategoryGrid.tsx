@@ -15,8 +15,10 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ categories, loading = false
   const [selectedCategory, setSelectedCategory] = useState('all');
   const visibleCategories = categories.slice(0, 6);
 
-  const handleCategoryClick = (categoryId: string) => {
-    navigate(`/category/${categoryId}`);
+  const handleCategoryClick = (category: Category) => {
+    // Use slug if available, otherwise use id
+    const identifier = category.slug || category.id;
+    navigate(`/category/${identifier}`);
   };
 
   return (
@@ -91,7 +93,7 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ categories, loading = false
             {visibleCategories.map((category, index) => (
             <div
               key={category.id}
-              onClick={() => handleCategoryClick(category.id)}
+              onClick={() => handleCategoryClick(category)}
               className="group relative cursor-pointer animate-fade-in-up"
               style={{ animationDelay: `${index * 200}ms` }}
             >

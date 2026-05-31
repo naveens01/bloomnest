@@ -1180,6 +1180,52 @@ router.put('/settings/:key', asyncHandler(async (req, res) => {
   });
 }));
 
+// ==================== SETTINGS MANAGEMENT ====================
+// @desc    Get app settings
+// @route   GET /api/admin/settings
+// @access  Admin only
+router.get('/settings', asyncHandler(async (req, res) => {
+  const settings = await Settings.getSettings();
+  
+  res.status(200).json({
+    status: 'success',
+    data: { settings }
+  });
+}));
+
+// @desc    Update app settings
+// @route   PUT /api/admin/settings
+// @access  Admin only
+router.put('/settings', asyncHandler(async (req, res) => {
+  const allowedUpdates = [
+    'codEnabled',
+    'storeName',
+    'storeEmail',
+    'storePhone',
+    'freeShippingThreshold',
+    'standardShippingFee',
+    'minOrderAmount',
+    'maxOrderAmount',
+    'maintenanceMode',
+    'allowGuestCheckout'
+  ];
+  
+  const updates = {};
+  Object.keys(req.body).forEach(key => {
+    if (allowedUpdates.includes(key)) {
+      updates[key] = req.body[key];
+    }
+  });
+  
+  const settings = await Settings.updateSettings(updates, req.user._id);
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Settings updated successfully',
+    data: { settings }
+  });
+}));
+
 // @desc    Initialize default settings
 // @route   POST /api/admin/settings/initialize
 // @access  Admin only

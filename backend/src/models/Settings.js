@@ -1,30 +1,67 @@
 const mongoose = require('mongoose');
 
 const settingsSchema = new mongoose.Schema({
-  key: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true
-  },
-  value: {
-    type: mongoose.Schema.Types.Mixed,
-    required: true
-  },
-  description: {
-    type: String,
-    trim: true
-  },
-  category: {
-    type: String,
-    enum: ['payment', 'shipping', 'general', 'email', 'sms'],
-    default: 'general'
-  },
-  isActive: {
+  // Payment Settings
+  codEnabled: {
     type: Boolean,
-    default: true
+    default: true,
+    description: 'Enable or disable Cash on Delivery (COD) payment method globally'
   },
-  updatedBy: {
+  
+  // Store Settings
+  storeName: {
+    type: String,
+    default: 'BloomNest',
+    trim: true
+  },
+  storeEmail: {
+    type: String,
+    default: 'support@bloomnest.com',
+    trim: true,
+    lowercase: true
+  },
+  storePhone: {
+    type: String,
+    default: '+91 1234567890',
+    trim: true
+  },
+  
+  // Shipping Settings
+  freeShippingThreshold: {
+    type: Number,
+    default: 500,
+    min: 0
+  },
+  standardShippingFee: {
+    type: Number,
+    default: 50,
+    min: 0
+  },
+  
+  // Order Settings
+  minOrderAmount: {
+    type: Number,
+    default: 100,
+    min: 0
+  },
+  maxOrderAmount: {
+    type: Number,
+    default: 50000,
+    min: 0
+  },
+  
+  // Feature Flags
+  maintenanceMode: {
+    type: Boolean,
+    default: false
+  },
+  allowGuestCheckout: {
+    type: Boolean,
+    default: false
+  },
+  
+  // Metadata
+  lastUpdatedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }
@@ -32,72 +69,25 @@ const settingsSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for faster queries
-settingsSchema.index({ key: 1 });
-settingsSchema.index({ category: 1 });
-
-// Static method to get setting value
-settingsSchema.statics.getValue = async function(key, defaultValue = null) {
-  const setting = await this.findOne({ key, isActive: true });
-  return setting ? setting.value : defaultValue;
-};
-
-// Static method to set setting value
-settingsSchema.statics.setValue = async function(key, value, userId = null) {
-  const setting = await this.findOneAndUpdate(
-    { key },
-    { 
-      value, 
-      updatedBy: userId,
-      isActive: true 
-    },
-    { 
-      new: true, 
-      upsert: true,
-      setDefaultsOnInsert: true 
-    }
-  );
-  return setting;
-};
-
-// Initialize default settings
-settingsSchema.statics.initializeDefaults = async function() {
-  const defaults = [
-    {
-      key: 'cod_enabled',
-      value: true,
-      description: 'Enable/Disable Cash on Delivery payment method',
-      category: 'payment'
-    },
-    {
-      key: 'min_order_for_cod',
-      value: 0,
-      description: 'Minimum order amount for COD (0 = no minimum)',
-      category: 'payment'
-    },
-    {
-      key: 'max_order_for_cod',
-      value: 50000,
-      description: 'Maximum order amount for COD (0 = no maximum)',
-      category: 'payment'
-    },
-    {
-      key: 'cod_charge',
-      value: 0,
-      description: 'Additional charge for COD orders',
-      category: 'payment'
-    }
-  ];
-
-  for (const setting of defaults) {
-    await this.findOneAndUpdate(
-      { key: setting.key },
-      setting,
-      { upsert: true, setDefaultsOnInsert: true }
-    );
+// Ensure only one settings document exists
+settingsSchema.statics.getSettings = async function() {
+  let settings = await this.findOne();
+  if (!settings) {
+    settings = await this.create({});
   }
+  return settings;
 };
 
-module.exports = mongoose.model('Settings', settingsSchema);
+settingsSchema.statics.updateSettings = async function(updates, userId) {
+  let settings = await this.getSettings();
+  Object.assign(settings, updates);
+  settings.lastUpdatedBy = userId;
+  await settings.save();
+  return settings;
+};
+
+const Settings = mongoose.model('Settings', settingsSchema);
+
+module.exports = Settings;
 
 // Made with Bob

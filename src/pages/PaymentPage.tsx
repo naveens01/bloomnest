@@ -50,13 +50,17 @@ const PaymentPage = () => {
 
   const checkCodAvailability = async () => {
     try {
-      const response = await fetch(`${API_ENDPOINTS.settings}/cod-available/${orderData.amount}`);
+      const response = await fetch(`${API_ENDPOINTS.settings}/public`);
       const data = await response.json();
       
       if (data.status === 'success') {
-        setCodAvailable(data.data.available);
-        setCodEnabled(data.data.available);
-        setCodMessage(data.data.reason || '');
+        const settings = data.data.settings;
+        setCodEnabled(settings.codEnabled);
+        setCodAvailable(settings.codEnabled);
+        
+        if (!settings.codEnabled) {
+          setCodMessage('Cash on Delivery is currently not available');
+        }
       }
     } catch (err) {
       console.error('Failed to check COD availability:', err);
@@ -363,31 +367,42 @@ const PaymentPage = () => {
 
                 {/* COD Option */}
                 <div
-                  onClick={() => setPaymentMethod('cod')}
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                    paymentMethod === 'cod'
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                  onClick={() => codEnabled && setPaymentMethod('cod')}
+                  className={`border-2 rounded-lg p-4 transition-all ${
+                    !codEnabled
+                      ? 'opacity-50 cursor-not-allowed bg-gray-50'
+                      : paymentMethod === 'cod'
+                      ? 'border-green-500 bg-green-50 cursor-pointer'
+                      : 'border-gray-200 hover:border-gray-300 cursor-pointer'
                   }`}
                 >
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 mt-1">
                       <div
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                          paymentMethod === 'cod'
+                          paymentMethod === 'cod' && codEnabled
                             ? 'border-green-500 bg-green-500'
                             : 'border-gray-300'
                         }`}
                       >
-                        {paymentMethod === 'cod' && (
+                        {paymentMethod === 'cod' && codEnabled && (
                           <div className="w-2 h-2 bg-white rounded-full" />
                         )}
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 mb-2">Cash on Delivery</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold text-gray-900">Cash on Delivery</h3>
+                        {!codEnabled && (
+                          <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded">
+                            Disabled
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-600">
-                        Pay with cash when your order is delivered
+                        {codEnabled
+                          ? 'Pay with cash when your order is delivered'
+                          : codMessage || 'Cash on Delivery is currently not available'}
                       </p>
                     </div>
                   </div>

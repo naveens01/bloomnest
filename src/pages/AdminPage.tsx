@@ -3,9 +3,9 @@ import { API_BASE_URL } from '../config/api';
 import { Link } from 'react-router-dom';
 import { adminApi, brandApi, categoryApi, productApi, transformBackendCategory, transformBackendBrand, transformBackendProduct } from '../services/api';
 import { BackendCategory, BackendBrand, BackendProduct } from '../services/api';
-import { Plus, Edit, Trash2, X, Save, Upload, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, LogIn } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Save, Upload, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, LogIn, Settings as SettingsIcon } from 'lucide-react';
 
-type TabType = 'categories' | 'brands' | 'products' | 'reviews';
+type TabType = 'categories' | 'brands' | 'products' | 'reviews' | 'settings';
 
 const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('categories');
@@ -32,6 +32,21 @@ const AdminPage: React.FC = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [editingReview, setEditingReview] = useState<any | null>(null);
+
+  // Settings state
+  const [settings, setSettings] = useState<any>({
+    codEnabled: true,
+    storeName: 'BloomNest',
+    storeEmail: 'support@bloomnest.com',
+    storePhone: '+91 1234567890',
+    freeShippingThreshold: 500,
+    standardShippingFee: 50,
+    minOrderAmount: 100,
+    maxOrderAmount: 50000,
+    maintenanceMode: false,
+    allowGuestCheckout: false
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
 
   // Load data
   useEffect(() => {
@@ -67,6 +82,9 @@ const AdminPage: React.FC = () => {
         setProducts(productsRes.data.products || []);
         setCategories(categoriesRes.data.categories || []);
         setBrands(brandsRes.data.brands || []);
+      } else if (activeTab === 'settings') {
+        const response = await adminApi.settings.get();
+        setSettings(response.data.settings);
       }
     } catch (err: any) {
       console.error('Load data error:', err);
