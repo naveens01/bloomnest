@@ -142,45 +142,70 @@ const ProductsPage: React.FC<ProductsPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen pt-28 sm:pt-32 pb-12 bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Modern Minimal Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
-            {/* Title Section */}
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-eco-500 to-nature-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-                  All Products
-                </h1>
-                <p className="text-sm sm:text-base text-gray-600 mt-0.5">
-                  {filteredProducts.length} of {products.length} products
-                </p>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-eco-50 via-nature-50 to-ocean-50">
+      {/* Grand Hero Section - Mobile Responsive */}
+      <section className="relative bg-gradient-to-br from-eco-600 via-nature-600 to-ocean-600 pt-24 sm:pt-28 md:pt-32 pb-16 sm:pb-20 lg:pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-20 sm:-top-40 -right-20 sm:-right-40 w-48 sm:w-96 h-48 sm:h-96 bg-eco-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob"></div>
+          <div className="absolute -bottom-20 sm:-bottom-40 -left-20 sm:-left-40 w-48 sm:w-96 h-48 sm:h-96 bg-ocean-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-20 sm:top-40 left-20 sm:left-40 w-48 sm:w-96 h-48 sm:h-96 bg-nature-200 rounded-full mix-blend-multiply filter blur-xl opacity-60 animate-blob animation-delay-4000"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-white/30 mb-4 sm:mb-6 animate-fade-in-up">
+              <Package className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              <span className="text-xs sm:text-sm font-semibold text-white">Premium Collection</span>
             </div>
 
-            {/* Sort Control - Modern Minimal */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              <span className="text-sm font-medium text-gray-700 hidden sm:inline">Sort by</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="flex-1 sm:flex-initial sm:min-w-[200px] px-4 py-2.5 text-sm font-medium border border-gray-300 rounded-xl focus:ring-2 focus:ring-eco-500 focus:border-eco-500 transition-all bg-white text-gray-900 shadow-sm hover:border-gray-400 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27currentColor%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e')] bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat pr-10"
-              >
-                <option value="displayOrder">Default</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="rating">Top Rated</option>
-                <option value="newest">Newest First</option>
-              </select>
+            {/* Title */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 animate-fade-in-up animation-delay-200 px-4">
+              All Products
+            </h1>
+
+            {/* Description */}
+            <p className="text-base sm:text-lg lg:text-xl text-white/90 max-w-3xl mx-auto leading-relaxed px-4 mb-6 sm:mb-8 animate-fade-in-up animation-delay-400">
+              Discover our complete collection of eco-friendly products for sustainable living
+            </p>
+
+            {/* Stats */}
+            <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-white/30 animate-fade-in-up animation-delay-600">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              <span className="text-xs sm:text-sm font-semibold text-white">
+                {filteredProducts.length} of {products.length} products
+              </span>
             </div>
           </div>
         </div>
+      </section>
 
+      {/* Sort Section - Modern & Clean */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 border border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-5 w-5 text-gray-600" />
+              <span className="text-sm font-semibold text-gray-900">Sort Products</span>
+            </div>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="flex-1 sm:flex-initial sm:min-w-[240px] px-4 py-2.5 text-sm font-medium border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-eco-500 focus:border-eco-500 transition-all bg-white text-gray-900 hover:border-gray-300 cursor-pointer"
+            >
+              <option value="displayOrder">⭐ Default</option>
+              <option value="price-low">💰 Price: Low to High</option>
+              <option value="price-high">💎 Price: High to Low</option>
+              <option value="rating">🏆 Top Rated</option>
+              <option value="newest">✨ Newest First</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Products Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
           <div className="text-center py-16 sm:py-20">
